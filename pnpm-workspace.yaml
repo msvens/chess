@@ -1,6 +1,12 @@
-# The SDK ships as a git tarball, so its `prepare` (tsup + tsc) must be allowed to
-# run on install — without this it lands with no dist/ and every import fails.
-onlyBuiltDependencies:
-  - '@msvens/schack-se-sdk'
-  - '@tailwindcss/oxide'
-  - esbuild
+# esbuild and Tailwind's oxide binary ship platform-specific artifacts and run a
+# postinstall to select one, so they need explicit approval; pnpm blocks
+# dependency build scripts by default.
+#
+# `allowBuilds` is pnpm 11's name for what pnpm 10 called `onlyBuiltDependencies`.
+# Bare names are fine here because both are registry packages — a given version is
+# immutable, so approving by name approves fixed content. That is exactly the
+# distinction that stopped working for the git-hosted SDK, which is why the SDK now
+# ships a prebuilt dist/ and needs no entry at all.
+allowBuilds:
+  '@tailwindcss/oxide': true
+  esbuild: true
