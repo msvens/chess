@@ -2,11 +2,19 @@
 /**
  * Live contract tests against the SSF and ChessTools APIs.
  *
- * These do NOT test our code. They assert the upstream behaviours that the proxy
- * configuration in `vite.config.ts` (dev) and nginx (prod) is built around. If SSF
- * changes any of them, our config is silently wrong — usually in the "everything
- * 404s" direction — and this suite is how we find out from a scheduled run rather
- * than from a user.
+ * Scope is deliberately narrow: only the upstream behaviours that exist as
+ * assumptions in OUR proxy configuration (`vite.config.ts` in dev, nginx in prod).
+ * If an upstream changes one of these, the config is silently wrong — usually in
+ * the "everything 404s" direction — and a scheduled run tells us before a user does.
+ *
+ * Endpoint coverage and DTO shapes are NOT tested here. @msvens/schack-se-sdk owns
+ * that and does it thoroughly (fide.integration.test.ts plus eight SSF suites);
+ * duplicating it would just mean maintaining the same assertions twice and
+ * inheriting ChessTools' flakiness in two repos.
+ *
+ * What remains is what the SDK has no reason to check: that a trailing slash still
+ * changes the outcome (it only matters because we rewrite paths), and that the CORS
+ * preflight still fails (a browser concern; the SDK is node-only).
  *
  * Excluded from `pnpm test` and run by `pnpm test:integration` (see
  * .github/workflows/integration.yml), so a flaky upstream cannot block a merge.
@@ -50,24 +58,9 @@ describe.skipIf(await ssfUnreachable())('SSF upstream contract', () => {
 		});
 		expect(res.status).toBe(403);
 	});
-
-	it('returns districts as a non-empty array', async () => {
-		const res = await fetch(`${SSF_BASE}/organisation/districts`);
-		const body = await res.json();
-		expect(Array.isArray(body)).toBe(true);
-		expect(body.length).toBeGreaterThan(0);
-		expect(body[0]).toMatchObject({ id: expect.any(Number), name: expect.any(String) });
-	});
 });
 
 describe.skipIf(await fideUnreachable())('ChessTools upstream contract', () => {
-	it('serves a known player', async () => {
-		const res = await fetch(`${CHESSTOOLS_BASE}/fide/1503014`);
-		expect(res.status).toBe(200);
-		const body = await res.json();
-		expect(body).toMatchObject({ fideid: '1503014', name: expect.any(String) });
-	});
-
 	// ChessTools is trailing-slash sensitive too, in the opposite direction from
 	// most SSF endpoints: this one REQUIRES the slash. Same lesson for the proxy.
 	it('requires the trailing slash on /fide/top_active/', async () => {
