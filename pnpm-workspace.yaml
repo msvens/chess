@@ -1,0 +1,6 @@
+# The SDK ships as a git tarball, so its `prepare` (tsup + tsc) must be allowed to
+# run on install — without this it lands with no dist/ and every import fails.
+onlyBuiltDependencies:
+  - '@msvens/schack-se-sdk'
+  - '@tailwindcss/oxide'
+  - esbuild
