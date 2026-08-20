@@ -1,5 +1,18 @@
 @import 'tailwindcss';
 
+/*
+ * Geist, self-hosted. The Next app pulled these through next/font/google, which
+ * exposed them as the two CSS variables below; keeping the same variable names
+ * means no component has to know the font source changed.
+ */
+@import '@fontsource-variable/geist';
+@import '@fontsource-variable/geist-mono';
+
+:root {
+	--font-geist-sans: 'Geist Variable', ui-sans-serif, system-ui, sans-serif;
+	--font-geist-mono: 'Geist Mono Variable', ui-monospace, monospace;
+}
+
 @theme {
 	--color-dark-bg: #121212;
 }
@@ -10,6 +23,7 @@
 
 body {
 	@apply bg-white text-gray-900 antialiased dark:bg-dark-bg dark:text-gray-200;
+	font-family: var(--font-geist-sans);
 }
 
 @layer utilities {

@@ -1,5 +1,11 @@
 <script lang="ts">
-	// Placeholder home page. The real one lands with the chrome in Stage 1.
+	import PageLayout from '$lib/components/layout/PageLayout.svelte';
+	import PageTitle from '$lib/components/layout/PageTitle.svelte';
+
+	// Placeholder body. The real home page is ported in a later stage; this exists
+	// so the navbar, footer and layout primitives have something to frame.
 </script>
 
-<h1 class="p-8 text-2xl font-semibold">msvens chess</h1>
+<PageLayout maxWidth="4xl">
+	<PageTitle title="msvens chess" subtitle="Svelte port in progress." />
+</PageLayout>

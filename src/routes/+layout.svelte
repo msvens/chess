@@ -4,6 +4,9 @@
 	import { language, initLanguage } from '$lib/stores/language.svelte';
 	import { theme, initTheme } from '$lib/stores/theme.svelte';
 	import { setOrganizationsState } from '$lib/stores/organizations.svelte';
+	import { brand, centerItems, rightItems } from '$lib/components/layout/nav';
+	import Navbar from '$lib/components/layout/Navbar.svelte';
+	import Footer from '$lib/components/layout/Footer.svelte';
 
 	let { children } = $props();
 
@@ -23,12 +26,28 @@
 		document.documentElement.classList.toggle('dark', theme.current === 'dark');
 	});
 
-	// The Next app hardcoded lang="en" while defaulting to Swedish. Bind it properly.
+	// The Next app hardcoded lang="en" while defaulting to Swedish.
 	$effect(() => {
 		document.documentElement.lang = language.current;
 	});
+
+	// Rebuilt whenever the language or theme changes — every label is translated and
+	// the two toggles advertise the state they'd switch to.
+	let center = $derived(centerItems(language.current));
+	let right = $derived(
+		rightItems(
+			language.current,
+			theme.current,
+			() => theme.toggle(),
+			() => language.toggle()
+		)
+	);
 </script>
+
+<Navbar {brand} display="text" centerItems={center} rightItems={right} />
 
 <main class="min-h-screen">
 	{@render children()}
 </main>
+
+<Footer />
