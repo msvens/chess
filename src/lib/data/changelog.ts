@@ -1,0 +1,484 @@
+// Auto-generated from CHANGELOG.md - DO NOT EDIT DIRECTLY
+// Run 'pnpm generate:changelog' to regenerate
+
+export interface ChangelogSection {
+  type: string;
+  items: string[];
+}
+
+export interface ChangelogEntry {
+  version: string;
+  date: string | null;
+  sections: ChangelogSection[];
+}
+
+export const changelog: ChangelogEntry[] = [
+  {
+    "version": "Unreleased",
+    "date": null,
+    "sections": []
+  },
+  {
+    "version": "1.5.0",
+    "date": "2026-08-19",
+    "sections": [
+      {
+        "type": "Added",
+        "items": [
+          "A \"Damer\" toggle on a tournament group's results — one click gives you the women in a mixed field, ranked, with their overall placement alongside, and the round-by-round pairings narrowed to their games. Shown only where it has something to do",
+          "Side prizes on a tournament group's results — pick a rating band, age class, women's or veteran prize and the standings filter to the players eligible for it, with the placement showing their rank among them and their overall place in parentheses",
+          "Veteran prizes are now included; previously they were left out because the federation's data didn't say what the age limit was"
+        ]
+      },
+      {
+        "type": "Changed",
+        "items": [
+          "A women's prize now lists every woman in the group. Some are registered with a rating range, but the official results don't apply it, so neither do we — and the range is no longer shown on the filter, since it isn't what decides who's eligible",
+          "Dropdown lists that don't fit now cut the last row in half, so it's obvious the list continues rather than ending where the box does"
+        ]
+      },
+      {
+        "type": "Fixed",
+        "items": [
+          "Dropdown lists no longer open far wider than the control that opened them"
+        ]
+      }
+    ]
+  },
+  {
+    "version": "1.4.0",
+    "date": "2026-08-10",
+    "sections": [
+      {
+        "type": "Added",
+        "items": [
+          "Girls (Flick) Junior Grand Prix standings on the Junior page — the Girls tab now shows the live girls series (previously \"coming soon\"), reproducing the official Stockholm standings",
+          "Wasa JGP 2026 is now included in the open Junior Grand Prix standings (now five counting tournaments)"
+        ]
+      },
+      {
+        "type": "Changed",
+        "items": [
+          "The junior standings tables now show each player's birth year (Född), after the name"
+        ]
+      },
+      {
+        "type": "Removed",
+        "items": [
+          "The junior standings now cover the 2026 season only; the estimated 2025 open standings were removed"
+        ]
+      },
+      {
+        "type": "Fixed",
+        "items": [
+          "Games that ended without a normal score now show what actually happened instead of a dash — a double forfeit as \"0 - 0 w.o\", an arbiter's ruling as \"0 - 0 domslut\", and a rescheduled game as \"Uppskjutet\". Previously any 0-0 game was displayed as if it had never been played",
+          "A player's round-by-round view now agrees with the group's round table; the two could previously show different results for the same game",
+          "Walkovers on team boards are now marked \"w.o\" in every point system (some Schackfyran and 3-1-0 forfeits were missed)"
+        ]
+      }
+    ]
+  },
+  {
+    "version": "1.3.0",
+    "date": "2026-06-28",
+    "sections": [
+      {
+        "type": "Added",
+        "items": [
+          "Round-by-round standings playback on a finished tournament's results page — an opt-in toggle lets you scrub through the rounds and watch the standings evolve, for both individual and team events",
+          "Print / save-as-PDF view for a tournament group's round pairings and standings, laid out for A4"
+        ]
+      },
+      {
+        "type": "Changed",
+        "items": [
+          "Tournament status (upcoming / ongoing / finished) is now derived from the tournament's dates and round data instead of the unreliable status field, so listings and results are labelled correctly",
+          "The club map now places more clubs at their exact street address",
+          "The results search notes when a wide date range may take longer to load"
+        ]
+      },
+      {
+        "type": "Fixed",
+        "items": [
+          "Clubs whose address can't be geocoded now fall back to their city instead of being dropped from the map",
+          "Data that came back as an empty response from the federation no longer fails to load (proxy now handles 204/304 correctly)",
+          "Players with no rating record now show \"unknown\" instead of a stuck \"retrieving\" state"
+        ]
+      }
+    ]
+  },
+  {
+    "version": "1.2.1",
+    "date": "2026-06-17",
+    "sections": [
+      {
+        "type": "Fixed",
+        "items": [
+          "Map coordinates now refresh reliably during server deploys (the data-pull script runs the geocoders via the local tsx binary instead of requiring pnpm on PATH)"
+        ]
+      }
+    ]
+  },
+  {
+    "version": "1.2.0",
+    "date": "2026-06-17",
+    "sections": [
+      {
+        "type": "Added",
+        "items": [
+          "Map view on the calendar showing upcoming tournaments by city (clustered, light/dark)",
+          "Clubs & Districts page redesigned with tabs (Clubs, Club Map, Districts, SSF Ranking)",
+          "Club map plotting active clubs by address, with an option to hide school clubs",
+          "Week and month calendar views, with an on-demand colour key",
+          "FIDE player search by name in the Elo calculator"
+        ]
+      },
+      {
+        "type": "Changed",
+        "items": [
+          "Schackfyran and team-league tournaments now link to official results on schack.se",
+          "Round results distinguish byes from walkovers",
+          "Landing page shows partner logos and an updated data-source label",
+          "Live results updates now default to on"
+        ]
+      },
+      {
+        "type": "Fixed",
+        "items": [
+          "Player profile no longer fails when game data is unavailable",
+          "Removed outdated \"results may be unavailable\" notices"
+        ]
+      }
+    ]
+  },
+  {
+    "version": "1.1.0",
+    "date": "2026-04-13",
+    "sections": [
+      {
+        "type": "Added",
+        "items": [
+          "Upcoming/registered tournaments shown in player profile Individual tab",
+          "Elo education pages with interactive rating calculator",
+          "FIDE integration in Elo calculator (search by FIDE ID via ChessTools API)",
+          "Guide section with tournament formats page (Swiss, Round Robin, Knockout, tiebreaks)",
+          "Live results notice with link to official results for same-day tournaments",
+          "Column sorting for tournament lists, final results, and team results tables",
+          "Player name search replaced with single-field combobox",
+          "Search buttons and narrower layout on players page",
+          "Persistent helper text for player name search format",
+          "Safe localStorage wrappers to prevent crashes when storage is blocked"
+        ]
+      },
+      {
+        "type": "Changed",
+        "items": [
+          "Upgraded to Next.js 16",
+          "Redesigned navbar with three-section grid layout and text labels",
+          "Upgraded SDK to v0.3.0 and replaced API rewrites with transparent route handlers",
+          "Revised rating scale to use FIDE title brackets"
+        ]
+      },
+      {
+        "type": "Fixed",
+        "items": [
+          "Walkover players showing as \"Player -100\" instead of \"W.O\" in round results",
+          "Scoring in Schack4an (3/2/1) and 3-1-0 point system tournaments",
+          "Missing players no longer silently dropped from tournament detail page",
+          "Elo capitalization consistency throughout codebase",
+          "SearchableSelectableList dropdown spanning full page width",
+          "Removed debug console.log statements",
+          "Error handling added to API proxy route handlers and Elo rating chart"
+        ]
+      }
+    ]
+  },
+  {
+    "version": "1.0.0",
+    "date": "2026-02-14",
+    "sections": [
+      {
+        "type": "Added",
+        "items": [
+          "Team detail page for team tournaments",
+          "LASK games grouped with standard in time control filter"
+        ]
+      },
+      {
+        "type": "Changed",
+        "items": [
+          "Redesigned landing page with cleaner layout",
+          "Migrated to @msvens/schack-se-sdk and switched to pnpm",
+          "Compact display for empty rating charts and team match rows",
+          "Updated Swedish translations for team average ratings"
+        ]
+      },
+      {
+        "type": "Fixed",
+        "items": [
+          "Team tournament display and table number rule",
+          "Team number display in team detail matches",
+          "ELO fallback in rapid tournaments",
+          "Opponents tab filter now uses ranking algorithm",
+          "H2H table showing fallback ratings instead of actual ratings"
+        ]
+      }
+    ]
+  },
+  {
+    "version": "0.9.0",
+    "date": "2026-02-04",
+    "sections": [
+      {
+        "type": "Added",
+        "items": [
+          "Head-to-head player comparison view",
+          "Global player cache for instant opponent data across navigations",
+          "Global tournament cache for instant tournament data across navigations",
+          "Historical ELO ratings in head-to-head comparisons",
+          "GitHub Actions CI workflow"
+        ]
+      },
+      {
+        "type": "Changed",
+        "items": [
+          "Results page live refresh now only re-fetches standings, not tournament metadata",
+          "Player pages load significantly faster on repeat visits (cached data)"
+        ]
+      },
+      {
+        "type": "Fixed",
+        "items": [
+          "Timezone-related date parsing issues",
+          "Live tournament display issues"
+        ]
+      }
+    ]
+  },
+  {
+    "version": "0.8.0",
+    "date": "2026-02-02",
+    "sections": [
+      {
+        "type": "Added",
+        "items": [
+          "Player search now shows dropdown for single match to confirm selection"
+        ]
+      },
+      {
+        "type": "Changed",
+        "items": [
+          "Tournament results default to the last played round instead of Round 1",
+          "Round dates now use actual game dates with fallback to scheduled dates",
+          "Renamed \"Live\" toggle to \"Auto\" for live updates",
+          "Results sidebar now switches to dropdown at large breakpoint (was medium)"
+        ]
+      },
+      {
+        "type": "Fixed",
+        "items": [
+          "Round 1 date not showing when missing from tournament metadata",
+          "ELO display for upcoming rounds",
+          "Result display for team match boards"
+        ]
+      }
+    ]
+  },
+  {
+    "version": "0.7.0",
+    "date": "2026-01-30",
+    "sections": [
+      {
+        "type": "Added",
+        "items": [
+          "Live tournament updates with opt-in auto-refresh (30-second polling)",
+          "Manual refresh button for on-demand data updates",
+          "\"Last updated\" timestamp on tournament results",
+          "Registration list view for tournaments that haven't started yet",
+          "FIDE titles displayed with player names throughout the app",
+          "Date range picker for ELO history chart",
+          "Custom DatePicker component"
+        ]
+      },
+      {
+        "type": "Changed",
+        "items": [
+          "ELO chart now limits data points based on screen size for better performance",
+          "Per-round rating types supported (standard/rapid/blitz per round)",
+          "Improved tournament state detection (registration vs ongoing vs finished)",
+          "Live controls hidden for finished tournaments"
+        ]
+      },
+      {
+        "type": "Fixed",
+        "items": [
+          "ELO display and loading flash issues on tournament pages",
+          "Timezone bug in date formatting"
+        ]
+      }
+    ]
+  },
+  {
+    "version": "0.6.0",
+    "date": "2026-01-27",
+    "sections": [
+      {
+        "type": "Added",
+        "items": [
+          "Unit test suite for all pure utility functions (140+ new tests)",
+          "Integration tests for searchPlayer, getPlayerEloHistory, getMemberGames, searchComingTournaments, and searchUpdatedTournaments",
+          "Historical ELO support for team tournaments"
+        ]
+      },
+      {
+        "type": "Changed",
+        "items": [
+          "Restructured organizations into districts, clubs, and SSF pages",
+          "Improved calendar and player info display",
+          "Replaced `<img>` with Next.js Image component for player photos",
+          "Cleaned up and consolidated test data"
+        ]
+      },
+      {
+        "type": "Fixed",
+        "items": [
+          "Build warnings (unused variables, React hook dependencies, image optimization)",
+          "Walkover detection in tournament player results"
+        ]
+      }
+    ]
+  },
+  {
+    "version": "0.5.0",
+    "date": "2025-01-22",
+    "sections": [
+      {
+        "type": "Added",
+        "items": [
+          "Contact page for user feedback (Formspree integration pending)",
+          "Changelog page with structured version history",
+          "Changelog generation script (`yarn generate:changelog`)",
+          "Bilingual About page with project background and acknowledgments"
+        ]
+      },
+      {
+        "type": "Changed",
+        "items": [
+          "Rebranded from \"Stockholm Chess\" to \"msvens chess\"",
+          "Updated site metadata and descriptions to focus on Sweden-wide coverage",
+          "Footer navigation now links to About, Contact, and Changelog",
+          "Footer styling: larger text on desktop, increased padding"
+        ]
+      }
+    ]
+  },
+  {
+    "version": "0.4.0",
+    "date": "2025-01-20",
+    "sections": [
+      {
+        "type": "Added",
+        "items": [
+          "Tournament filters for calendar and results pages (category, type, status, district)",
+          "Comprehensive game result handling for all point systems",
+          "PageTitle component for consistent page headers"
+        ]
+      },
+      {
+        "type": "Fixed",
+        "items": [
+          "Mobile navbar now shows Results and Players icons",
+          "Deduplicated tournament search results"
+        ]
+      },
+      {
+        "type": "Changed",
+        "items": [
+          "Improved translation system with common section for shared strings"
+        ]
+      }
+    ]
+  },
+  {
+    "version": "0.3.0",
+    "date": "2025-01-15",
+    "sections": [
+      {
+        "type": "Added",
+        "items": [
+          "Organizations page with clubs and districts browser",
+          "Club rating lists with filtering by rating type and member category",
+          "Opponents statistics page with progressive loading",
+          "Batch API methods for efficient multi-ID fetching",
+          "Player rating history with batched requests"
+        ]
+      },
+      {
+        "type": "Changed",
+        "items": [
+          "Unified player page tournament data from games",
+          "Optimized imports with centralized @/lib/api exports",
+          "Enhanced rating display on tournament result pages"
+        ]
+      }
+    ]
+  },
+  {
+    "version": "0.2.0",
+    "date": "2025-01-10",
+    "sections": [
+      {
+        "type": "Added",
+        "items": [
+          "Team tournament support with expandable match details",
+          "Club-based player assignments for team tournaments",
+          "W.O. (walkover) handling for forfeited games",
+          "Results page with date range and text search",
+          "Tournament timestamp column showing last update"
+        ]
+      },
+      {
+        "type": "Changed",
+        "items": [
+          "Centralized API environment configuration",
+          "Simplified player search with recent players in localStorage"
+        ]
+      },
+      {
+        "type": "Fixed",
+        "items": [
+          "Team tournament result display improvements"
+        ]
+      }
+    ]
+  },
+  {
+    "version": "0.1.0",
+    "date": "2025-01-05",
+    "sections": [
+      {
+        "type": "Added",
+        "items": [
+          "Initial release of msvens chess (then Stockholm Chess)",
+          "Tournament calendar with upcoming events",
+          "Tournament results browser",
+          "Player search by name or member ID",
+          "Player profiles with: (ELO ratings (standard, rapid, blitz)) (LASK ratings) (Tournament history with tabbed navigation) (ELO rating history chart) (Player photos from SSF)",
+          "Round-by-round results for individual tournaments",
+          "Dark/light theme support",
+          "English and Swedish language support",
+          "Mobile-responsive design"
+        ]
+      },
+      {
+        "type": "Infrastructure",
+        "items": [
+          "Next.js 15 with App Router",
+          "Tailwind CSS for styling",
+          "API service layer for SSF tournament data",
+          "Jest testing setup"
+        ]
+      }
+    ]
+  }
+];

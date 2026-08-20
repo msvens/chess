@@ -16,7 +16,15 @@
 		"format": "prettier --write .",
 		"test": "vitest run --exclude='**/*.integration.test.ts'",
 		"test:watch": "vitest --exclude='**/*.integration.test.ts'",
-		"test:integration": "vitest run integration --retry=2"
+		"test:integration": "vitest run integration --retry=2",
+		"translations:check": "tsx scripts/check-translations.ts",
+		"generate:changelog": "tsx scripts/generate-changelog.ts",
+		"geocode:build": "tsx scripts/build-geocodes.ts",
+		"geocode:clubs": "tsx scripts/geocode-clubs.ts",
+		"data:clubs": "node scripts/fetch-organizations.js",
+		"release": "bash scripts/release.sh",
+		"predev": "node scripts/check-data.js && pnpm generate:changelog",
+		"prebuild": "pnpm generate:changelog"
 	},
 	"dependencies": {
 		"@msvens/schack-se-sdk": "github:msvens/schack-se-sdk#v0.17.0",
@@ -42,6 +50,7 @@
 		"svelte": "^5.56.1",
 		"svelte-check": "^4.6.0",
 		"tailwindcss": "^4.3.0",
+		"tsx": "^4.20.5",
 		"typescript": "^6.0.3",
 		"typescript-eslint": "^8.60.1",
 		"vite": "^8.0.16",

@@ -7,3 +7,8 @@ bun.lockb
 
 # Miscellaneous
 /static/
+
+# Generated — rewritten by `pnpm generate:changelog` (which prebuild runs on every
+# build). Style-checking it would mean every build dirties the tree and the next
+# lint fails. The file carries its own DO-NOT-EDIT header.
+/src/lib/data/changelog.ts
