@@ -144,6 +144,13 @@ export interface Translations {
 			started: string;
 			finished: string;
 		};
+		tournamentSearch: {
+			/** Validation and failure messages for the results search. */
+			missingDates: string;
+			missingText: string;
+			loadFailed: string;
+			searchFailed: string;
+		};
 		textDisplay: {
 			/** Accessible name for the show-more control on clamped text. */
 			expand: string;
@@ -858,6 +865,12 @@ const translations: Record<Language, Translations> = {
 				registration: 'Registration',
 				started: 'In Progress',
 				finished: 'Finished'
+			},
+			tournamentSearch: {
+				missingDates: 'Please select both a start and an end date',
+				missingText: 'Please enter a search term',
+				loadFailed: 'Could not load tournaments',
+				searchFailed: 'Could not search tournaments'
 			},
 			textDisplay: {
 				expand: 'Show more',
@@ -1574,6 +1587,12 @@ const translations: Record<Language, Translations> = {
 				registration: 'Anmälan öppen',
 				started: 'Pågående',
 				finished: 'Avslutad'
+			},
+			tournamentSearch: {
+				missingDates: 'Välj både start- och slutdatum',
+				missingText: 'Ange ett sökord',
+				loadFailed: 'Kunde inte hämta turneringar',
+				searchFailed: 'Kunde inte söka turneringar'
 			},
 			textDisplay: {
 				expand: 'Visa mer',
