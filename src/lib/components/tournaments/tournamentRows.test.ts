@@ -35,6 +35,9 @@ describe('formatTimestamp', () => {
 	// toTimeString() (local). Between midnight and 02:00 Swedish time those
 	// disagree, and the row showed yesterday's date beside this morning's time.
 	// Both halves must come from the same clock.
+	//
+	// Only demonstrable in a non-UTC zone — hence TZ=Europe/Stockholm in the test
+	// scripts. Without the pin this passed for the wrong reason in CI.
 	it('takes date and time from the same clock', () => {
 		const justAfterMidnight = new Date(2026, 7, 21, 0, 30, 0);
 		const out = formatTimestamp(justAfterMidnight.toISOString());

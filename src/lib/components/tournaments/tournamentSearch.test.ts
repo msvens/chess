@@ -116,6 +116,9 @@ describe('defaultDateRange', () => {
 	// The React version built this with toISOString(), which is UTC. Just after
 	// midnight in Sweden (UTC+2) that yields yesterday, so the default range
 	// silently started and ended a day early.
+	//
+	// This only has teeth in a non-UTC zone, which is why the test scripts pin
+	// TZ=Europe/Stockholm — in UTC local and UTC agree and the bug is invisible.
 	it('uses local dates, so just after midnight it still means today', () => {
 		const justAfterMidnight = new Date(2026, 7, 21, 0, 30);
 		expect(defaultDateRange(justAfterMidnight).end).toBe('2026-08-21');
