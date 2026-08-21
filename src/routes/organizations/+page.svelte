@@ -10,6 +10,7 @@
 	import SearchableSelectableList from '$lib/components/ui/SearchableSelectableList.svelte';
 	import Toggle from '$lib/components/ui/Toggle.svelte';
 	import SsfRankingPanel from '$lib/components/organizations/SsfRankingPanel.svelte';
+	import ClubMapView from '$lib/components/organizations/ClubMapView.svelte';
 	import {
 		ORGANIZATIONS_TABS,
 		resolveInitialTab,
@@ -102,12 +103,7 @@
 			</div>
 		</div>
 	{:else if activeTab === 'map'}
-		<div
-			class="flex h-[70vh] min-h-[420px] w-full items-center justify-center rounded-lg border border-gray-200 text-sm text-gray-500 dark:border-gray-700 dark:text-gray-400"
-		>
-			<!-- The Leaflet rewrite lands in the next commit on this branch. -->
-			{org.map.loading}
-		</div>
+		<ClubMapView {clubs} loading={organizations.loading} error={organizations.error} />
 	{:else if activeTab === 'districts'}
 		<div class="space-y-4">
 			<div class="max-w-md">
