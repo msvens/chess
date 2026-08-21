@@ -38,6 +38,7 @@
 		selectedId={formatDateLocal(value.ratingDate)}
 		onSelect={(id) => onChange({ ...value, ratingDate: parseDateLocal(String(id)) })}
 		title={labels.dateLabel}
+		placeholder={t.components.selectableList.selectPlaceholder}
 		variant="dropdown"
 		density="compact"
 	/>
@@ -46,6 +47,7 @@
 		selectedId={value.ratingType}
 		onSelect={(id) => onChange({ ...value, ratingType: id as RatingType })}
 		title={labels.ratingTypeLabel}
+		placeholder={t.components.selectableList.selectPlaceholder}
 		variant="dropdown"
 		density="compact"
 	/>
@@ -54,6 +56,7 @@
 		selectedId={value.memberType}
 		onSelect={(id) => onChange({ ...value, memberType: id as PlayerCategory })}
 		title={labels.memberTypeLabel}
+		placeholder={t.components.selectableList.selectPlaceholder}
 		variant="dropdown"
 		density="compact"
 	/>

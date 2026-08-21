@@ -50,4 +50,14 @@
 	<a href="/players/{row.id}" data-testid="rich-{row.id}">{row.name}</a>
 {/snippet}
 
-<Table {data} {columns} {pagination} {defaultSort} {density} {onRowClick} getRowKey={(r) => r.id} />
+<Table
+	{data}
+	{columns}
+	{pagination}
+	{defaultSort}
+	{density}
+	{onRowClick}
+	getRowKey={(r) => r.id}
+	emptyMessage="No rows"
+	loadingMessage="Loading"
+/>

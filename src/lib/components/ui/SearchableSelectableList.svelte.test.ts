@@ -12,7 +12,18 @@ const items: SelectableListItem[] = [
 
 function setup(props: Record<string, unknown> = {}) {
 	const onSelect = vi.fn();
-	render(SearchableSelectableList, { props: { items, selectedId: null, onSelect, ...props } });
+	render(SearchableSelectableList, {
+		props: {
+			items,
+			selectedId: null,
+			onSelect,
+			placeholder: 'Välj...',
+			filterPlaceholder: 'Skriv för att filtrera...',
+			noResultsLabel: 'Inga träffar',
+			resultCountTemplate: '{shown} av {total}',
+			...props
+		}
+	});
 	return { onSelect, user: userEvent.setup() };
 }
 
@@ -21,7 +32,7 @@ const openPanel = async (user: ReturnType<typeof userEvent.setup>) => {
 };
 
 describe('SearchableSelectableList', () => {
-	it('shows a translated placeholder until something is selected', () => {
+	it('shows the supplied placeholder until something is selected', () => {
 		setup();
 		expect(screen.getByRole('button', { expanded: false })).toHaveTextContent('Välj...');
 	});

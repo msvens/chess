@@ -12,8 +12,6 @@
 	import { ChevronDown, Icon } from 'svelte-hero-icons';
 	import { clickOutside } from '$lib/attachments/clickOutside';
 	import { escapeKey } from '$lib/attachments/escapeKey';
-	import { language } from '$lib/stores/language.svelte';
-	import { getTranslation } from '$lib/translations';
 	import {
 		DEFAULT_LIST_THRESHOLDS,
 		filterItems,
@@ -28,8 +26,14 @@
 		selectedId: string | number | null;
 		onSelect: (id: string | number) => void;
 		title?: string;
-		/** Trigger text when nothing is selected. Defaults to a translated "Select...". */
-		placeholder?: string;
+		/** Trigger text when nothing is selected. */
+		placeholder: string;
+		/** Placeholder and accessible name for the filter input. */
+		filterPlaceholder: string;
+		/** Shown when the filter matches nothing. */
+		noResultsLabel: string;
+		/** Match count under a filtered list. `{shown}` and `{total}` are substituted. */
+		resultCountTemplate: string;
 		class?: string;
 		density?: ListDensity;
 		densityThresholds?: ListDensityThresholds;
@@ -41,6 +45,9 @@
 		onSelect,
 		title,
 		placeholder,
+		filterPlaceholder,
+		noResultsLabel,
+		resultCountTemplate,
 		class: cls = '',
 		density,
 		densityThresholds = DEFAULT_LIST_THRESHOLDS
@@ -51,7 +58,6 @@
 	let input = $state<HTMLInputElement | null>(null);
 	const mobile = new MediaQuery('(max-width: 767px)');
 
-	let t = $derived(getTranslation(language.current).components.selectableList);
 	let effectiveDensity = $derived(
 		resolveListDensity(density, mobile.current, items.length, densityThresholds)
 	);
@@ -129,7 +135,7 @@
 		class="flex w-full items-center justify-between rounded-lg border border-gray-300 bg-white text-left transition-colors hover:bg-gray-50 dark:border-gray-700 dark:bg-dark-bg dark:hover:bg-gray-800 {d.triggerPadding} {d.fontSize} {d.lineHeight}"
 	>
 		<span class="text-gray-900 dark:text-gray-200">
-			{selectedItem?.label ?? placeholder ?? t.selectPlaceholder}
+			{selectedItem?.label ?? placeholder}
 		</span>
 		<Icon
 			src={ChevronDown}
@@ -149,8 +155,8 @@
 					bind:this={input}
 					bind:value={filter}
 					type="text"
-					placeholder={t.filterPlaceholder}
-					aria-label={t.filterPlaceholder}
+					placeholder={filterPlaceholder}
+					aria-label={filterPlaceholder}
 					class="w-full rounded border border-gray-300 bg-gray-50 px-3 py-2 text-sm text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:placeholder-gray-400"
 				/>
 			</div>
@@ -176,7 +182,7 @@
 					</button>
 				{:else}
 					<div class="text-center text-gray-500 dark:text-gray-400 {d.itemPadding} {d.fontSize}">
-						{t.noResults}
+						{noResultsLabel}
 					</div>
 				{/each}
 			</div>
@@ -185,7 +191,7 @@
 				<div
 					class="border-t border-gray-200 bg-gray-50 px-3 py-2 text-xs text-gray-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-400"
 				>
-					{t.resultCount
+					{resultCountTemplate
 						.replace('{shown}', String(filtered.length))
 						.replace('{total}', String(items.length))}
 				</div>

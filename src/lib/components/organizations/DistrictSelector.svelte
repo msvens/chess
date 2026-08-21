@@ -24,6 +24,7 @@
 	selectedId={selectedDistrictId}
 	onSelect={(id) => goto(`/organizations/districts/${id}`)}
 	title={t.pages.organizations.districts.selectDistrict}
+	placeholder={t.components.selectableList.selectPlaceholder}
 	variant="dropdown"
 	density="compact"
 	transparent

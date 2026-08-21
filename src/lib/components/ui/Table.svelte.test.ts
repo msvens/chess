@@ -34,18 +34,34 @@ describe('Table rendering', () => {
 	});
 
 	it('shows the empty message instead of an empty table', () => {
-		render(Table, { props: { data: [], columns: [], emptyMessage: 'Inga resultat' } });
+		render(Table, {
+			props: { data: [], columns: [], emptyMessage: 'Inga resultat', loadingMessage: 'Laddar...' }
+		});
 		expect(screen.getByText('Inga resultat')).toBeInTheDocument();
 		expect(document.querySelector('table')).toBeNull();
 	});
 
 	it('shows loading and error states in preference to data', () => {
 		const { unmount } = render(Table, {
-			props: { data: rows, columns: [], loading: true, loadingMessage: 'Laddar...' }
+			props: {
+				data: rows,
+				columns: [],
+				loading: true,
+				emptyMessage: 'Inga resultat',
+				loadingMessage: 'Laddar...'
+			}
 		});
 		expect(screen.getByText('Laddar...')).toBeInTheDocument();
 		unmount();
-		render(Table, { props: { data: rows, columns: [], error: 'Kunde inte hämta' } });
+		render(Table, {
+			props: {
+				data: rows,
+				columns: [],
+				error: 'Kunde inte hämta',
+				emptyMessage: 'Inga resultat',
+				loadingMessage: 'Laddar...'
+			}
+		});
 		expect(screen.getByText('Kunde inte hämta')).toBeInTheDocument();
 	});
 });

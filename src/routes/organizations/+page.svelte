@@ -34,6 +34,7 @@
 
 	let t = $derived(getTranslation(language.current));
 	let org = $derived(t.pages.organizations);
+	let list = $derived(t.components.selectableList);
 
 	let clubs = $derived(
 		organizations
@@ -96,6 +97,9 @@
 					selectedId={null}
 					onSelect={(id) => goto(`/organizations/clubs/${id}`)}
 					placeholder={org.clubs.searchPlaceholder}
+					filterPlaceholder={list.filterPlaceholder}
+					noResultsLabel={list.noResults}
+					resultCountTemplate={list.resultCount}
 				/>
 			</div>
 			<div class="text-sm text-gray-600 dark:text-gray-400">
@@ -112,6 +116,9 @@
 					selectedId={null}
 					onSelect={(id) => goto(`/organizations/districts/${id}`)}
 					placeholder={org.districts.selectDistrict}
+					filterPlaceholder={list.filterPlaceholder}
+					noResultsLabel={list.noResults}
+					resultCountTemplate={list.resultCount}
 				/>
 			</div>
 			<div class="text-sm text-gray-600 dark:text-gray-400">

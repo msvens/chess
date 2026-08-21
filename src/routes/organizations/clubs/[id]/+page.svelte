@@ -71,7 +71,13 @@
 			</div>
 
 			{#if club.vbdescr}
-				<TextDisplay text={club.vbdescr} maxLines={2} class="text-sm" />
+				<TextDisplay
+					text={club.vbdescr}
+					maxLines={2}
+					expandLabel={t.components.textDisplay.expand}
+					collapseLabel={t.components.textDisplay.collapse}
+					class="text-sm"
+				/>
 			{/if}
 
 			<ClubRatingSection
