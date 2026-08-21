@@ -378,6 +378,10 @@ export interface Translations {
 			error: string;
 			notFound: string;
 			groups: string;
+			/** Heading over the class selector, beside the group selector. */
+			classes: string;
+			/** Stand-in for a class the API named with nothing but an id. `{id}` is substituted. */
+			classFallback: string;
 			finalResults: string;
 			ongoingResults: string;
 			statusOngoing: string;
@@ -387,6 +391,8 @@ export interface Translations {
 			walkover: string;
 			/** Stand-in when a player id resolves to nobody we can name. */
 			unknownPlayer: string;
+			/** The tournament resolved, but has no groups to show results for. */
+			noGroups: string;
 			errors: {
 				invalidIds: string;
 				tournamentFetchFailed: string;
@@ -1107,6 +1113,8 @@ const translations: Record<Language, Translations> = {
 				error: 'Error Loading Tournament',
 				notFound: 'Tournament not found',
 				groups: 'Groups',
+				classes: 'Class',
+				classFallback: 'Class {id}',
 				finalResults: 'Final Results',
 				ongoingResults: 'Results',
 				statusOngoing: 'Ongoing',
@@ -1114,6 +1122,7 @@ const translations: Record<Language, Translations> = {
 				bye: 'Bye',
 				walkover: 'W.O',
 				unknownPlayer: 'Unknown player',
+				noGroups: 'No groups found for this tournament',
 				errors: {
 					invalidIds: 'Invalid tournament or group',
 					tournamentFetchFailed: 'Could not load the tournament',
@@ -1837,6 +1846,8 @@ const translations: Record<Language, Translations> = {
 				error: 'Fel vid laddning av turnering',
 				notFound: 'Turnering hittades inte',
 				groups: 'Grupper',
+				classes: 'Klass',
+				classFallback: 'Klass {id}',
 				finalResults: 'Slutresultat',
 				ongoingResults: 'Resultat',
 				statusOngoing: 'Pågående',
@@ -1844,6 +1855,7 @@ const translations: Record<Language, Translations> = {
 				bye: 'Frirond',
 				walkover: 'W.O',
 				unknownPlayer: 'Okänd spelare',
+				noGroups: 'Inga grupper hittades för denna turnering',
 				errors: {
 					invalidIds: 'Ogiltig turnering eller grupp',
 					tournamentFetchFailed: 'Kunde inte hämta turneringen',

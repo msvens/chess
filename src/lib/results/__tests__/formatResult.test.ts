@@ -1,12 +1,15 @@
 import { describe, it, expect } from 'vitest';
 import { ResultCode } from '@msvens/schack-se-sdk';
 import {
+	formatBoardResult,
 	formatResult,
 	formatResultCode,
 	formatIndividualRowResult,
 	formatScore,
+	formatTeamMatchScore,
 	type ResultLabels
 } from '../formatResult';
+import type { BoardGame } from '../teamMatches';
 
 const sv: ResultLabels = {
 	postponed: 'Uppskjutet',
@@ -153,5 +156,75 @@ describe('formatResult label injection', () => {
 		};
 		expect(formatResultCode(ResultCode.WHITE_WIN_WO, en)).toBe('1 - 0 w.o');
 		expect(formatResultCode(ResultCode.BOTH_NO_RESULT, en)).toBe('0 - 0 adj');
+	});
+});
+
+/** A board already oriented home-left by `boardGames`. */
+const board = (over: Partial<BoardGame> = {}): BoardGame => ({
+	boardNumber: 1,
+	homePlayerId: 111,
+	awayPlayerId: 222,
+	homeScore: 0,
+	awayScore: 0,
+	isWalkover: false,
+	resultCode: null,
+	...over
+});
+
+describe('formatBoardResult', () => {
+	it("renders the score from the home team's side", () => {
+		// The result code is written from white's side; `boardGames` has already
+		// turned it into home and away points, so this must not re-read the code.
+		expect(
+			formatBoardResult(board({ homeScore: 0, awayScore: 1, resultCode: ResultCode.WHITE_WIN }), sv)
+		).toBe('0 - 1');
+	});
+
+	it('renders half points as ½', () => {
+		expect(
+			formatBoardResult(board({ homeScore: 0.5, awayScore: 0.5, resultCode: ResultCode.DRAW }), sv)
+		).toBe('½ - ½');
+	});
+
+	it('suffixes a walkover', () => {
+		expect(
+			formatBoardResult(
+				board({
+					homeScore: 1,
+					awayScore: 0,
+					isWalkover: true,
+					resultCode: ResultCode.WHITE_WIN_WO
+				}),
+				sv
+			)
+		).toBe('1 - 0 w.o');
+	});
+
+	it('suffixes an adjudicated result with the translated word', () => {
+		expect(formatBoardResult(board({ resultCode: ResultCode.BOTH_NO_RESULT }), sv)).toBe(
+			`0 - 0 ${sv.adjudicated}`
+		);
+	});
+
+	it('shows no result for a board that has not been played', () => {
+		expect(formatBoardResult(board({ resultCode: null }), sv)).toBe('-');
+	});
+});
+
+describe('formatTeamMatchScore', () => {
+	it('renders the match score', () => {
+		expect(formatTeamMatchScore({ homeResult: 5, awayResult: 3 }, sv)).toBe('5 - 3');
+	});
+
+	it('leaves a half point on a whole number alone', () => {
+		// `formatScore` only turns a bare 0.5 into ½; 4.5 board points stay 4.5,
+		// which is what the React version printed.
+		expect(formatTeamMatchScore({ homeResult: 4.5, awayResult: 3.5 }, sv)).toBe('4.5 - 3.5');
+	});
+
+	it('reads 0 - 0 as not played, which is what the API means by it', () => {
+		// A genuine double forfeit is recorded on the boards, not by zeroing the
+		// match score — so this is safe.
+		expect(formatTeamMatchScore({ homeResult: 0, awayResult: 0 }, sv)).toBe('-');
 	});
 });
