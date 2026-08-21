@@ -144,6 +144,21 @@ export interface Translations {
 			started: string;
 			finished: string;
 		};
+		textDisplay: {
+			/** Accessible name for the show-more control on clamped text. */
+			expand: string;
+			collapse: string;
+		};
+		selectableList: {
+			/** Trigger text when nothing is selected. */
+			selectPlaceholder: string;
+			/** Placeholder in the filter input of a searchable list. */
+			filterPlaceholder: string;
+			/** Shown when the filter matches nothing. */
+			noResults: string;
+			/** Match count under a filtered list. `{shown}` and `{total}` are substituted. */
+			resultCount: string;
+		};
 	};
 	pages: {
 		contact: {
@@ -615,6 +630,9 @@ export interface Translations {
 			yes: string;
 			no: string;
 			loading: string;
+			/** Shown when the id in the URL matches no club/district. */
+			clubNotFound: string;
+			districtNotFound: string;
 			ratingList: {
 				title: string;
 				dateLabel: string;
@@ -840,6 +858,16 @@ const translations: Record<Language, Translations> = {
 				registration: 'Registration',
 				started: 'In Progress',
 				finished: 'Finished'
+			},
+			textDisplay: {
+				expand: 'Show more',
+				collapse: 'Show less'
+			},
+			selectableList: {
+				selectPlaceholder: 'Select...',
+				filterPlaceholder: 'Type to filter...',
+				noResults: 'No results found',
+				resultCount: '{shown} of {total}'
 			}
 		},
 		pages: {
@@ -1320,6 +1348,8 @@ const translations: Record<Language, Translations> = {
 				includeSchoolClubs: 'Include school clubs',
 				yes: 'Yes',
 				no: 'No',
+				clubNotFound: 'Club not found',
+				districtNotFound: 'District not found',
 				loading: 'Loading...',
 				ratingList: {
 					title: 'Rating List',
@@ -1544,6 +1574,16 @@ const translations: Record<Language, Translations> = {
 				registration: 'Anmälan öppen',
 				started: 'Pågående',
 				finished: 'Avslutad'
+			},
+			textDisplay: {
+				expand: 'Visa mer',
+				collapse: 'Visa mindre'
+			},
+			selectableList: {
+				selectPlaceholder: 'Välj...',
+				filterPlaceholder: 'Skriv för att filtrera...',
+				noResults: 'Inga träffar',
+				resultCount: '{shown} av {total}'
 			}
 		},
 		pages: {
@@ -2026,6 +2066,8 @@ const translations: Record<Language, Translations> = {
 				includeSchoolClubs: 'Visa skolklubbar',
 				yes: 'Ja',
 				no: 'Nej',
+				clubNotFound: 'Klubben hittades inte',
+				districtNotFound: 'Distriktet hittades inte',
 				loading: 'Laddar...',
 				ratingList: {
 					title: 'Rankinglista',
