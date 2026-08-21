@@ -383,6 +383,15 @@ export interface Translations {
 			statusOngoing: string;
 			statusFinished: string;
 			bye: string;
+			/** A game awarded without play. */
+			walkover: string;
+			/** Stand-in when a player id resolves to nobody we can name. */
+			unknownPlayer: string;
+			errors: {
+				invalidIds: string;
+				tournamentFetchFailed: string;
+				resultsLoadFailed: string;
+			};
 			/** Standalone label for a postponed game (it has no score). */
 			postponed: string;
 			/** Suffix for an adjudicated result, e.g. "0 - 0 avbruten". */
@@ -1103,6 +1112,13 @@ const translations: Record<Language, Translations> = {
 				statusOngoing: 'Ongoing',
 				statusFinished: 'Finished',
 				bye: 'Bye',
+				walkover: 'W.O',
+				unknownPlayer: 'Unknown player',
+				errors: {
+					invalidIds: 'Invalid tournament or group',
+					tournamentFetchFailed: 'Could not load the tournament',
+					resultsLoadFailed: 'Could not load the results'
+				},
 				postponed: 'Postponed',
 				adjudicated: 'adj',
 				externalNotice: {
@@ -1826,6 +1842,13 @@ const translations: Record<Language, Translations> = {
 				statusOngoing: 'Pågående',
 				statusFinished: 'Avslutad',
 				bye: 'Frirond',
+				walkover: 'W.O',
+				unknownPlayer: 'Okänd spelare',
+				errors: {
+					invalidIds: 'Ogiltig turnering eller grupp',
+					tournamentFetchFailed: 'Kunde inte hämta turneringen',
+					resultsLoadFailed: 'Kunde inte hämta resultaten'
+				},
 				postponed: 'Uppskjutet',
 				adjudicated: 'domslut',
 				externalNotice: {
