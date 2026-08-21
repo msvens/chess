@@ -144,6 +144,11 @@ export interface Translations {
 			started: string;
 			finished: string;
 		};
+		textDisplay: {
+			/** Accessible name for the show-more control on clamped text. */
+			expand: string;
+			collapse: string;
+		};
 		selectableList: {
 			/** Trigger text when nothing is selected. */
 			selectPlaceholder: string;
@@ -625,6 +630,9 @@ export interface Translations {
 			yes: string;
 			no: string;
 			loading: string;
+			/** Shown when the id in the URL matches no club/district. */
+			clubNotFound: string;
+			districtNotFound: string;
 			ratingList: {
 				title: string;
 				dateLabel: string;
@@ -850,6 +858,10 @@ const translations: Record<Language, Translations> = {
 				registration: 'Registration',
 				started: 'In Progress',
 				finished: 'Finished'
+			},
+			textDisplay: {
+				expand: 'Show more',
+				collapse: 'Show less'
 			},
 			selectableList: {
 				selectPlaceholder: 'Select...',
@@ -1336,6 +1348,8 @@ const translations: Record<Language, Translations> = {
 				includeSchoolClubs: 'Include school clubs',
 				yes: 'Yes',
 				no: 'No',
+				clubNotFound: 'Club not found',
+				districtNotFound: 'District not found',
 				loading: 'Loading...',
 				ratingList: {
 					title: 'Rating List',
@@ -1560,6 +1574,10 @@ const translations: Record<Language, Translations> = {
 				registration: 'Anmälan öppen',
 				started: 'Pågående',
 				finished: 'Avslutad'
+			},
+			textDisplay: {
+				expand: 'Visa mer',
+				collapse: 'Visa mindre'
 			},
 			selectableList: {
 				selectPlaceholder: 'Välj...',
@@ -2048,6 +2066,8 @@ const translations: Record<Language, Translations> = {
 				includeSchoolClubs: 'Visa skolklubbar',
 				yes: 'Ja',
 				no: 'Nej',
+				clubNotFound: 'Klubben hittades inte',
+				districtNotFound: 'Distriktet hittades inte',
 				loading: 'Laddar...',
 				ratingList: {
 					title: 'Rankinglista',
