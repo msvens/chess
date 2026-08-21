@@ -144,6 +144,16 @@ export interface Translations {
 			started: string;
 			finished: string;
 		};
+		selectableList: {
+			/** Trigger text when nothing is selected. */
+			selectPlaceholder: string;
+			/** Placeholder in the filter input of a searchable list. */
+			filterPlaceholder: string;
+			/** Shown when the filter matches nothing. */
+			noResults: string;
+			/** Match count under a filtered list. `{shown}` and `{total}` are substituted. */
+			resultCount: string;
+		};
 	};
 	pages: {
 		contact: {
@@ -840,6 +850,12 @@ const translations: Record<Language, Translations> = {
 				registration: 'Registration',
 				started: 'In Progress',
 				finished: 'Finished'
+			},
+			selectableList: {
+				selectPlaceholder: 'Select...',
+				filterPlaceholder: 'Type to filter...',
+				noResults: 'No results found',
+				resultCount: '{shown} of {total}'
 			}
 		},
 		pages: {
@@ -1544,6 +1560,12 @@ const translations: Record<Language, Translations> = {
 				registration: 'Anmälan öppen',
 				started: 'Pågående',
 				finished: 'Avslutad'
+			},
+			selectableList: {
+				selectPlaceholder: 'Välj...',
+				filterPlaceholder: 'Skriv för att filtrera...',
+				noResults: 'Inga träffar',
+				resultCount: '{shown} av {total}'
 			}
 		},
 		pages: {
