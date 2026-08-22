@@ -46,10 +46,12 @@ The Next app stays runnable for side-by-side diffing until cutover; its
 - Use the `PageLayout` component instead of hand-rolled containers.
 - All UI text goes through `$lib/translations.ts` — no inline `language === 'sv' ? … : …`.
 - Routes in `src/routes/` stay thin; feature components under `src/lib/components/` grouped by
-  role (`ui/`, `layout/`, then one directory per domain). Non-component logic sits beside its
-  component as a plain `.ts` so it is testable without rendering.
-- Tests colocated (`Foo.svelte` + `Foo.svelte.test.ts`); ported framework-agnostic tests keep
-  their `__tests__/` layout.
+  role (`ui/`, `layout/`, then one directory per domain).
+- A component is `Foo.svelte` + `Foo.svelte.test.ts`. It earns a folder when it grows several
+  parts (`ui/Table/`), not merely a second file; split logic into a `.ts` sibling only when it
+  has behaviour a rendered test cannot assert, and name it for what it is (`calendar.ts`),
+  never `xxxLogic.ts`.
+- Ported framework-agnostic tests keep their `__tests__/` layout.
 - **No lint or type suppressions.** No `eslint-disable`, no `@ts-ignore` / `@ts-expect-error`.
   If a rule fires, fix the design — the rule is usually right, and when it isn't the honest move
   is to restructure rather than silence it.

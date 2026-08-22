@@ -5,7 +5,7 @@
  * can see what a filter would leave before selecting it. Pure, and tested.
  */
 import type { getTranslation } from '$lib/translations';
-import type { SelectableListItem } from '$lib/components/ui/selectableListLogic';
+import type { SelectableListItem } from '$lib/components/ui/listItems';
 import {
 	getAllTournamentTypes,
 	getTournamentTypeKey,

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { filterItems, resolveListDensity, type SelectableListItem } from './selectableListLogic';
+import { filterItems, resolveListDensity, type SelectableListItem } from './listItems';
 
 const items: SelectableListItem[] = [
 	{ id: 1, label: 'Stockholms Schacksällskap', subtitle: 'Stockholm' },

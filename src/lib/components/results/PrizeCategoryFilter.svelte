@@ -9,7 +9,7 @@
 	import SelectableList from '$lib/components/ui/SelectableList.svelte';
 	import { prizeCategoryLabel } from '$lib/results/prizeCategories';
 	import type { PrizeCategoryDto } from '$lib/api';
-	import type { ListDensity } from '$lib/components/ui/selectableListLogic';
+	import type { ListDensity } from '$lib/components/ui/listItems';
 
 	/** SelectableList needs a concrete id, so "no selection" gets a sentinel. */
 	const ALL_PRIZES = 'all';

@@ -6,7 +6,7 @@
 	 * Deliberately not `<input type="date">`: that renders differently in every
 	 * browser and cannot show a month-only mode, which the Elo chart needs.
 	 *
-	 * Calendar arithmetic and locale formatting live in `datePickerLogic.ts`.
+	 * Calendar arithmetic and locale formatting live in `calendar.ts`.
 	 */
 	import { untrack } from 'svelte';
 	import { Calendar, ChevronLeft, ChevronRight, Icon } from 'svelte-hero-icons';
@@ -21,7 +21,7 @@
 		toMonthString,
 		viewDateFor,
 		type CalendarDay
-	} from './datePickerLogic';
+	} from './calendar';
 
 	interface DatePickerProps {
 		/** YYYY-MM-DD, or YYYY-MM in month mode. */

@@ -8,7 +8,7 @@ import {
 	toDateString,
 	toMonthString,
 	viewDateFor
-} from './datePickerLogic';
+} from './calendar';
 
 describe('getDaysInMonth', () => {
 	it('knows the ordinary months', () => {

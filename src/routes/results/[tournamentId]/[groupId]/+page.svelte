@@ -19,10 +19,10 @@
 	import Badge, { type BadgeColor } from '$lib/components/ui/Badge.svelte';
 	import Link from '$lib/components/ui/Link.svelte';
 	import SelectableList from '$lib/components/ui/SelectableList.svelte';
-	import Table from '$lib/components/ui/Table.svelte';
+	import Table from '$lib/components/ui/Table/Table.svelte';
 	import Toggle from '$lib/components/ui/Toggle.svelte';
-	import type { TableColumn } from '$lib/components/ui/tableTypes';
-	import type { SelectableListItem } from '$lib/components/ui/selectableListLogic';
+	import type { TableColumn } from '$lib/components/ui/Table/tableTypes';
+	import type { SelectableListItem } from '$lib/components/ui/listItems';
 	import ExternalResultsNotice from '$lib/components/results/ExternalResultsNotice.svelte';
 	import FinalResultsTable from '$lib/components/results/FinalResultsTable.svelte';
 	import LiveUpdatesToggle from '$lib/components/results/LiveUpdatesToggle.svelte';

@@ -7,8 +7,8 @@
 	 * which service call fills `players`.
 	 */
 	import { goto } from '$app/navigation';
-	import Table from '$lib/components/ui/Table.svelte';
-	import type { TableColumn } from '$lib/components/ui/tableTypes';
+	import Table from '$lib/components/ui/Table/Table.svelte';
+	import type { TableColumn } from '$lib/components/ui/Table/tableTypes';
 	import { RatingType, type PlayerInfoDto } from '$lib/api';
 	import { language } from '$lib/stores/language.svelte';
 	import { getTranslation } from '$lib/translations';

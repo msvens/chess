@@ -20,7 +20,7 @@
 	import { getOrganizationsState } from '$lib/stores/organizations.svelte';
 	import { language } from '$lib/stores/language.svelte';
 	import { getTranslation } from '$lib/translations';
-	import type { SelectableListItem } from '$lib/components/ui/selectableListLogic';
+	import type { SelectableListItem } from '$lib/components/ui/listItems';
 
 	const organizations = getOrganizationsState();
 

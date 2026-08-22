@@ -3,10 +3,10 @@
 	 * Page buttons for `Table.svelte`. Ports `components/Pagination.tsx`.
 	 *
 	 * The windowing — which pages to show, where the ellipses fall — lives in
-	 * `paginationLogic.ts` and is tested there.
+	 * `pageNumbers.ts` and is tested there.
 	 */
 	import { ChevronLeft, ChevronRight, Icon } from 'svelte-hero-icons';
-	import { pageNumbers } from './paginationLogic';
+	import { pageNumbers } from './pageNumbers';
 
 	interface PaginationProps {
 		/** 1-indexed. */

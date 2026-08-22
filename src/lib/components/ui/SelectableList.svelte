@@ -16,7 +16,7 @@
 		type ListDensity,
 		type ListDensityThresholds,
 		type SelectableListItem
-	} from './selectableListLogic';
+	} from './listItems';
 
 	interface SelectableListProps {
 		items: SelectableListItem[];

@@ -4,7 +4,7 @@
  */
 import { PlayerCategory, RatingType } from '$lib/api';
 import type { getTranslation } from '$lib/translations';
-import type { SelectableListItem } from '$lib/components/ui/selectableListLogic';
+import type { SelectableListItem } from '$lib/components/ui/listItems';
 
 export interface RatingFiltersValue {
 	ratingDate: Date;

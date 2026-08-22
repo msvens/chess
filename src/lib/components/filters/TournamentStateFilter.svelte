@@ -4,7 +4,7 @@
 	import { language } from '$lib/stores/language.svelte';
 	import { getTranslation } from '$lib/translations';
 	import { stateItems } from './filterItems';
-	import type { ListDensity } from '$lib/components/ui/selectableListLogic';
+	import type { ListDensity } from '$lib/components/ui/listItems';
 	import type { StateCounts } from '$lib/utils/tournamentFilters';
 
 	interface Props {
