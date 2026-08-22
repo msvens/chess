@@ -286,6 +286,7 @@ export interface Translations {
 				playerNotFound: string;
 				searchPlaceholder: string;
 				memberIdPlaceholder: string;
+				fideIdPlaceholder: string;
 				namePlaceholder: string;
 			};
 			recentPlayers: string;
@@ -1031,6 +1032,7 @@ const translations: Record<Language, Translations> = {
 					playerNotFound: 'Player not found',
 					searchPlaceholder: 'Enter first or last name...',
 					memberIdPlaceholder: 'Enter member ID...',
+					fideIdPlaceholder: 'Enter FIDE ID...',
 					namePlaceholder: 'First Last, e.g. Mag Carl'
 				},
 				recentPlayers: 'Recent Players'
@@ -1770,6 +1772,7 @@ const translations: Record<Language, Translations> = {
 					playerNotFound: 'Spelare hittades inte',
 					searchPlaceholder: 'Ange förnamn eller efternamn...',
 					memberIdPlaceholder: 'Ange medlems-ID...',
+					fideIdPlaceholder: 'Ange FIDE-ID...',
 					namePlaceholder: 'Förnamn Efternamn, t.ex. Mag Carl'
 				},
 				recentPlayers: 'Senaste Spelare'
