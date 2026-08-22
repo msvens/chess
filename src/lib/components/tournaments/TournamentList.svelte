@@ -5,9 +5,9 @@
 	 * Two columns need markup — the name is a link, and "last updated" hides its
 	 * time below `lg` — so they use `cell` snippets. The rest are plain accessors.
 	 */
-	import Table from '$lib/components/ui/Table.svelte';
+	import Table from '$lib/components/ui/Table/Table.svelte';
 	import Link from '$lib/components/ui/Link.svelte';
-	import type { TableColumn } from '$lib/components/ui/tableTypes';
+	import type { TableColumn } from '$lib/components/ui/Table/tableTypes';
 	import type { TournamentDto } from '$lib/api';
 	import { getOrganizationsState } from '$lib/stores/organizations.svelte';
 	import { language } from '$lib/stores/language.svelte';

@@ -7,8 +7,12 @@
 	 * exact, while `qualityPoints` are the SDK's indicative tie-break estimate —
 	 * hence the `≈` on that header and the caveat the page renders.
 	 */
-	import Table from '$lib/components/ui/Table.svelte';
-	import type { TableColumn, DensityThresholds, TableDensity } from '$lib/components/ui/tableTypes';
+	import Table from '$lib/components/ui/Table/Table.svelte';
+	import type {
+		TableColumn,
+		DensityThresholds,
+		TableDensity
+	} from '$lib/components/ui/Table/tableTypes';
 	import {
 		formatPlayerName,
 		formatRatingWithType,

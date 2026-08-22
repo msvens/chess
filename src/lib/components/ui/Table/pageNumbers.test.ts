@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { pageNumbers } from './paginationLogic';
+import { pageNumbers } from './pageNumbers';
 
 const nums = (t: ReturnType<typeof pageNumbers>) => t.filter((p) => p !== 'ellipsis');
 

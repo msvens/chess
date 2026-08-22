@@ -2,7 +2,7 @@
 	/**
 	 * The app's generic data table. Ports `components/Table.tsx`.
 	 *
-	 * Sorting, paging and density live in `tableLogic.ts` as pure functions so they
+	 * Sorting, paging and density live in `tableView.ts` as pure functions so they
 	 * can be tested without rendering; this file is layout and wiring.
 	 *
 	 * Departures from the React original, all deliberate:
@@ -30,7 +30,7 @@
 		paginationInfo,
 		resolveDensity,
 		sortRows
-	} from './tableLogic';
+	} from './tableView';
 	import type {
 		DensityThresholds,
 		PaginationConfig,

@@ -8,8 +8,12 @@
 	 * from the boards — so unlike the individual snapshot table there is no
 	 * estimation badge.
 	 */
-	import Table from '$lib/components/ui/Table.svelte';
-	import type { TableColumn, DensityThresholds, TableDensity } from '$lib/components/ui/tableTypes';
+	import Table from '$lib/components/ui/Table/Table.svelte';
+	import type {
+		TableColumn,
+		DensityThresholds,
+		TableDensity
+	} from '$lib/components/ui/Table/tableTypes';
 	import type { RoundStandingRow } from '$lib/api';
 	import { language } from '$lib/stores/language.svelte';
 	import { getTranslation } from '$lib/translations';

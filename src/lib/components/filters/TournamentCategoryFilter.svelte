@@ -4,7 +4,7 @@
 	import { language } from '$lib/stores/language.svelte';
 	import { getTranslation } from '$lib/translations';
 	import { categoryItems } from './filterItems';
-	import type { ListDensity } from '$lib/components/ui/selectableListLogic';
+	import type { ListDensity } from '$lib/components/ui/listItems';
 	import type { CategoryCounts, TournamentCategory } from '$lib/utils/tournamentFilters';
 
 	interface Props {

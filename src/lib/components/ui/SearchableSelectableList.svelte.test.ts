@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import SearchableSelectableList from './SearchableSelectableList.svelte';
-import type { SelectableListItem } from './selectableListLogic';
+import type { SelectableListItem } from './listItems';
 
 const items: SelectableListItem[] = [
 	{ id: 1, label: 'Stockholms Schacksällskap', subtitle: 'Stockholm' },

@@ -10,8 +10,8 @@
 	import { untrack } from 'svelte';
 	import { ChevronDown, Icon } from 'svelte-hero-icons';
 	import Link from '$lib/components/ui/Link.svelte';
-	import Table from '$lib/components/ui/Table.svelte';
-	import type { TableColumn } from '$lib/components/ui/tableTypes';
+	import Table from '$lib/components/ui/Table/Table.svelte';
+	import type { TableColumn } from '$lib/components/ui/Table/tableTypes';
 	import {
 		createRoundResultsTeamNameFormatter,
 		getOpponentKind,

@@ -3,8 +3,12 @@
 	 * Final standings for an individual tournament.
 	 * Ports `components/results/FinalResultsTable.tsx`.
 	 */
-	import Table from '$lib/components/ui/Table.svelte';
-	import type { TableColumn, DensityThresholds, TableDensity } from '$lib/components/ui/tableTypes';
+	import Table from '$lib/components/ui/Table/Table.svelte';
+	import type {
+		TableColumn,
+		DensityThresholds,
+		TableDensity
+	} from '$lib/components/ui/Table/tableTypes';
 	import {
 		formatPlayerName,
 		formatRatingWithType,

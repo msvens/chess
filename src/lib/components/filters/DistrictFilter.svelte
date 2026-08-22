@@ -8,7 +8,7 @@
 	import { language } from '$lib/stores/language.svelte';
 	import { getTranslation } from '$lib/translations';
 	import { districtItems, toDistrictId, toDistrictListId, type DistrictCount } from './filterItems';
-	import type { ListDensity } from '$lib/components/ui/selectableListLogic';
+	import type { ListDensity } from '$lib/components/ui/listItems';
 
 	interface DistrictFilterProps {
 		/** null is "all"; -1 is the Övriga bucket. */

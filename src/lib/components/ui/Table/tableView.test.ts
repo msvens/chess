@@ -8,7 +8,7 @@ import {
 	paginationInfo,
 	resolveDensity,
 	sortRows
-} from './tableLogic';
+} from './tableView';
 import type { TableColumn } from './tableTypes';
 
 interface Row {

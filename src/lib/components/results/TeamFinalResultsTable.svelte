@@ -7,8 +7,12 @@
 	 * the reverse of the individual table — hence the column order ending
 	 * "…, pp, mp" rather than "…, points, qp".
 	 */
-	import Table from '$lib/components/ui/Table.svelte';
-	import type { TableColumn, DensityThresholds, TableDensity } from '$lib/components/ui/tableTypes';
+	import Table from '$lib/components/ui/Table/Table.svelte';
+	import type {
+		TableColumn,
+		DensityThresholds,
+		TableDensity
+	} from '$lib/components/ui/Table/tableTypes';
 	import { createTeamNameFormatter, type TeamTournamentEndResultDto } from '$lib/api';
 	import { language } from '$lib/stores/language.svelte';
 	import { getTranslation } from '$lib/translations';
