@@ -42,6 +42,7 @@
 		type TournamentRoundResultDto
 	} from '$lib/api';
 	import { findClassForGroup, firstGroupOf, flattenClasses } from '$lib/results/classTree';
+	import { formatTeamId } from '$lib/results/teamId';
 	import { hasGroupEnded, isSingleDayToday } from '$lib/results/groupDates';
 	import { formatIndividualRowResult, getResultLabels } from '$lib/results/formatResult';
 	import {
@@ -691,7 +692,14 @@
 											{formatTeamName}
 											onRowClick={(row) =>
 												goto(
-													`/results/${tournamentId}/${groupId}/team/${row.contenderId}-${row.teamNumber}`
+													`/results/${tournamentId}/${groupId}/team/${formatTeamId(
+														row.contenderId,
+														// A snapshot row's team number is optional in the SDK's
+														// type; the sibling table already displays it as 0 when
+														// absent, so the link agrees rather than interpolating
+														// `undefined` into the URL as the Next version did.
+														row.teamNumber ?? 0
+													)}`
 												)}
 										/>
 									{:else}
@@ -719,7 +727,7 @@
 											error={results.error ?? undefined}
 											onRowClick={(row) =>
 												goto(
-													`/results/${tournamentId}/${groupId}/team/${row.contenderId}-${row.teamNumber}`
+													`/results/${tournamentId}/${groupId}/team/${formatTeamId(row.contenderId, row.teamNumber)}`
 												)}
 										/>
 									{/if}

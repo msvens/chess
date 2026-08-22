@@ -11,6 +11,7 @@ import {
 	isAdjudicatedResult,
 	parseResultDisplay,
 	resolveIndividualResult,
+	resolveTeamMatchResult,
 	type ParsedResultDisplay,
 	type TournamentRoundResultDto
 } from '$lib/api';
@@ -108,15 +109,16 @@ export function formatBoardResult(board: BoardGame, labels: ResultLabels): strin
 }
 
 /**
- * Render a team match's score, e.g. "4½ - 3½".
+ * Render a team match's score, e.g. "4.5 - 3.5".
  *
  * `0 - 0` is the API's way of saying the match has not been played — a real
- * double forfeit is recorded on the boards, not as a zeroed match score.
+ * double forfeit is recorded on the boards, not as a zeroed match score — and
+ * `resolveTeamMatchResult` is the SDK's statement of exactly that rule. This
+ * used to reimplement it inline; the SDK owning it is the point of the SDK.
  */
 export function formatTeamMatchScore(
-	match: { homeResult: number; awayResult: number },
+	match: Pick<TournamentRoundResultDto, 'homeResult' | 'awayResult'>,
 	labels: ResultLabels
 ): string {
-	if (match.homeResult === 0 && match.awayResult === 0) return labels.noResult;
-	return `${formatScore(match.homeResult)} - ${formatScore(match.awayResult)}`;
+	return formatResult(resolveTeamMatchResult(match), labels);
 }

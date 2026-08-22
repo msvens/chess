@@ -24,6 +24,7 @@ import {
 	isTeamPairing,
 	isTeamTournament,
 	type PlayerInfoDto,
+	type PlayerRating,
 	type RoundDto,
 	type TeamTournamentEndResultDto,
 	type TournamentClassGroupDto,
@@ -289,10 +290,28 @@ export class GroupResultsState {
 		return playerCache.getByDate(playerId, date);
 	}
 
-	getPlayerEloByDate(playerId: number, date: number): string {
+	/** The ranking rating as of a month, with its type — the shape both readers want. */
+	#ratingByDate(playerId: number, date: number): PlayerRating {
 		const player = playerCache.getByDate(playerId, date) ?? this.playerMap.get(playerId);
-		const { rating, ratingType } = getPlayerRatingStrict(player?.elo, this.rankingAlgorithm);
+		return getPlayerRatingStrict(player?.elo, this.rankingAlgorithm);
+	}
+
+	getPlayerEloByDate(playerId: number, date: number): string {
+		const { rating, ratingType } = this.#ratingByDate(playerId, date);
 		return formatRatingWithType(rating, ratingType, language.current);
+	}
+
+	/**
+	 * The same rating as `getPlayerEloByDate`, as a number.
+	 *
+	 * For callers that need to compute with it — averaging a team's boards, say.
+	 * They share `#ratingByDate` so the displayed rating and the computed one
+	 * cannot drift apart. The React version reached the number by `parseInt`-ing
+	 * the formatted string ("1638 S" → 1638), which is a display format being
+	 * used as data.
+	 */
+	getPlayerRatingByDate(playerId: number, date: number): number | null {
+		return this.#ratingByDate(playerId, date).rating;
 	}
 
 	getRoundRatedType(roundNumber: number): number | undefined {

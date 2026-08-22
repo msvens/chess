@@ -162,6 +162,27 @@ export function boardGames(match: TeamMatch): BoardGame[] {
 }
 
 /**
+ * Swap a board's two sides.
+ *
+ * `boardGames` orients everything home-left, which is what the group page wants.
+ * A team's own page wants *that team* on the left whichever side it played, so
+ * it flips the boards of its away matches. After the flip `home*` reads as
+ * "this team" and `away*` as "the opponent", and every helper that takes a
+ * `BoardGame` — `formatBoardResult` included — keeps working unchanged.
+ */
+export function flipBoard(board: BoardGame): BoardGame {
+	return {
+		boardNumber: board.boardNumber,
+		homePlayerId: board.awayPlayerId,
+		awayPlayerId: board.homePlayerId,
+		homeScore: board.awayScore,
+		awayScore: board.homeScore,
+		isWalkover: board.isWalkover,
+		resultCode: board.resultCode
+	};
+}
+
+/**
  * The players of a match whose historical ratings are worth fetching.
  *
  * Bye and walkover slots are dropped — schack.se answers their negative ids with

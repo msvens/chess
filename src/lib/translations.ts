@@ -90,6 +90,10 @@ export interface Translations {
 			blitzEloChange: string;
 			rapidPerformance: string;
 			blitzPerformance: string;
+			/** The player has no rated months in the chosen range. */
+			noHistory: string;
+			/** The rating-history request failed. */
+			historyError: string;
 		};
 		actions: {
 			search: string;
@@ -297,6 +301,8 @@ export interface Translations {
 				firstName: string;
 				lastName: string;
 				club: string;
+				/** Stand-in when a club id has no name attached. `{id}` is substituted. */
+				clubFallback: string;
 			};
 			eloRating: {
 				title: string;
@@ -372,6 +378,8 @@ export interface Translations {
 			noMatchesFound: string;
 			loadingMatches: string;
 			of: string;
+			/** The member id in the URL is not a number. */
+			invalidMemberId: string;
 		};
 		tournamentResults: {
 			loading: string;
@@ -531,6 +539,10 @@ export interface Translations {
 			};
 			teamDetailPage: {
 				backToStandings: string;
+				/** The `{contenderId}-{teamNumber}` route segment could not be read. */
+				invalidTeamId: string;
+				/** The segment parsed, but no team in this group matches it. */
+				teamNotFound: string;
 				matchesPlayed: string;
 				winDrawLoss: string;
 				boardPoints: string;
@@ -826,7 +838,9 @@ const translations: Record<Language, Translations> = {
 				rapidEloChange: 'Rapid Elo +/-',
 				blitzEloChange: 'Blitz Elo +/-',
 				rapidPerformance: 'Rapid Performance',
-				blitzPerformance: 'Blitz Performance'
+				blitzPerformance: 'Blitz Performance',
+				noHistory: 'No rating history available',
+				historyError: 'Failed to load rating history'
 			},
 			actions: {
 				search: 'Search',
@@ -1031,7 +1045,8 @@ const translations: Record<Language, Translations> = {
 					memberId: 'Member ID',
 					firstName: 'First Name',
 					lastName: 'Last Name',
-					club: 'Club'
+					club: 'Club',
+					clubFallback: 'Club {id}'
 				},
 				eloRating: {
 					title: 'Elo',
@@ -1106,7 +1121,8 @@ const translations: Record<Language, Translations> = {
 				total: 'Total',
 				noMatchesFound: 'No matches found',
 				loadingMatches: 'Loading matches...',
-				of: 'of'
+				of: 'of',
+				invalidMemberId: 'Invalid player ID'
 			},
 			tournamentResults: {
 				loading: 'Loading tournament results...',
@@ -1264,6 +1280,8 @@ const translations: Record<Language, Translations> = {
 				},
 				teamDetailPage: {
 					backToStandings: 'Back to standings',
+					invalidTeamId: 'Invalid team ID format',
+					teamNotFound: 'Team not found',
 					matchesPlayed: 'MP',
 					winDrawLoss: 'W-D-L',
 					boardPoints: 'BP',
@@ -1558,7 +1576,9 @@ const translations: Record<Language, Translations> = {
 				rapidEloChange: 'Snabb Elo +/-',
 				blitzEloChange: 'Blixt Elo +/-',
 				rapidPerformance: 'Snabb prestation',
-				blitzPerformance: 'Blixt prestation'
+				blitzPerformance: 'Blixt prestation',
+				noHistory: 'Ingen ratinghistorik tillgänglig',
+				historyError: 'Kunde inte hämta ratinghistoriken'
 			},
 			actions: {
 				search: 'Sök',
@@ -1764,7 +1784,8 @@ const translations: Record<Language, Translations> = {
 					memberId: 'Medlems-ID',
 					firstName: 'Förnamn',
 					lastName: 'Efternamn',
-					club: 'Klubb'
+					club: 'Klubb',
+					clubFallback: 'Klubb {id}'
 				},
 				eloRating: {
 					title: 'Elo',
@@ -1839,7 +1860,8 @@ const translations: Record<Language, Translations> = {
 				total: 'Totalt',
 				noMatchesFound: 'Inga partier hittades',
 				loadingMatches: 'Laddar partier...',
-				of: 'av'
+				of: 'av',
+				invalidMemberId: 'Ogiltigt spelar-ID'
 			},
 			tournamentResults: {
 				loading: 'Laddar turneringsresultat...',
@@ -1997,6 +2019,8 @@ const translations: Record<Language, Translations> = {
 				},
 				teamDetailPage: {
 					backToStandings: 'Tillbaka till ställning',
+					invalidTeamId: 'Ogiltigt lag-ID',
+					teamNotFound: 'Laget hittades inte',
 					matchesPlayed: 'MP',
 					winDrawLoss: 'V-R-F',
 					boardPoints: 'BP',
