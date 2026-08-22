@@ -38,13 +38,28 @@ export function parseDateToTimestamp(dateStr: string | undefined): number {
 
 /** Compact date under a round tab, e.g. "25-01-15". Empty when unparseable. */
 export function formatRoundDate(dateStr: string | undefined, locale: string): string {
+	return formatApiDate(dateStr, locale, { day: 'numeric', month: 'numeric', year: '2-digit' });
+}
+
+/**
+ * Spelled-out date beside a match, e.g. "15 januari 2026".
+ *
+ * The long form is what a team's own page uses, where each match gets a line of
+ * its own and there is room for it — as against the round tabs, which are a
+ * cramped horizontal strip.
+ */
+export function formatMatchDate(dateStr: string | undefined, locale: string): string {
+	return formatApiDate(dateStr, locale, { day: 'numeric', month: 'long', year: 'numeric' });
+}
+
+function formatApiDate(
+	dateStr: string | undefined,
+	locale: string,
+	options: Intl.DateTimeFormatOptions
+): string {
 	const timestamp = parseDateToTimestamp(dateStr);
 	if (Number.isNaN(timestamp) || timestamp <= 0) return '';
-	return new Date(timestamp).toLocaleDateString(locale, {
-		day: 'numeric',
-		month: 'numeric',
-		year: '2-digit'
-	});
+	return new Date(timestamp).toLocaleDateString(locale, options);
 }
 
 /**

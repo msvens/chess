@@ -3,6 +3,7 @@ import { ResultCode, type GameDto, type TournamentRoundResultDto } from '$lib/ap
 import {
 	boardGames,
 	boardPlayerIds,
+	flipBoard,
 	groupMatchesByRound,
 	homeIsWhiteOnBoard,
 	matchKey
@@ -182,5 +183,35 @@ describe('boardPlayerIds', () => {
 
 	it('is empty without boards', () => {
 		expect(boardPlayerIds([])).toEqual([]);
+	});
+});
+
+describe('flipBoard', () => {
+	const matchOf = (games: GameDto[]) => groupMatchesByRound([row({ games })]).get(1)![0];
+
+	it('swaps the two sides, so a chosen away team reads as the left column', () => {
+		// Board 1: away has white. White wins, so home scores 0. Seen from the away
+		// team's own page, that same board must read as their win.
+		const [board] = boardGames(matchOf([game(0, 111, 222, ResultCode.WHITE_WIN)]));
+		expect([board.homePlayerId, board.homeScore]).toEqual([222, 0]);
+
+		const flipped = flipBoard(board);
+		expect(flipped.homePlayerId).toBe(111);
+		expect(flipped.awayPlayerId).toBe(222);
+		expect(flipped.homeScore).toBe(1);
+		expect(flipped.awayScore).toBe(0);
+	});
+
+	it('leaves the board number, walkover flag and result code alone', () => {
+		const [board] = boardGames(matchOf([game(2, 111, 222, ResultCode.NO_WIN_WO)]));
+		const flipped = flipBoard(board);
+		expect(flipped.boardNumber).toBe(board.boardNumber);
+		expect(flipped.isWalkover).toBe(board.isWalkover);
+		expect(flipped.resultCode).toBe(board.resultCode);
+	});
+
+	it('is its own inverse', () => {
+		const [board] = boardGames(matchOf([game(1, 111, 222, ResultCode.DRAW)]));
+		expect(flipBoard(flipBoard(board))).toEqual(board);
 	});
 });

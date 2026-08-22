@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { normalizeEloLookupDate, type TournamentRoundResultDto } from '$lib/api';
 import {
+	formatMatchDate,
 	formatRoundDate,
 	groupByRound,
 	parseDateToTimestamp,
@@ -56,6 +57,25 @@ describe('formatRoundDate', () => {
 		expect(formatRoundDate(undefined, 'sv-SE')).toBe('');
 		expect(formatRoundDate('not a date', 'sv-SE')).toBe('');
 		expect(formatRoundDate('0', 'sv-SE')).toBe('');
+	});
+});
+
+describe('formatMatchDate', () => {
+	it('spells the month out — a team match has a line to itself', () => {
+		expect(formatMatchDate('2026-01-15', 'sv-SE')).toMatch(/januari/);
+		expect(formatMatchDate('2026-01-15', 'en-US')).toMatch(/January/);
+	});
+
+	it('is the long form where formatRoundDate is the compact one', () => {
+		// The round tabs are a cramped horizontal strip; a team's own page is not.
+		expect(formatRoundDate('2026-01-15', 'sv-SE')).toBe('26-01-15');
+		expect(formatMatchDate('2026-01-15', 'sv-SE')).not.toBe('26-01-15');
+	});
+
+	it('renders nothing rather than "Invalid Date" for an unusable value', () => {
+		expect(formatMatchDate(undefined, 'sv-SE')).toBe('');
+		expect(formatMatchDate('not a date', 'sv-SE')).toBe('');
+		expect(formatMatchDate('0', 'sv-SE')).toBe('');
 	});
 });
 

@@ -277,3 +277,46 @@ describe('per-round rating type', () => {
 		expect(s.getRoundRatedType(99)).toBeUndefined();
 	});
 });
+
+describe('the ranking rating as a number', () => {
+	// `getPlayerRatingByDate` exists so callers that compute with a rating — the
+	// team page averages its boards — do not have to parse the formatted string
+	// back into a number, which is what the React version did ("1638 S" -> 1638).
+	const load = async () => {
+		getTournament.mockResolvedValue(ok(tournament(INDIVIDUAL)));
+		getTournamentResults.mockResolvedValue(
+			ok([
+				{ playerInfo: { id: 42, firstName: 'A', lastName: 'B', elo: { rating: 1638 } } },
+				{ playerInfo: { id: 43, firstName: 'C', lastName: 'D', elo: { rating: 0 } } }
+			])
+		);
+		const s = make();
+		await s.load(5835, 16642);
+		return s;
+	};
+
+	it('gives the number for a rated player', async () => {
+		const s = await load();
+		expect(s.getPlayerRatingByDate(42, Date.now())).toBe(1638);
+	});
+
+	it('is null for an unknown player and for one with no rating of the ranked type', async () => {
+		const s = await load();
+		expect(s.getPlayerRatingByDate(999999, Date.now())).toBeNull();
+		expect(s.getPlayerRatingByDate(43, Date.now())).toBeNull();
+	});
+
+	it('never disagrees with the string the same lookup formats', async () => {
+		// Both go through one private helper precisely so they cannot drift; if
+		// this ever fails, a rating is being displayed that is not the one being
+		// averaged.
+		const s = await load();
+		const date = Date.now();
+		for (const id of [42, 43, 999999]) {
+			const rating = s.getPlayerRatingByDate(id, date);
+			const shown = s.getPlayerEloByDate(id, date);
+			if (rating === null) expect(shown).toBe('-');
+			else expect(shown).toContain(String(rating));
+		}
+	});
+});
