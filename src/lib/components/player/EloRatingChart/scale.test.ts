@@ -7,7 +7,7 @@ import {
 	pointScale,
 	tooltipX,
 	tooltipY
-} from '../scale';
+} from './scale';
 
 describe('linearScale', () => {
 	it('maps the ends of the domain onto the ends of the range', () => {

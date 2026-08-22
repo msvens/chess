@@ -24,7 +24,7 @@
 	import Table from '$lib/components/ui/Table/Table.svelte';
 	import type { TableColumn } from '$lib/components/ui/Table/tableTypes';
 	import PlayerInfo from '$lib/components/player/PlayerInfo.svelte';
-	import EloRatingChart from '$lib/components/player/EloRatingChart.svelte';
+	import EloRatingChart from '$lib/components/player/EloRatingChart/EloRatingChart.svelte';
 	import { formatPlayerName, formatRatingWithType, type PlayerInfoDto } from '$lib/api';
 	import { formatResultCode, formatScore, getResultLabels } from '$lib/results/formatResult';
 	import { playerMatchLookups, playerMatches, type PlayerMatch } from '$lib/results/playerMatches';

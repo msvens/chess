@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { monotonePath, type Point } from '../curve';
+import { monotonePath, type Point } from './curve';
 
 /**
  * Captured from d3-shape 3.2.0 — `line().curve(curveMonotoneX)` — which is what

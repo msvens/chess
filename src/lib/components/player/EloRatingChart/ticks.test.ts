@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { niceStep, niceTicks } from '../ticks';
+import { niceStep, niceTicks } from './ticks';
 
 /**
  * Captured from recharts itself — `getNiceTickValues([min, max], 5, true)` run

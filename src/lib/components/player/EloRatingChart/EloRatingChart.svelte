@@ -14,21 +14,22 @@
 	 * algorithm, and `monotonePath` reproduces d3-shape's `curveMonotoneX`,
 	 * which is what `type="monotone"` drew. Colours, stroke widths, dot radii,
 	 * the dashed grid and the 1200 floor are all taken from the original.
+	 *
+	 * Those three modules sit beside this file rather than in a shared home:
+	 * this is their only consumer. If a second kind of chart ever arrives, the
+	 * genuinely common parts get broken out into a general-purpose chart with
+	 * implementations on top — decided against two real callers rather than one
+	 * guess. Note how little would actually transfer to, say, a pie chart: it
+	 * has no axes, so `ticks` is useless to it, and it draws arcs rather than
+	 * splines, so `curve` is too.
 	 */
 	import { untrack } from 'svelte';
 	import { MediaQuery } from 'svelte/reactivity';
 	import DatePicker from '$lib/components/ui/DatePicker.svelte';
 	import { decimateRatingData, getPlayerRatingHistory, type RatingDataPoint } from '$lib/api';
-	import { monotonePath, type Point } from '$lib/charts/curve';
-	import {
-		labelIndices,
-		linearScale,
-		nearestIndex,
-		pointScale,
-		tooltipX,
-		tooltipY
-	} from '$lib/charts/scale';
-	import { niceTicks } from '$lib/charts/ticks';
+	import { monotonePath, type Point } from './curve';
+	import { labelIndices, linearScale, nearestIndex, pointScale, tooltipX, tooltipY } from './scale';
+	import { niceTicks } from './ticks';
 
 	interface EloRatingChartProps {
 		memberId: number;
