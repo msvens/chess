@@ -8,11 +8,13 @@
  * `w.o` is deliberately NOT translated — it is universal chess notation.
  */
 import {
+	isAdjudicatedResult,
 	parseResultDisplay,
 	resolveIndividualResult,
 	type ParsedResultDisplay,
 	type TournamentRoundResultDto
 } from '$lib/api';
+import type { BoardGame } from './teamMatches';
 import type { Translations } from '$lib/translations';
 
 /** Universal chess notation for a walkover — intentionally not translated. */
@@ -86,4 +88,35 @@ export function formatIndividualRowResult(
 	labels: ResultLabels
 ): string {
 	return formatResult(resolveIndividualResult(row), labels);
+}
+
+/**
+ * Render one board of a team match, from the home team's perspective.
+ *
+ * Not `formatResultCode`: colours alternate down the boards, so the result code
+ * — which is written from white's side — has already been turned into home and
+ * away points by `boardGames`. Only the suffix still comes from the code.
+ */
+export function formatBoardResult(board: BoardGame, labels: ResultLabels): string {
+	const { homeScore, awayScore, isWalkover, resultCode } = board;
+	if (resultCode == null) return labels.noResult;
+
+	const score = `${formatScore(homeScore)} - ${formatScore(awayScore)}`;
+	if (isWalkover) return `${score} ${WALKOVER_SUFFIX}`;
+	if (isAdjudicatedResult(resultCode)) return `${score} ${labels.adjudicated}`;
+	return score;
+}
+
+/**
+ * Render a team match's score, e.g. "4½ - 3½".
+ *
+ * `0 - 0` is the API's way of saying the match has not been played — a real
+ * double forfeit is recorded on the boards, not as a zeroed match score.
+ */
+export function formatTeamMatchScore(
+	match: { homeResult: number; awayResult: number },
+	labels: ResultLabels
+): string {
+	if (match.homeResult === 0 && match.awayResult === 0) return labels.noResult;
+	return `${formatScore(match.homeResult)} - ${formatScore(match.awayResult)}`;
 }

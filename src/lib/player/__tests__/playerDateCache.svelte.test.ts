@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { PlayerDateCache } from '$lib/player/playerDateCache';
+import { PlayerDateCache } from '$lib/player/playerDateCache.svelte';
 import type { PlayerInfoDto } from '$lib/api';
 
 const player = (id: number) => ({ id, firstName: 'A', lastName: 'B' }) as unknown as PlayerInfoDto;

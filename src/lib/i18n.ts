@@ -14,3 +14,14 @@ export const DEFAULT_LANGUAGE: Language = 'sv';
 export function isLanguage(value: unknown): value is Language {
 	return value === 'en' || value === 'sv';
 }
+
+/**
+ * BCP-47 tag for `Intl` formatting.
+ *
+ * The bare subtags would resolve to the same thing today, but only by accident
+ * of the runtime's default region — `'en'` picking `en-US` is not guaranteed.
+ * Naming the regions makes the dates and times the app prints deterministic.
+ */
+export function localeOf(language: Language): string {
+	return language === 'sv' ? 'sv-SE' : 'en-US';
+}

@@ -14,8 +14,10 @@
 	 *    in unrelated components.
 	 *  - `cellStyle`, `headerStyle`, `rowClassName` and `size` are gone — no caller
 	 *    used them, except `cellStyle: { fontWeight: 'medium' }`, which is not a
-	 *    valid CSS font-weight and therefore never did anything. Use
-	 *    `cellClassName: 'font-medium'`.
+	 *    valid CSS font-weight and therefore never did anything. Dropping it keeps
+	 *    those cells rendering exactly as they do on the live site; do NOT
+	 *    "restore" it as `cellClassName: 'font-medium'` — that would be a visual
+	 *    change, not a fix.
 	 */
 	import { untrack } from 'svelte';
 	import { MediaQuery } from 'svelte/reactivity';
@@ -42,8 +44,10 @@
 		columns: TableColumn<T>[];
 		loading?: boolean;
 		error?: string;
-		emptyMessage?: string;
-		loadingMessage?: string;
+		/** Shown instead of the table when `data` is empty. */
+		emptyMessage: string;
+		/** Shown instead of the table while `loading`. */
+		loadingMessage: string;
 		hover?: boolean;
 		striped?: boolean;
 		border?: boolean;
@@ -64,8 +68,8 @@
 		columns,
 		loading = false,
 		error,
-		emptyMessage = 'No data available',
-		loadingMessage = 'Loading...',
+		emptyMessage,
+		loadingMessage,
 		hover = true,
 		striped = true,
 		border = true,

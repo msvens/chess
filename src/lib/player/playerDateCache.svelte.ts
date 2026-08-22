@@ -1,11 +1,19 @@
+import { SvelteMap } from 'svelte/reactivity';
 import type { PlayerInfoDto } from '$lib/api';
 
 /** Cache state for a player(+date): not fetched, confirmed missing, or found. */
 export type PlayerCacheStatus = 'unfetched' | 'missing' | 'found';
 
 /**
- * Plain (React-free) store backing GlobalPlayerCacheContext, keyed by the SDK's
- * "playerId-YYYY-MM-01" strings.
+ * Cache of players by id and month, keyed by the SDK's "playerId-YYYY-MM-01"
+ * strings.
+ *
+ * The entries map is a `SvelteMap`, which is the whole reason this file moved to
+ * `.svelte.ts`: reads become reactive, so a component showing a name simply
+ * updates when the fetch lands. The React version could not do that — it held the
+ * same Map in a `useRef` and forced re-renders with a `setVersion(v => v + 1)`
+ * bump after every write, because React cannot observe ref mutation. Every one of
+ * those bumps is gone; the API below is otherwise unchanged.
  *
  * A `null` entry is a NEGATIVE cache: the API confirmed there is no record
  * (it returns 204/404, e.g. a player with no rating at a given date). Recording
@@ -14,7 +22,7 @@ export type PlayerCacheStatus = 'unfetched' | 'missing' | 'found';
  * instead of a perpetual "retrieving".
  */
 export class PlayerDateCache {
-	private readonly entries = new Map<string, PlayerInfoDto | null>();
+	private readonly entries = new SvelteMap<string, PlayerInfoDto | null>();
 
 	/** A key is a cache hit whether it resolved to a player OR to "missing". */
 	has(key: string): boolean {
@@ -38,6 +46,14 @@ export class PlayerDateCache {
 	/** Negative-cache: record that this key has no record so we don't refetch. */
 	setMissing(key: string): void {
 		this.entries.set(key, null);
+	}
+
+	/**
+	 * Drop everything. Only for tests — the app's cache is a session-long singleton
+	 * and nothing in it goes stale within a session.
+	 */
+	clear(): void {
+		this.entries.clear();
 	}
 
 	/** setFound when data is present, setMissing otherwise. */

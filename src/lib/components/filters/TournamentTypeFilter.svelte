@@ -36,6 +36,7 @@
 	selectedId={selected ?? 'all'}
 	onSelect={(id) => onSelect(id === 'all' ? null : Number(id))}
 	title={showLabel ? t.components.tournamentTypeFilter.label : undefined}
+	placeholder={t.components.selectableList.selectPlaceholder}
 	{variant}
 	{density}
 	{transparent}

@@ -89,5 +89,14 @@
 {:else if tournaments.length === 0}
 	<div class="py-8 text-center text-gray-500 dark:text-gray-400">{labels.noTournaments}</div>
 {:else}
-	<Table data={rows} {columns} border={false} />
+	<!-- The branches above already cover loading and empty, so Table's own
+	     messages never render here; it still asks for them, and passing the same
+	     labels keeps the two paths from drifting apart. -->
+	<Table
+		data={rows}
+		{columns}
+		border={false}
+		emptyMessage={labels.noTournaments}
+		loadingMessage={loadingMessage ?? labels.loading}
+	/>
 {/if}

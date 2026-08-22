@@ -48,6 +48,7 @@
 		selectedId={toDistrictListId(selectedDistrictId)}
 		onSelect={(id) => onSelect(toDistrictId(id))}
 		title={showLabel ? t.components.districtFilter.district : undefined}
+		placeholder={t.components.selectableList.selectPlaceholder}
 		{variant}
 		{density}
 		{transparent}

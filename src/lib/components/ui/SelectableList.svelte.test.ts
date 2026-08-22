@@ -13,7 +13,14 @@ const items: SelectableListItem[] = [
 function renderDropdown(props: Partial<Record<string, unknown>> = {}) {
 	const onSelect = vi.fn();
 	render(SelectableList, {
-		props: { items, selectedId: 'a', onSelect, variant: 'dropdown', ...props }
+		props: {
+			items,
+			selectedId: 'a',
+			onSelect,
+			variant: 'dropdown',
+			placeholder: 'Välj...',
+			...props
+		}
 	});
 	return { onSelect };
 }
@@ -24,8 +31,10 @@ describe('SelectableList — dropdown', () => {
 		expect(screen.getByRole('button', { expanded: false })).toHaveTextContent('Standard');
 	});
 
-	it('falls back to a translated placeholder when nothing is selected', () => {
-		// The React version hardcoded 'Select an option' in English, in a bilingual app.
+	it('falls back to the supplied placeholder when nothing is selected', () => {
+		// The React version hardcoded 'Select an option' in English, in a
+		// bilingual app. The list takes the string rather than translating it —
+		// a general UI component has no business knowing the app has languages.
 		renderDropdown({ selectedId: null });
 		expect(screen.getByRole('button', { expanded: false })).toHaveTextContent('Välj...');
 	});
@@ -96,7 +105,9 @@ describe('SelectableList — dropdown', () => {
 describe('SelectableList — vertical', () => {
 	it('renders every option inline, with no trigger', () => {
 		const onSelect = vi.fn();
-		render(SelectableList, { props: { items, selectedId: 'b', onSelect } });
+		render(SelectableList, {
+			props: { items, selectedId: 'b', onSelect, placeholder: 'Välj...' }
+		});
 		expect(screen.getAllByRole('option')).toHaveLength(3);
 		expect(screen.queryByRole('button', { expanded: false })).toBeNull();
 	});
@@ -104,7 +115,9 @@ describe('SelectableList — vertical', () => {
 	it('selects on click', async () => {
 		const user = userEvent.setup();
 		const onSelect = vi.fn();
-		render(SelectableList, { props: { items, selectedId: 'b', onSelect } });
+		render(SelectableList, {
+			props: { items, selectedId: 'b', onSelect, placeholder: 'Välj...' }
+		});
 		await user.click(screen.getByRole('option', { name: /standard/i }));
 		expect(onSelect).toHaveBeenCalledWith('a');
 	});

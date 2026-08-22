@@ -10,8 +10,6 @@
 	import { ChevronDown, Icon } from 'svelte-hero-icons';
 	import { clickOutside } from '$lib/attachments/clickOutside';
 	import { escapeKey } from '$lib/attachments/escapeKey';
-	import { language } from '$lib/stores/language.svelte';
-	import { getTranslation } from '$lib/translations';
 	import {
 		DEFAULT_LIST_THRESHOLDS,
 		resolveListDensity,
@@ -26,6 +24,8 @@
 		onSelect: (id: string | number) => void;
 		title?: string;
 		showTitle?: boolean;
+		/** Dropdown trigger text when nothing is selected. */
+		placeholder: string;
 		class?: string;
 		variant?: 'vertical' | 'dropdown';
 		/** Omit to size from the item count (and always compact on mobile). */
@@ -41,6 +41,7 @@
 		onSelect,
 		title,
 		showTitle = true,
+		placeholder,
 		class: cls = '',
 		variant = 'vertical',
 		density,
@@ -51,7 +52,6 @@
 	let open = $state(false);
 	const mobile = new MediaQuery('(max-width: 767px)');
 
-	let t = $derived(getTranslation(language.current).components.selectableList);
 	let effectiveDensity = $derived(
 		resolveListDensity(density, mobile.current, items.length, densityThresholds)
 	);
@@ -154,7 +154,7 @@
 			>
 				<div class="min-w-0 flex-1">
 					<div class="truncate font-medium text-gray-900 dark:text-gray-200 {d.fontSize}">
-						{selectedItem?.label ?? t.selectPlaceholder}
+						{selectedItem?.label ?? placeholder}
 					</div>
 				</div>
 				<Icon

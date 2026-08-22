@@ -8,8 +8,6 @@
 	 */
 	import { ChevronDown, Icon } from 'svelte-hero-icons';
 	import { MediaQuery } from 'svelte/reactivity';
-	import { language } from '$lib/stores/language.svelte';
-	import { getTranslation } from '$lib/translations';
 
 	interface TextDisplayProps {
 		text: string;
@@ -17,17 +15,27 @@
 		label?: string;
 		/** Lines to show when collapsed. Omit to never clamp. */
 		maxLines?: number;
+		/** Accessible name for the chevron while collapsed. */
+		expandLabel: string;
+		/** Accessible name for the chevron while expanded. */
+		collapseLabel: string;
 		class?: string;
 	}
 
-	let { text, label, maxLines, class: cls = '' }: TextDisplayProps = $props();
+	let {
+		text,
+		label,
+		maxLines,
+		expandLabel,
+		collapseLabel,
+		class: cls = ''
+	}: TextDisplayProps = $props();
 
 	let expanded = $state(false);
 	let textEl = $state<HTMLSpanElement | null>(null);
 	let overflows = $state(false);
 
 	const large = new MediaQuery('(min-width: 768px)');
-	let t = $derived(getTranslation(language.current).components.textDisplay);
 	let clamped = $derived(Boolean(maxLines) && !expanded && !large.current);
 
 	// Whether the chevron is needed can only be answered from layout, so it is
@@ -66,7 +74,7 @@
 		<button
 			onclick={() => (expanded = !expanded)}
 			class="ml-1 inline-flex items-center text-blue-600 transition-colors hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
-			aria-label={expanded ? t.collapse : t.expand}
+			aria-label={expanded ? collapseLabel : expandLabel}
 			aria-expanded={expanded}
 		>
 			<Icon
