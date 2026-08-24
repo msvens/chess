@@ -68,6 +68,10 @@
 	 * The four series, in the order recharts stacked them, with the colours it
 	 * used. Each label is named explicitly rather than looked up by key — the
 	 * dynamic form hides the props from the unused-prop check.
+	 *
+	 * This order is the *drawing* order, and the tooltip's: recharts' `Tooltip`
+	 * would sort too, but the original passes custom content, which bypasses that.
+	 * Only the legend is sorted — see `legend` below.
 	 */
 	let series = $derived([
 		{ key: 'lask' as const, colour: '#d97706', label: labels.lask },
@@ -75,6 +79,22 @@
 		{ key: 'rapid' as const, colour: '#be123c', label: labels.rapid },
 		{ key: 'blitz' as const, colour: '#059669', label: labels.blitz }
 	]);
+
+	/**
+	 * The legend, alphabetically by label.
+	 *
+	 * Not the drawing order: recharts' `Legend` defaults to `itemSorter: 'value'`,
+	 * which sorts entries by their displayed name. So the live chart reads Blixt,
+	 * Elo, LASK, Snabb rather than the order the lines are declared in — and
+	 * lands the same way in English (Blitz, Elo, LASK, Rapid).
+	 *
+	 * Compared by code point rather than `localeCompare`, which is what lodash's
+	 * `sortBy` does inside recharts. The two agree on these four labels; matching
+	 * the original exactly costs nothing.
+	 */
+	let legend = $derived(
+		[...series].sort((a, b) => (a.label < b.label ? -1 : a.label > b.label ? 1 : 0))
+	);
 
 	/** Ratings below this are clipped rather than shown, as in the original. */
 	const Y_FLOOR = 1200;
@@ -363,7 +383,7 @@
 	</div>
 
 	<div class="flex flex-wrap justify-center gap-4 pt-[15px] text-xs">
-		{#each series as { key, colour, label } (key)}
+		{#each legend as { key, colour, label } (key)}
 			<span class="flex items-center gap-1.5 text-gray-600 dark:text-gray-400">
 				<svg width="8" height="8" aria-hidden="true">
 					<circle cx="4" cy="4" r="4" fill={colour} />
