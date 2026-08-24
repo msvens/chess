@@ -357,6 +357,7 @@ export interface Translations {
 					all: string;
 					white: string;
 					black: string;
+					noGames: string;
 				};
 				table: {
 					white: string;
@@ -371,6 +372,7 @@ export interface Translations {
 					draws: string;
 					losses: string;
 				};
+				loading: string;
 				noOpponents: string;
 				ratingNote: string;
 			};
@@ -1101,7 +1103,8 @@ const translations: Record<Language, Translations> = {
 					charts: {
 						all: 'All',
 						white: 'White',
-						black: 'Black'
+						black: 'Black',
+						noGames: 'No games'
 					},
 					table: {
 						white: 'White',
@@ -1116,6 +1119,7 @@ const translations: Record<Language, Translations> = {
 						draws: 'Draws',
 						losses: 'Losses'
 					},
+					loading: 'Loading opponent statistics...',
 					noOpponents: 'No opponents found',
 					ratingNote: 'Latest ratings shown (may differ from game-time ratings)'
 				},
@@ -1841,7 +1845,8 @@ const translations: Record<Language, Translations> = {
 					charts: {
 						all: 'Alla',
 						white: 'Vit',
-						black: 'Svart'
+						black: 'Svart',
+						noGames: 'Inga partier'
 					},
 					table: {
 						white: 'Vit',
@@ -1856,6 +1861,7 @@ const translations: Record<Language, Translations> = {
 						draws: 'Remier',
 						losses: 'Förluster'
 					},
+					loading: 'Laddar motståndarstatistik...',
 					noOpponents: 'Inga motståndare funna',
 					ratingNote: 'Senaste rating visas (kan skilja sig från rating vid partitillfället)'
 				},
