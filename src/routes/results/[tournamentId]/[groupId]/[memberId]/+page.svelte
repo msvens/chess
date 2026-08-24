@@ -390,8 +390,6 @@
 			</div>
 
 			<div class="mt-4 text-center">
-				<!-- /players/[memberId] does not exist yet; it lands with the player
-				     profile slice. The live site has this link too. -->
 				<Link href="/players/{memberId}" color="blue" class="text-sm font-medium">
 					{pd.viewFullProfile}
 				</Link>

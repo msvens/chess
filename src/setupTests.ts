@@ -23,3 +23,16 @@ if (typeof window !== 'undefined') {
 		})
 	});
 }
+
+// jsdom ships no ResizeObserver either, and Svelte 5 implements `bind:clientWidth`
+// and `bind:clientHeight` with one — so any component measuring itself throws on
+// mount without this. Element sizes are all 0 in jsdom regardless, so a stand-in
+// that observes nothing loses no coverage: a test that needs a real size sets the
+// bound value's consequences directly.
+if (typeof window !== 'undefined' && typeof window.ResizeObserver === 'undefined') {
+	window.ResizeObserver = class {
+		observe() {}
+		unobserve() {}
+		disconnect() {}
+	};
+}
