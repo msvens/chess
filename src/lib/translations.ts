@@ -194,7 +194,7 @@ export interface Translations {
 		calendar: {
 			title: string;
 			subtitle: string;
-			placeholder: string;
+			loadError: string;
 			tournamentList: {
 				tournament: string;
 				organizer: string;
@@ -231,6 +231,9 @@ export interface Translations {
 			};
 			moreEvents: string;
 			longerEvent: string;
+			reversedDates: string;
+			viewLabel: string;
+			dayEvents: string;
 			continues: string;
 			dayDetails: {
 				organizer: string;
@@ -939,8 +942,7 @@ const translations: Record<Language, Translations> = {
 			calendar: {
 				title: 'Tournament Calendar',
 				subtitle: 'View the full calendar of chess events and tournaments across Sweden.',
-				placeholder:
-					'Calendar view coming soon. This page will display a comprehensive calendar of all chess events with filtering and search capabilities.',
+				loadError: 'Failed to load tournaments',
 				tournamentList: {
 					tournament: 'Tournament',
 					organizer: 'Organizer',
@@ -977,6 +979,9 @@ const translations: Record<Language, Translations> = {
 				},
 				moreEvents: '+{count} more',
 				longerEvent: 'Longer event',
+				reversedDates: 'End date is before the start date — shown on the start date',
+				viewLabel: 'View',
+				dayEvents: '{count} events on {date}',
 				continues: 'continues',
 				dayDetails: {
 					organizer: 'Organizer',
@@ -1681,8 +1686,7 @@ const translations: Record<Language, Translations> = {
 				title: 'Turneringskalender',
 				subtitle:
 					'Se den fullständiga kalendern för schackevenemang och turneringar över hela Sverige.',
-				placeholder:
-					'Kalendervy kommer snart. Denna sida kommer att visa en omfattande kalender över alla schackevenemang med filtrering och sökfunktioner.',
+				loadError: 'Kunde inte ladda turneringar',
 				tournamentList: {
 					tournament: 'Turnering',
 					organizer: 'Arrangör',
@@ -1719,6 +1723,9 @@ const translations: Record<Language, Translations> = {
 				},
 				moreEvents: '+{count} fler',
 				longerEvent: 'Längre evenemang',
+				reversedDates: 'Slutdatum är före startdatum — visas på startdatumet',
+				viewLabel: 'Vy',
+				dayEvents: '{count} evenemang den {date}',
 				continues: 'fortsätter',
 				dayDetails: {
 					organizer: 'Arrangör',
