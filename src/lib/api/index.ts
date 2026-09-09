@@ -7,3 +7,6 @@ import './init';
 // algorithms, tournament status, prize categories, result codes — lives there
 // and is framework-agnostic.
 export * from '@msvens/schack-se-sdk';
+
+// ChessTools (FIDE) is a second upstream with its own base URL; see `fide.ts`.
+export { fideService } from './fide';
