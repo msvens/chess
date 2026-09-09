@@ -566,6 +566,20 @@ export interface Translations {
 				finePrint: string;
 				calculator: string;
 			};
+			/** Only the headings — the three explanation pages are prose components per language. */
+			basics: { title: string; subtitle: string };
+			calculation: { title: string; subtitle: string };
+			finePrint: { title: string; subtitle: string };
+			expectedScoreWidget: {
+				title: string;
+				yourRating: string;
+				opponentRating: string;
+				yourExpected: string;
+				opponentExpected: string;
+				ratingDifference: string;
+				points: string;
+				capped: string;
+			};
 			calculator: {
 				title: string;
 				player1: string;
@@ -582,7 +596,6 @@ export interface Translations {
 				kFactor: string;
 				auto: string;
 				manual: string;
-				calculate: string;
 				expectedScore: string;
 				ratingChange: string;
 				newRating: string;
@@ -593,25 +606,22 @@ export interface Translations {
 				fideId: string;
 				fideSearch: string;
 				topPlayers: string;
-				firstName: string;
-				lastName: string;
 				search: string;
-				selectPlayer: string;
-				noResults: string;
-				searching: string;
 				enterRating: string;
 				enterSsfId: string;
 				enterFideId: string;
-				fideSearchComingSoon: string;
 				lookingUp: string;
 				playerNotFound: string;
 				selectTopPlayer: string;
 				loadingTopPlayers: string;
 				noOfficialRating: string;
 				removeCap: string;
-				uncapped: string;
+				/** Shown over the results when the cap is off and would have applied; `{difference}`. */
+				uncappedNote: string;
 				performanceRating: string;
 				autoHint: string;
+				/** Suffix on the K line when the K came from an SSF profile. */
+				fromProfile: string;
 			};
 		};
 		junior: {
@@ -1310,6 +1320,22 @@ const translations: Record<Language, Translations> = {
 					finePrint: 'Fine Print',
 					calculator: 'Calculator'
 				},
+				basics: { title: 'Elo Basics', subtitle: 'Understanding chess ratings' },
+				calculation: { title: 'The Formula', subtitle: 'How Elo ratings are calculated' },
+				finePrint: {
+					title: 'Fine Print',
+					subtitle: 'Qualification rules, K-factors, and edge cases'
+				},
+				expectedScoreWidget: {
+					title: 'Try It: Expected Score',
+					yourRating: 'Your rating',
+					opponentRating: 'Opponent rating',
+					yourExpected: 'Your expected score:',
+					opponentExpected: 'Opponent expected score:',
+					ratingDifference: 'Rating difference',
+					points: 'points',
+					capped: '(capped at 400)'
+				},
 				calculator: {
 					title: 'Elo Calculator',
 					player1: 'White',
@@ -1326,7 +1352,6 @@ const translations: Record<Language, Translations> = {
 					kFactor: 'K-Factor',
 					auto: 'Auto',
 					manual: 'Manual',
-					calculate: 'Calculate',
 					expectedScore: 'Expected Score',
 					ratingChange: 'Rating Change',
 					newRating: 'New Rating',
@@ -1337,25 +1362,21 @@ const translations: Record<Language, Translations> = {
 					fideId: 'FIDE Id',
 					fideSearch: 'FIDE Search',
 					topPlayers: 'Top Players',
-					firstName: 'First name',
-					lastName: 'Last name',
 					search: 'Search',
-					selectPlayer: 'Select a player',
-					noResults: 'No players found',
-					searching: 'Searching...',
 					enterRating: 'Enter rating',
 					enterSsfId: 'Enter SSF ID',
 					enterFideId: 'Enter FIDE ID',
-					fideSearchComingSoon: 'FIDE search is not yet available',
 					lookingUp: 'Looking up...',
 					playerNotFound: 'Player not found',
 					selectTopPlayer: 'Select a top player',
 					loadingTopPlayers: 'Loading top players...',
 					noOfficialRating: 'No official Elo \u2014 using default rating of 1400',
 					removeCap: 'Remove 400-point cap',
-					uncapped: 'Uncapped',
+					uncappedNote: 'Uncapped \u2014 rating difference {difference} (normally capped at 400)',
 					performanceRating: 'Performance',
-					autoHint: "Uses the SSF player's K-factor when available, otherwise estimates from rating"
+					autoHint:
+						"Uses the SSF player's K-factor when available, otherwise estimates from rating",
+					fromProfile: 'profile'
 				}
 			},
 			junior: {
@@ -2054,6 +2075,22 @@ const translations: Record<Language, Translations> = {
 					finePrint: 'Detaljerna',
 					calculator: 'Kalkylator'
 				},
+				basics: { title: 'Elo-grunder', subtitle: 'Förstå schackratingar' },
+				calculation: { title: 'Formeln', subtitle: 'Hur Elo-rating beräknas' },
+				finePrint: {
+					title: 'Detaljerna',
+					subtitle: 'Kvalificeringsregler, K-faktorer och specialfall'
+				},
+				expectedScoreWidget: {
+					title: 'Testa: Förväntat resultat',
+					yourRating: 'Din rating',
+					opponentRating: 'Motståndarens rating',
+					yourExpected: 'Ditt förväntade resultat:',
+					opponentExpected: 'Motståndarens förväntade resultat:',
+					ratingDifference: 'Ratingskillnad',
+					points: 'poäng',
+					capped: '(begränsad till 400)'
+				},
 				calculator: {
 					title: 'Elo-kalkylator',
 					player1: 'Vit',
@@ -2070,7 +2107,6 @@ const translations: Record<Language, Translations> = {
 					kFactor: 'K-faktor',
 					auto: 'Auto',
 					manual: 'Manuell',
-					calculate: 'Beräkna',
 					expectedScore: 'Förväntat resultat',
 					ratingChange: 'Ratingändring',
 					newRating: 'Ny rating',
@@ -2081,26 +2117,22 @@ const translations: Record<Language, Translations> = {
 					fideId: 'FIDE-Id',
 					fideSearch: 'FIDE-sök',
 					topPlayers: 'Toppspelare',
-					firstName: 'Förnamn',
-					lastName: 'Efternamn',
 					search: 'Sök',
-					selectPlayer: 'Välj en spelare',
-					noResults: 'Inga spelare hittades',
-					searching: 'Söker...',
 					enterRating: 'Ange rating',
 					enterSsfId: 'Ange SSF-ID',
 					enterFideId: 'Ange FIDE-ID',
-					fideSearchComingSoon: 'FIDE-sökning är inte tillgänglig ännu',
 					lookingUp: 'Söker...',
 					playerNotFound: 'Spelare hittades inte',
 					selectTopPlayer: 'Välj en toppspelare',
 					loadingTopPlayers: 'Laddar toppspelare...',
 					noOfficialRating: 'Ingen officiell Elo \u2014 använder standardrating 1400',
 					removeCap: 'Ta bort 400-poängsgräns',
-					uncapped: 'Utan gräns',
+					uncappedNote:
+						'Utan gräns \u2014 ratingskillnad {difference} (normalt begränsad till 400)',
 					performanceRating: 'Prestation',
 					autoHint:
-						'Använder SSF-spelarens K-faktor om tillgänglig, annars uppskattas den utifrån rating'
+						'Använder SSF-spelarens K-faktor om tillgänglig, annars uppskattas den utifrån rating',
+					fromProfile: 'profil'
 				}
 			},
 			junior: {
