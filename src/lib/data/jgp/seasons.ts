@@ -14,8 +14,7 @@
 import type { JgpSeason } from './types';
 
 /**
- * 2026 open — snapshot of an ongoing season (official standings dated
- * 2026-06-06, 5 tournaments so far). Age dispensations and club exceptions are
+ * 2026 open — an ongoing season. Age dispensations and club exceptions are
  * filled in age group by age group as verification proceeds; the official 2026
  * dispensation document is used afterwards as a cross-check.
  */
@@ -116,6 +115,36 @@ const OPEN_2026: JgpSeason = {
 				{ groupId: 18594, isBeginner: false, label: 'D', fromYear: 2015, toYear: 2016 },
 				{ groupId: 18595, isBeginner: false, label: 'E', fromYear: 2017, toYear: 9999 }
 			]
+		},
+		{
+			label: 'Skärgårdens JGP 2026',
+			shortLabel: 'Skärgården',
+			date: '2026-08-22',
+			tournamentId: 6987,
+			groups: [
+				{ groupId: 18928, isBeginner: false, label: 'A/B', fromYear: 2006, toYear: 2012 },
+				{ groupId: 18929, isBeginner: false, label: 'C', fromYear: 2013, toYear: 2015 },
+				{ groupId: 18930, isBeginner: false, label: 'D', fromYear: 2016, toYear: 9999 },
+				// E is "Allmän, med klocka" (2014-2016) and F "Nybörjare, utan klocka" —
+				// both cut across the age classes, so neither counts on the open ladder.
+				// Same treatment as Trojanska Hästen's E/F.
+				{ groupId: 18931, isBeginner: true, label: 'E' },
+				{ groupId: 18932, isBeginner: true, label: 'F' }
+			]
+		},
+		{
+			label: 'Junior-DM i Blixt 2026',
+			shortLabel: 'JDM Blixt',
+			date: '2026-09-06',
+			tournamentId: 7106,
+			// Like JDM Snabb: no beginner groups, class E is a counted youngest age class.
+			groups: [
+				{ groupId: 19132, isBeginner: false, label: 'A', fromYear: 2006, toYear: 2009 },
+				{ groupId: 19133, isBeginner: false, label: 'B', fromYear: 2010, toYear: 2012 },
+				{ groupId: 19134, isBeginner: false, label: 'C', fromYear: 2013, toYear: 2014 },
+				{ groupId: 19135, isBeginner: false, label: 'D', fromYear: 2015, toYear: 2016 },
+				{ groupId: 19136, isBeginner: false, label: 'E', fromYear: 2017, toYear: 9999 }
+			]
 		}
 	],
 	// Filled in during verification, age group by age group (cross-checked
@@ -179,7 +208,6 @@ const GIRLS_2026: JgpSeason = {
 	year: 2026,
 	division: 'girls',
 	scoring: 'percentile',
-	estimated: true,
 	tournaments: [
 		{
 			label: 'Tjejträffen 2026',
@@ -272,6 +300,34 @@ const GIRLS_2026: JgpSeason = {
 				{ groupId: 18594, isBeginner: false, klass: 'd', rounds: 6, label: 'D' },
 				// JDM has no beginner scoring ⇒ class E is a normal percentile klass.
 				{ groupId: 18595, isBeginner: false, klass: 'e', rounds: 6, label: 'E' }
+			]
+		},
+		{
+			label: 'Skärgårdens JGP 2026',
+			shortLabel: 'Skärgården',
+			date: '2026-08-22',
+			tournamentId: 6987,
+			groups: [
+				{ groupId: 18928, isBeginner: false, klass: 'ab', rounds: 7, label: 'A/B' },
+				{ groupId: 18929, isBeginner: false, klass: 'c', rounds: 7, label: 'C' },
+				{ groupId: 18930, isBeginner: false, klass: 'd', rounds: 7, label: 'D' },
+				// "Klass E (Allmän, med klocka)" → öppen/allmän ⇒ klass "y".
+				{ groupId: 18931, isBeginner: false, klass: 'y', rounds: 6, label: 'E' },
+				{ groupId: 18932, isBeginner: true, klass: 'z', rounds: 5, label: 'F' }
+			]
+		},
+		{
+			label: 'Junior-DM i Blixt 2026',
+			shortLabel: 'JDM Blixt',
+			date: '2026-09-06',
+			tournamentId: 7106,
+			groups: [
+				{ groupId: 19132, isBeginner: false, klass: 'a', rounds: 9, label: 'A' },
+				{ groupId: 19133, isBeginner: false, klass: 'b', rounds: 9, label: 'B' },
+				{ groupId: 19134, isBeginner: false, klass: 'c', rounds: 9, label: 'C' },
+				{ groupId: 19135, isBeginner: false, klass: 'd', rounds: 9, label: 'D' },
+				// JDM has no beginner scoring => class E is a normal percentile klass.
+				{ groupId: 19136, isBeginner: false, klass: 'e', rounds: 9, label: 'E' }
 			]
 		}
 	],

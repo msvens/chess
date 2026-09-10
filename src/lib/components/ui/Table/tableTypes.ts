@@ -16,8 +16,14 @@ export interface TableColumn<T> {
 
 	/** Header text. 86 of the Next app's 87 columns are a plain string. */
 	header?: string;
-	/** Escape hatch for a header needing markup. Wins over `header`. */
-	headerSnippet?: Snippet;
+	/**
+	 * Escape hatch for a header needing markup. Wins over `header`.
+	 *
+	 * Receives its own column, so one snippet can serve a set of columns built in
+	 * a loop — the JGP standings number their tournament columns and link each to
+	 * its results page, and look the tournament up by column id.
+	 */
+	headerSnippet?: Snippet<[TableColumn<T>]>;
 
 	/**
 	 * Where the cell's value comes from: a property name, or a function of the row.

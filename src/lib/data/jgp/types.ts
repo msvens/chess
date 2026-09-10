@@ -144,12 +144,6 @@ export interface JgpSeason {
 	 * link in the UI; omit for seasons whose finals hasn't happened yet.
 	 */
 	finalsTournamentId?: number;
-	/**
-	 * Marks a season whose inputs are estimated rather than authoritative — the
-	 * dispensations/club-exceptions were deduced from the published standings and
-	 * it may use the legacy `averaged` tie scoring. The UI shows a caveat banner.
-	 */
-	estimated?: boolean;
 	/** Constituent tournaments, in the order they should appear as columns. */
 	tournaments: JgpTournamentRef[];
 	/** Birth-year age classes — open only; omit/empty for girls. */

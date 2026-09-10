@@ -211,8 +211,9 @@
 							>
 								{#if sortable}
 									<span class="inline-flex items-center gap-1">
-										{#if column.headerSnippet}{@render column.headerSnippet()}{:else}{column.header ??
-												''}{/if}
+										{#if column.headerSnippet}{@render column.headerSnippet(
+												column
+											)}{:else}{column.header ?? ''}{/if}
 										{#if active}
 											<span class="text-blue-600 dark:text-blue-400">
 												{sort?.direction === 'asc' ? '▲' : '▼'}
@@ -220,7 +221,7 @@
 										{/if}
 									</span>
 								{:else if column.headerSnippet}
-									{@render column.headerSnippet()}
+									{@render column.headerSnippet(column)}
 								{:else}
 									{column.header ?? ''}
 								{/if}
