@@ -26,6 +26,8 @@
 		fullWidth?: boolean;
 		compact?: boolean;
 		class?: string;
+		/** Tooltip, for a button whose label cannot say the whole story. */
+		title?: string;
 	}
 
 	let {
@@ -37,7 +39,8 @@
 		disabled = false,
 		fullWidth = false,
 		compact = false,
-		class: cls = ''
+		class: cls = '',
+		title
 	}: ButtonProps = $props();
 
 	// Spelled out in full — Tailwind's scanner cannot see composed class names.
@@ -97,6 +100,6 @@
 	);
 </script>
 
-<button {type} {disabled} {onclick} class={classes}>
+<button {type} {disabled} {onclick} {title} class={classes}>
 	{@render children()}
 </button>
