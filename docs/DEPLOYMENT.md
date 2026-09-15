@@ -135,6 +135,19 @@ real `pnpm build` output. Confirmed:
 
 ## Deploy
 
+The contact page's Formspree endpoint is **inlined at build time**, so it must be in the
+environment of the machine that runs `pnpm build`, not on the host. Put it in a
+gitignored `.env.local` in the repo root:
+
+```bash
+VITE_FORMSPREE_ENDPOINT=https://formspree.io/f/<form-id>
+```
+
+It replaces the Next app's `NEXT_PUBLIC_FORMSPREE_ENDPOINT`, which lived in
+`/usr/share/chess/.env.local` on the host and is no longer read. A build without it still
+succeeds, and the contact page shows an "under construction" placeholder instead of the
+form, so check the page after deploying.
+
 Build, ship the directory, reload:
 
 ```bash

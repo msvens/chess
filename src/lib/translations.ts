@@ -185,6 +185,13 @@ export interface Translations {
 				success: string;
 				error: string;
 			};
+			/** Shown instead of the form when no endpoint is configured. */
+			underConstruction: string;
+		};
+		changelog: {
+			title: string;
+			subtitle: string;
+			unreleased: string;
 		};
 		events: {
 			title: string;
@@ -941,7 +948,13 @@ const translations: Record<Language, Translations> = {
 					sending: 'Sending...',
 					success: "Thank you for your feedback! We'll get back to you if needed.",
 					error: 'Something went wrong. Please try again later.'
-				}
+				},
+				underConstruction: 'Under construction. Check back soon!'
+			},
+			changelog: {
+				title: 'Changelog',
+				subtitle: 'All notable changes to msvens chess.',
+				unreleased: 'Unreleased'
 			},
 			events: {
 				title: 'Upcoming Events',
@@ -1695,7 +1708,13 @@ const translations: Record<Language, Translations> = {
 					sending: 'Skickar...',
 					success: 'Tack för din feedback! Vi återkommer om det behövs.',
 					error: 'Något gick fel. Försök igen senare.'
-				}
+				},
+				underConstruction: 'Under uppbyggnad. Titta in snart igen!'
+			},
+			changelog: {
+				title: 'Ändringslogg',
+				subtitle: 'Alla noterbara ändringar i msvens schack.',
+				unreleased: 'Ej släppt'
 			},
 			events: {
 				title: 'Kommande Evenemang',
