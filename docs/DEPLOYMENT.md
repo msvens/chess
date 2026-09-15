@@ -148,6 +148,19 @@ It replaces the Next app's `NEXT_PUBLIC_FORMSPREE_ENDPOINT`, which lived in
 succeeds, and the contact page shows an "under construction" placeholder instead of the
 form, so check the page after deploying.
 
+The map tiles need a CARTO basemaps key, also inlined at build time. It goes in
+`.env.production.local`, which only `vite build` reads, **not** in `.env.local`:
+
+```bash
+VITE_CARTO_KEY=<key>
+```
+
+The key is referrer-restricted to `*.msvens.com`, and CARTO answers a keyed tile from any
+other origin, localhost included, with a 403 and no map at all. `.env.local` is read by the
+dev server too, so a key there breaks the maps locally. Without the key, both maps still work
+but show CARTO's "API KEY REQUIRED" watermark. The value is deliberately not in this repo,
+which is public; it lives with the configs.
+
 Build, ship the directory, reload:
 
 ```bash
