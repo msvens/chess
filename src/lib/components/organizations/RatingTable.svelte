@@ -17,9 +17,11 @@
 		players: PlayerInfoDto[];
 		ratingType: RatingType;
 		loading: boolean;
+		/** Shown instead of the table when the list could not be fetched. */
+		error?: string;
 	}
 
-	let { players, ratingType, loading }: RatingTableProps = $props();
+	let { players, ratingType, loading, error }: RatingTableProps = $props();
 
 	let t = $derived(getTranslation(language.current));
 	let labels = $derived(t.pages.organizations.ratingList);
@@ -73,6 +75,7 @@
 	data={ranked}
 	{columns}
 	{loading}
+	{error}
 	emptyMessage={labels.noPlayers}
 	loadingMessage={labels.loading}
 	onRowClick={(player) => player.id && goto(`/players/${player.id}`)}
