@@ -726,6 +726,8 @@ export interface Translations {
 				};
 				loading: string;
 				noPlayers: string;
+				loadFailed: string;
+				retry: string;
 			};
 			ssf: {
 				title: string;
@@ -1491,8 +1493,10 @@ const translations: Record<Language, Translations> = {
 						lastName: 'LAST NAME',
 						rating: 'Elo 1/1'
 					},
-					loading: 'Loading ratings...',
-					noPlayers: 'No players found'
+					loading: 'Loading ratings, be patient...',
+					noPlayers: 'No players found',
+					loadFailed: 'Could not load the ratings',
+					retry: 'Try again'
 				},
 				ssf: {
 					title: 'SSF National Ranking',
@@ -2258,8 +2262,10 @@ const translations: Record<Language, Translations> = {
 						lastName: 'EFTERNAMN',
 						rating: 'Elo 1/1'
 					},
-					loading: 'Laddar rating...',
-					noPlayers: 'Inga spelare hittades'
+					loading: 'Laddar rating, ha tålamod...',
+					noPlayers: 'Inga spelare hittades',
+					loadFailed: 'Kunde inte hämta ratingen',
+					retry: 'Försök igen'
 				},
 				ssf: {
 					title: 'SSF Nationell Ranking',
