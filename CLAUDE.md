@@ -87,9 +87,9 @@ Club and district data is static JSON loaded once at startup, then queried synch
 
 # Deployment
 
-Production topology and the nginx configuration this SPA needs are documented in
-`docs/DEPLOYMENT.md`. The live configs live in the separate `configs` repo and are applied
-from there.
+Production serves the built static files directly from nginx, which also terminates the
+two `/api/*` proxies the app calls client-side. There is no application server. The live
+configuration is maintained outside this repo.
 
 # Behavior Rules
 

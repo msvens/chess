@@ -26,8 +26,9 @@ every refresh, so they are not committed; a fresh clone has none until you run
 rather than starting an app whose club lookups all render `Org 1234`.
 
 In production the daily `chess-org-update.service` timer regenerates them on the
-host. See `docs/DEPLOYMENT.md` — under a static build the script must write into
-the _served_ directory, not a source one.
+host. Under a static build the script must write into the _served_ directory, not a
+source one — `static/` is copied into the bundle at build time, so writing there
+would never reach the live site.
 
 Districts and clubs change a few times a year, so re-running is rarely urgent.
 

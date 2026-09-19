@@ -7,8 +7,9 @@
 
 	let t = $derived(getTranslation(language.current).pages.contact);
 
-	// Inlined at build time, replacing Next's NEXT_PUBLIC_FORMSPREE_ENDPOINT. A
-	// build without it shows the placeholder — see docs/DEPLOYMENT.md.
+	// Inlined at build time from `VITE_FORMSPREE_ENDPOINT`, replacing Next's
+	// NEXT_PUBLIC_ variable. A build without it shows the placeholder instead of
+	// a form that could only fail.
 	const endpoint: string | undefined = import.meta.env.VITE_FORMSPREE_ENDPOINT;
 </script>
 

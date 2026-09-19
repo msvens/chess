@@ -6,8 +6,8 @@
  * Since August 2026 CARTO stamps "API KEY REQUIRED" across keyless tiles. A key
  * removes it, but ours is referrer-restricted to the production domain, and a
  * keyed tile requested from anywhere else — localhost included, or with no
- * referrer — is a 403 with no map at all. So only production builds get the key
- * (see docs/DEPLOYMENT.md), and the dev server keeps watermarked tiles.
+ * referrer — is a 403 with no map at all. So the key is set only in the production
+ * build environment, and the dev server keeps watermarked tiles.
  */
 
 const ATTRIBUTION =

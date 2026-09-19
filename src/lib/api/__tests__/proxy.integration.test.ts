@@ -4,8 +4,8 @@
  *
  * The app only ever calls same-origin `/api/chess/v1/…` and `/api/chesstools/…`;
  * something has to map those onto the real hosts. In dev that is `server.proxy` in
- * vite.config.ts, in production the equivalent nginx `location` blocks
- * (docs/DEPLOYMENT.md). This suite drives the dev half through a real dev server.
+ * vite.config.ts, in production the equivalent nginx `location` blocks. This suite
+ * drives the dev half through a real dev server.
  *
  * Why it earns its keep: the rewrite is a one-line regex per prefix, it is invisible
  * to typechecking and unit tests, and getting it wrong fails in the least obvious
@@ -13,8 +13,8 @@
  * earlier version of the geocode scripts shipped exactly that class of bug (a path
  * updated in the comment but not the code), found only by running it.
  *
- * The assertions mirror the nginx ones in docs/DEPLOYMENT.md, so if the two
- * implementations ever drift, this is what says so.
+ * The assertions mirror the production nginx rules, so if the two implementations
+ * ever drift, this is what says so.
  *
  * Excluded from `pnpm test`; runs via `pnpm test:integration`.
  */
@@ -108,7 +108,7 @@ describe('app routes vs /api', () => {
 	// production there is no server: nginx does `try_files $uri $uri/ /index.html`,
 	// so ANY unmatched path serves the app and the client router resolves it. That
 	// prod-only fallback cannot be observed from here — it is verified against the
-	// built output behind nginx (see docs/DEPLOYMENT.md).
+	// built output behind nginx.
 	//
 	// So this test does not mean deep links are broken. It pins the dev contract, and
 	// as routes get ported it will start failing for the right reason: the route now
