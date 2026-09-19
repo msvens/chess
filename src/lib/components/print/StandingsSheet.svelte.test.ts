@@ -1,7 +1,7 @@
 import { render, screen, within } from '@testing-library/svelte';
 import { describe, expect, it } from 'vitest';
 import { createRawSnippet } from 'svelte';
-import type { TournamentEndResultDto } from '$lib/api';
+import { NO_PLACE, RatingAlgorithm, type TournamentEndResultDto } from '$lib/api';
 import StandingsSheet from './StandingsSheet.svelte';
 
 const sheetHeader = createRawSnippet(() => ({ render: () => '<header>Test Open</header>' }));
@@ -68,5 +68,57 @@ describe('StandingsSheet', () => {
 	it('says so when there are no standings', () => {
 		setup([]);
 		expect(screen.getByText('Ingen ställning tillgänglig')).toBeInTheDocument();
+	});
+});
+
+describe('StandingsSheet before a group has standings', () => {
+	const unplaced = (contenderId: number, lastName: string, rating?: number) =>
+		({
+			contenderId,
+			place: NO_PLACE,
+			points: 0,
+			secPoints: 0,
+			playerInfo: { id: contenderId, firstName: 'A', lastName, elo: { rating } }
+		}) as TournamentEndResultDto;
+
+	const seededSetup = (standings: TournamentEndResultDto[]) =>
+		render(StandingsSheet, {
+			props: {
+				standings,
+				fontPx: 13,
+				sheetHeader,
+				groupSuffix: '',
+				rankingAlgorithm: RatingAlgorithm.STANDARD_ELO
+			}
+		});
+
+	it('prints a start list seeded by rating instead of the API order', () => {
+		seededSetup([
+			unplaced(1, 'Weak', 1200),
+			unplaced(2, 'Strong', 2400),
+			unplaced(3, 'Middling', 1800)
+		]);
+		expect(bodyRows().map((r) => within(r).getAllByRole('cell')[1].textContent?.trim())).toEqual([
+			'A Strong',
+			'A Middling',
+			'A Weak'
+		]);
+	});
+
+	it('numbers the start list by seed position, never printing the sentinel', () => {
+		seededSetup([unplaced(1, 'Weak', 1200), unplaced(2, 'Strong', 2400)]);
+		expect(bodyRows().map((r) => within(r).getAllByRole('cell')[0].textContent?.trim())).toEqual([
+			'1',
+			'2'
+		]);
+		expect(screen.queryByText(String(NO_PLACE))).not.toBeInTheDocument();
+	});
+
+	it('puts unrated players last', () => {
+		seededSetup([unplaced(1, 'Unrated'), unplaced(2, 'Rated', 1500)]);
+		expect(bodyRows().map((r) => within(r).getAllByRole('cell')[1].textContent?.trim())).toEqual([
+			'A Rated',
+			'A Unrated'
+		]);
 	});
 });

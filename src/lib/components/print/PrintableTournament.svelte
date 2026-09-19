@@ -104,6 +104,7 @@
 			/>
 			<StandingsSheet
 				standings={group.standings}
+				rankingAlgorithm={group.group.rankingAlgorithm}
 				fontPx={effectiveFontPx(fontMode, auto, standingsRowCount(group))}
 				{sheetHeader}
 				{groupSuffix}
