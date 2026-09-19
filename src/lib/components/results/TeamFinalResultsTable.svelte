@@ -13,7 +13,7 @@
 		DensityThresholds,
 		TableDensity
 	} from '$lib/components/ui/Table/tableTypes';
-	import { createTeamNameFormatter, type TeamTournamentEndResultDto } from '$lib/api';
+	import { createTeamNameFormatter, isUnplaced, type TeamTournamentEndResultDto } from '$lib/api';
 	import { language } from '$lib/stores/language.svelte';
 	import { getTranslation } from '$lib/translations';
 
@@ -49,7 +49,10 @@
 		{
 			id: 'pos',
 			header: labels.pos,
-			accessor: 'place',
+			// `place` is the NO_PLACE sentinel until the group produces standings.
+			// Team rows carry no rating, so there is nothing to seed them by — a
+			// dash is honest where a row number would imply a ranking.
+			accessor: (row) => (isUnplaced(row) ? '-' : row.place),
 			noWrap: true,
 			sortValue: (row) => row.place
 		},

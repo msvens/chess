@@ -5,7 +5,7 @@
 	 */
 	import type { Snippet } from 'svelte';
 	import PrintSheet from './PrintSheet.svelte';
-	import { createTeamNameFormatter, type TeamTournamentEndResultDto } from '$lib/api';
+	import { createTeamNameFormatter, isUnplaced, type TeamTournamentEndResultDto } from '$lib/api';
 	import { getOrganizationsState } from '$lib/stores/organizations.svelte';
 	import { language } from '$lib/stores/language.svelte';
 	import { getTranslation } from '$lib/translations';
@@ -42,7 +42,8 @@
 
 {#snippet row(entry: TeamTournamentEndResultDto)}
 	<tr class="border-b border-gray-300">
-		<td class="py-0.5 pr-2 text-right tabular-nums">{entry.place}</td>
+		<!-- Team rows carry no rating, so an unstarted group cannot be seeded. -->
+		<td class="py-0.5 pr-2 text-right tabular-nums">{isUnplaced(entry) ? '-' : entry.place}</td>
 		<td class="py-0.5 pr-2">{teamName(entry.contenderId, entry.teamNumber)}</td>
 		<td class="py-0.5 pr-2 text-right font-semibold tabular-nums">{entry.points}</td>
 		<td class="py-0.5 text-right tabular-nums">{entry.secPoints?.toFixed(1)}</td>

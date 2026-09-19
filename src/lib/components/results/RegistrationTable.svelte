@@ -4,7 +4,11 @@
 	 * Ports `components/results/RegistrationTable.tsx`.
 	 *
 	 * No scores yet, so the columns are who has entered and their rating; the
-	 * position column is entry order, not a standing.
+	 * position column is the seed number, not a standing.
+	 *
+	 * The API hands the rows over in arbitrary order, so they are seeded here —
+	 * by the same rating the Rating column shows, which is the order the official
+	 * start list is in. See `$lib/results/seeding`.
 	 */
 	import Table from '$lib/components/ui/Table/Table.svelte';
 	import type {
@@ -18,6 +22,7 @@
 		getPlayerRatingByAlgorithm,
 		type TournamentEndResultDto
 	} from '$lib/api';
+	import { seedOrder } from '$lib/results/seeding';
 	import { language } from '$lib/stores/language.svelte';
 	import { getTranslation } from '$lib/translations';
 
@@ -46,10 +51,12 @@
 
 	const idOf = (row: TournamentEndResultDto) => row.playerInfo?.id ?? row.contenderId;
 
-	// Entry order is the row's position in the API's response — there is no field
-	// for it — so it is read from the index rather than added to the row, which
-	// also keeps `onRowClick` handing back the untouched DTO.
-	let order = $derived(new Map(results.map((row, i) => [idOf(row), i + 1])));
+	let seeded = $derived(seedOrder(results, rankingAlgorithm));
+
+	// The seed number is the row's position in the seeded order — there is no
+	// field for it — so it is read from the index rather than added to the row,
+	// which also keeps `onRowClick` handing back the untouched DTO.
+	let order = $derived(new Map(seeded.map((row, i) => [idOf(row), i + 1])));
 
 	let columns = $derived<TableColumn<TournamentEndResultDto>[]>([
 		{
@@ -93,7 +100,7 @@
 </script>
 
 <Table
-	data={results}
+	data={seeded}
 	{columns}
 	{loading}
 	{error}

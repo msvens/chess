@@ -37,6 +37,7 @@
 		createTeamNameFormatter,
 		getOpponentKind,
 		getTournamentStatus,
+		hasStandings,
 		normalizeEloLookupDate,
 		resolvePrizeMembers,
 		type TournamentRoundResultDto
@@ -114,6 +115,23 @@
 	let isNotStarted = $derived(status === 'upcoming');
 	let isFinished = $derived(status === 'finished');
 
+	// --- Standings, or a start list ---
+	//
+	// Every row carries the NO_PLACE sentinel until a group produces standings, so
+	// "rows exist" and "rows are placed" are different questions and the page needs
+	// both. Status alone is not enough: a group can be past its start date with
+	// nothing published yet — which is a start list, not a standing — while one
+	// that has ended without results is neither, and keeps its message.
+	let hasRows = $derived(
+		isTeam ? results.teamResults.length > 0 : results.individualResults.length > 0
+	);
+	let placementsExist = $derived(
+		isTeam ? hasStandings(results.teamResults) : hasStandings(results.individualResults)
+	);
+	let groupEnded = $derived(hasGroupEnded(results.groupEndDate, new Date()));
+	/** Show the entry list, seeded by rating, rather than a placement table. */
+	let showSeedList = $derived(isNotStarted || (hasRows && !placementsExist && !groupEnded));
+
 	// --- Class and group selectors ---
 
 	let allClasses = $derived(flattenClasses(results.tournament));
@@ -153,7 +171,11 @@
 	 * toggle meaningless.
 	 */
 	let womenFilterEligible = $derived(
-		!isTeam && !isNotStarted && womenIndex.count > 0 && womenIndex.count < womenIndex.total
+		!isTeam &&
+			!showSeedList &&
+			placementsExist &&
+			womenIndex.count > 0 &&
+			womenIndex.count < womenIndex.total
 	);
 	// Also covers a stale `womenOnly` carried into a group without the toggle.
 	let showWomenOnly = $derived(womenFilterEligible && womenOnly);
@@ -188,10 +210,6 @@
 
 	// --- Round playback ---
 
-	let hasStandings = $derived(
-		isTeam ? results.teamResults.length > 0 : results.individualResults.length > 0
-	);
-
 	/**
 	 * Team names for the playback snapshots, built from the *official* standings
 	 * rather than from the snapshot rows — so a club's Roman numerals are the same
@@ -207,7 +225,7 @@
 	 * is excluded because no standings are fetched for it at all.
 	 */
 	let playbackEligible = $derived(
-		isFinished && !results.isIndividuallyPairedTeam && hasStandings && sortedRounds.length >= 2
+		isFinished && !results.isIndividuallyPairedTeam && placementsExist && sortedRounds.length >= 2
 	);
 	let showPlayback = $derived(playbackEligible && playback.enabled);
 	let activeSnapshot = $derived(playback.snapshot(groupId, activeRound));
@@ -284,8 +302,8 @@
 	/** A started group with nothing to show: cancelled, or simply not in yet. */
 	let missingResultsMessage = $derived.by(() => {
 		if (isNotStarted || results.loading || results.error || !results.groupStartDate) return null;
-		if (hasStandings) return null;
-		return hasGroupEnded(results.groupEndDate, new Date()) ? 'ended' : 'pending';
+		if (placementsExist || showSeedList) return null;
+		return groupEnded ? 'ended' : 'pending';
 	});
 
 	// --- Side effects the store deliberately does not own ---
@@ -551,7 +569,7 @@
 												'{round}',
 												String(activeRound ?? '')
 											)}
-										{:else if isNotStarted}
+										{:else if showSeedList}
 											{tr.registrationTable.title}
 										{:else if isFinished}
 											{tr.finalResults}
@@ -637,7 +655,7 @@
 								</p>
 							{/if}
 
-							{#if !isTeam && !isNotStarted && prizeTypes.length > 0}
+							{#if !isTeam && !showSeedList && prizeTypes.length > 0}
 								<!-- One dropdown per prize type the group actually offers;
 								     absent for the large majority of tournaments. -->
 								<div class="mb-4 flex flex-wrap items-end gap-3">
@@ -731,7 +749,7 @@
 												)}
 										/>
 									{/if}
-								{:else if isNotStarted}
+								{:else if showSeedList}
 									<RegistrationTable
 										results={results.individualResults}
 										rankingAlgorithm={results.rankingAlgorithm}
@@ -739,7 +757,7 @@
 											row.playerInfo?.id &&
 											goto(`/results/${tournamentId}/${groupId}/${row.playerInfo.id}`)}
 									/>
-								{:else if results.individualResults.length > 0}
+								{:else if placementsExist}
 									<FinalResultsTable
 										results={displayedResults}
 										rankingAlgorithm={results.rankingAlgorithm}

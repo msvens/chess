@@ -13,6 +13,7 @@
 		formatPlayerName,
 		formatRatingWithType,
 		getPlayerRatingByAlgorithm,
+		isUnplaced,
 		type TournamentEndResultDto
 	} from '$lib/api';
 	import { language } from '$lib/stores/language.svelte';
@@ -58,8 +59,12 @@
 			id: 'pos',
 			header: labels.pos,
 			accessor: (row) => {
+				// An unplaced row means the group has no standings; the page routes
+				// those to the seeded start list instead, so this is a backstop that
+				// keeps the NO_PLACE sentinel from ever reaching the screen.
+				const place = isUnplaced(row) ? '-' : row.place;
 				const rank = rankOf(row);
-				return rank == null ? row.place : `${rank} (${row.place})`;
+				return rank == null ? place : `${rank} (${place})`;
 			},
 			noWrap: true,
 			sortValue: (row) => rankOf(row) ?? row.place
