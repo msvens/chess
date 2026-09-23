@@ -431,7 +431,6 @@ export interface Translations {
 			adjudicated: string;
 			externalNotice: {
 				individuallyPairedTeam: { prefix: string; linkLabel: string; suffix: string };
-				looseTeam: { prefix: string; linkLabel: string; suffix: string };
 			};
 			finalResultsTable: {
 				pos: string;
@@ -1199,12 +1198,6 @@ const translations: Record<Language, Translations> = {
 							"This is a team tournament with individual pairings. The team standings aren't available from the data source for this format — see the official results at",
 						linkLabel: 'resultat.schack.se',
 						suffix: '.'
-					},
-					looseTeam: {
-						prefix:
-							"Team names aren't available yet for this format — they appear as `Org <id>` below. See the official results at",
-						linkLabel: 'resultat.schack.se',
-						suffix: 'for the proper names.'
 					}
 				},
 				finalResultsTable: {
@@ -1967,12 +1960,6 @@ const translations: Record<Language, Translations> = {
 							'Detta är en lagturnering med individuell lottning. Lagtabellen är inte tillgänglig från datakällan för detta format — se de officiella resultaten på',
 						linkLabel: 'resultat.schack.se',
 						suffix: '.'
-					},
-					looseTeam: {
-						prefix:
-							'Lagnamn är inte tillgängliga ännu för detta format — de visas som `Org <id>` nedan. Se de officiella resultaten på',
-						linkLabel: 'resultat.schack.se',
-						suffix: 'för korrekta namn.'
 					}
 				},
 				finalResultsTable: {

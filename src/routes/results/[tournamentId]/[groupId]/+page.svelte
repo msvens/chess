@@ -34,7 +34,6 @@
 	import TeamRoundResults from '$lib/components/results/TeamRoundResults.svelte';
 	import TeamRoundStandingsTable from '$lib/components/results/TeamRoundStandingsTable.svelte';
 	import {
-		createTeamNameFormatter,
 		getOpponentKind,
 		getTournamentStatus,
 		hasStandings,
@@ -44,6 +43,7 @@
 	} from '$lib/api';
 	import { findClassForGroup, firstGroupOf, flattenClasses } from '$lib/results/classTree';
 	import { formatTeamId } from '$lib/results/teamId';
+	import { teamNameOrId } from '$lib/results/teamNames';
 	import { hasGroupEnded, isSingleDayToday } from '$lib/results/groupDates';
 	import { formatIndividualRowResult, getResultLabels } from '$lib/results/formatResult';
 	import {
@@ -211,13 +211,11 @@
 	// --- Round playback ---
 
 	/**
-	 * Team names for the playback snapshots, built from the *official* standings
-	 * rather than from the snapshot rows — so a club's Roman numerals are the same
-	 * in a round snapshot as in the final table.
+	 * Team names, built from the *official* standings rather than from snapshot or
+	 * round rows — so a club's Roman numerals are the same everywhere, and a school
+	 * team resolves at all: only the standings carry its name.
 	 */
-	let formatTeamName = $derived(
-		createTeamNameFormatter(results.teamResults, (clubId) => results.getClubName(clubId))
-	);
+	let formatTeamName = $derived(teamNameOrId(results.teamResults));
 	/**
 	 * Restricted to finished events on purpose: while one is running, the
 	 * live-updates toggle occupies this spot, and offering "watch it change" and
@@ -544,18 +542,6 @@
 						url={externalUrl}
 					/>
 				{:else}
-					{#if results.isLooseTeamTournament}
-						<!-- Skol-SM and the like: the numbers are right, only the team
-						     names degrade to placeholders, so this sits above the data
-						     rather than replacing it. -->
-						<ExternalResultsNotice
-							prefix={tr.externalNotice.looseTeam.prefix}
-							linkLabel={tr.externalNotice.looseTeam.linkLabel}
-							suffix={tr.externalNotice.looseTeam.suffix}
-							url={externalUrl}
-						/>
-					{/if}
-
 					{#if !results.loading}
 						<div class="mb-6">
 							<!-- Top-aligned rather than centred: the left column can carry
@@ -741,7 +727,6 @@
 									{#if results.teamResults.length > 0 || results.error}
 										<TeamFinalResultsTable
 											results={results.teamResults}
-											getClubName={(clubId) => results.getClubName(clubId)}
 											error={results.error ?? undefined}
 											onRowClick={(row) =>
 												goto(
@@ -774,7 +759,7 @@
 							{#if results.teamRoundResults.length > 0}
 								<TeamRoundResults
 									roundResults={results.teamRoundResults}
-									getClubName={(clubId) => results.getClubName(clubId)}
+									{formatTeamName}
 									getPlayerName={(playerId, date) => results.getPlayerName(playerId, date)}
 									getPlayerEloByDate={(playerId, date) =>
 										results.getPlayerEloByDate(playerId, date)}

@@ -30,10 +30,9 @@ function setup(over: Record<string, unknown> = {}) {
 	render(TeamDetailMatches, {
 		props: {
 			matches: rows,
-			allRoundResults: rows,
 			selectedClubId: HOME_CLUB,
 			selectedTeamNumber: 1,
-			getClubName: (id: number) => `Club ${id}`,
+			formatTeamName: (id: number) => `Club ${id}`,
 			getPlayerName: (id: number) => `Player ${id}`,
 			getPlayerEloByDate: (id: number) => `${1500 + id}`,
 			tournamentId: 5814,
@@ -90,10 +89,9 @@ describe('TeamDetailMatches', () => {
 		render(TeamDetailMatches, {
 			props: {
 				matches: rows,
-				allRoundResults: rows,
 				selectedClubId: HOME_CLUB,
 				selectedTeamNumber: 1,
-				getClubName: (id: number) => `Club ${id}`,
+				formatTeamName: (id: number) => `Club ${id}`,
 				getPlayerName: (id: number) => `Player ${id}`,
 				getPlayerEloByDate: () => '-',
 				tournamentId: 5814,
@@ -115,10 +113,9 @@ describe('TeamDetailMatches', () => {
 		render(TeamDetailMatches, {
 			props: {
 				matches: rows,
-				allRoundResults: rows,
 				selectedClubId: HOME_CLUB,
 				selectedTeamNumber: 1,
-				getClubName: (id: number) => `Club ${id}`,
+				formatTeamName: (id: number) => `Club ${id}`,
 				getPlayerName: (id: number) => `Player ${id}`,
 				getPlayerEloByDate: () => '1500',
 				tournamentId: 5814,
@@ -132,10 +129,9 @@ describe('TeamDetailMatches', () => {
 		render(TeamDetailMatches, {
 			props: {
 				matches: [],
-				allRoundResults: [],
 				selectedClubId: HOME_CLUB,
 				selectedTeamNumber: 1,
-				getClubName: (id: number) => `Club ${id}`,
+				formatTeamName: (id: number) => `Club ${id}`,
 				getPlayerName: (id: number) => `Player ${id}`,
 				getPlayerEloByDate: () => '-',
 				tournamentId: 5814,

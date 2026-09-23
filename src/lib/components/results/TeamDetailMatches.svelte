@@ -17,12 +17,7 @@
 	import Link from '$lib/components/ui/Link.svelte';
 	import Table from '$lib/components/ui/Table/Table.svelte';
 	import type { TableColumn } from '$lib/components/ui/Table/tableTypes';
-	import {
-		createRoundResultsTeamNameFormatter,
-		getOpponentKind,
-		normalizeEloLookupDate,
-		type TournamentRoundResultDto
-	} from '$lib/api';
+	import { getOpponentKind, normalizeEloLookupDate, type TournamentRoundResultDto } from '$lib/api';
 	import { formatBoardResult, getResultLabels } from '$lib/results/formatResult';
 	import { formatMatchDate, parseDateToTimestamp } from '$lib/results/roundGrouping';
 	import {
@@ -39,14 +34,10 @@
 	interface TeamDetailMatchesProps {
 		/** This team's rows only. */
 		matches: TournamentRoundResultDto[];
-		/**
-		 * Every row in the group. The Roman numeral a club's team gets depends on
-		 * how many teams that club entered, which the filtered subset cannot see.
-		 */
-		allRoundResults: TournamentRoundResultDto[];
 		selectedClubId: number;
 		selectedTeamNumber: number;
-		getClubName: (clubId: number) => string;
+		/** Built from the group's standings, so both sides of a match resolve. */
+		formatTeamName: (contenderId: number, teamNumber: number) => string;
 		getPlayerName: (playerId: number, date?: number) => string;
 		getPlayerEloByDate: (playerId: number, date: number) => string;
 		tournamentId: number;
@@ -55,10 +46,9 @@
 
 	let {
 		matches,
-		allRoundResults,
 		selectedClubId,
 		selectedTeamNumber,
-		getClubName,
+		formatTeamName,
 		getPlayerName,
 		getPlayerEloByDate,
 		tournamentId,
@@ -70,9 +60,7 @@
 	let resultLabels = $derived(getResultLabels(t));
 	let locale = $derived(localeOf(language.current));
 
-	let formatTeamName = $derived(createRoundResultsTeamNameFormatter(allRoundResults, getClubName));
-
-	/** Byes and walkovers occupy a team slot but have no club to name. */
+	/** Byes and walkovers occupy a team slot but have no team to name. */
 	function teamLabel(id: number, teamNumber: number): string {
 		switch (getOpponentKind(id)) {
 			case 'bye':

@@ -14,10 +14,11 @@
 	import PageLayout from '$lib/components/layout/PageLayout.svelte';
 	import Link from '$lib/components/ui/Link.svelte';
 	import TeamDetailMatches from '$lib/components/results/TeamDetailMatches.svelte';
-	import { createTeamNameFormatter, getOpponentKind, normalizeEloLookupDate } from '$lib/api';
+	import { getOpponentKind, normalizeEloLookupDate } from '$lib/api';
 	import { parseDateToTimestamp } from '$lib/results/roundGrouping';
 	import { boardGames, groupMatchesByRound } from '$lib/results/teamMatches';
 	import { parseTeamId } from '$lib/results/teamId';
+	import { teamNameOrId } from '$lib/results/teamNames';
 	import { getGroupResultsState } from '$lib/stores/groupResults.svelte';
 	import { language } from '$lib/stores/language.svelte';
 	import { getTranslation } from '$lib/translations';
@@ -43,13 +44,8 @@
 			: null
 	);
 
-	let teamName = $derived.by(() => {
-		if (!team) return '';
-		const format = createTeamNameFormatter(results.teamResults, (clubId) =>
-			results.getClubName(clubId)
-		);
-		return format(team.clubId, team.teamNumber);
-	});
+	let formatTeamName = $derived(teamNameOrId(results.teamResults));
+	let teamName = $derived(team ? formatTeamName(team.clubId, team.teamNumber) : '');
 
 	/** This team's rows, from either side of the pairing. */
 	let teamMatches = $derived(
@@ -219,10 +215,9 @@
 		{:else}
 			<TeamDetailMatches
 				matches={teamMatches}
-				allRoundResults={results.teamRoundResults}
 				selectedClubId={team.clubId}
 				selectedTeamNumber={team.teamNumber}
-				getClubName={(clubId) => results.getClubName(clubId)}
+				{formatTeamName}
 				getPlayerName={(playerId, date) => results.getPlayerName(playerId, date)}
 				getPlayerEloByDate={(playerId, date) => results.getPlayerEloByDate(playerId, date)}
 				{tournamentId}

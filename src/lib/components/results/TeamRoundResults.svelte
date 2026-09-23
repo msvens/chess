@@ -12,12 +12,7 @@
 	import Link from '$lib/components/ui/Link.svelte';
 	import Table from '$lib/components/ui/Table/Table.svelte';
 	import type { TableColumn } from '$lib/components/ui/Table/tableTypes';
-	import {
-		createRoundResultsTeamNameFormatter,
-		getOpponentKind,
-		normalizeEloLookupDate,
-		type TournamentRoundResultDto
-	} from '$lib/api';
+	import { getOpponentKind, normalizeEloLookupDate, type TournamentRoundResultDto } from '$lib/api';
 	import {
 		formatBoardResult,
 		formatTeamMatchScore,
@@ -41,7 +36,8 @@
 
 	interface TeamRoundResultsProps {
 		roundResults: TournamentRoundResultDto[];
-		getClubName: (clubId: number) => string;
+		/** Built from the group's standings, so both sides of a match resolve. */
+		formatTeamName: (contenderId: number, teamNumber: number) => string;
 		getPlayerName: (playerId: number, date?: number) => string;
 		getPlayerEloByDate: (playerId: number, date: number) => string;
 		fetchPlayersByDate: (requests: { playerId: number; date: number }[]) => Promise<void>;
@@ -51,7 +47,7 @@
 
 	let {
 		roundResults,
-		getClubName,
+		formatTeamName,
 		getPlayerName,
 		getPlayerEloByDate,
 		fetchPlayersByDate,
@@ -77,9 +73,7 @@
 	let activeRound = $derived(resolveActiveRound(selectedRound, sortedRounds));
 	let matches = $derived(activeRound == null ? [] : (matchesByRound.get(activeRound) ?? []));
 
-	let formatTeamName = $derived(createRoundResultsTeamNameFormatter(roundResults, getClubName));
-
-	/** Byes and walkovers occupy a team slot but have no club to name. */
+	/** Byes and walkovers occupy a team slot but have no team to name. */
 	function teamLabel(id: number, teamNumber: number): string {
 		switch (getOpponentKind(id)) {
 			case 'bye':
