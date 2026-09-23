@@ -13,13 +13,9 @@
 	 */
 	import type { Snippet } from 'svelte';
 	import PrintSheet from './PrintSheet.svelte';
-	import {
-		createTeamNameFormatter,
-		type TeamTournamentEndResultDto,
-		type TournamentRoundResultDto
-	} from '$lib/api';
+	import { type TeamTournamentEndResultDto, type TournamentRoundResultDto } from '$lib/api';
 	import { groupMatchesByRound, type TeamMatch } from '$lib/results/teamMatches';
-	import { getOrganizationsState } from '$lib/stores/organizations.svelte';
+	import { teamNameOrId } from '$lib/results/teamNames';
 	import { language } from '$lib/stores/language.svelte';
 	import { getTranslation } from '$lib/translations';
 
@@ -35,17 +31,11 @@
 	let { round, boardRows, teamStandings, fontPx, sheetHeader, groupSuffix }: TeamPairingSheetProps =
 		$props();
 
-	const organizations = getOrganizationsState();
-
 	let t = $derived(getTranslation(language.current));
 	let print = $derived(t.pages.tournamentResults.print);
 	let rb = $derived(t.pages.tournamentResults.roundByRound);
 
-	let teamName = $derived(
-		createTeamNameFormatter(teamStandings, (orgNumber: number) =>
-			organizations.getClubName(orgNumber)
-		)
-	);
+	let teamName = $derived(teamNameOrId(teamStandings));
 
 	let rows = $derived(groupMatchesByRound(boardRows).get(round) ?? []);
 	let title = $derived(

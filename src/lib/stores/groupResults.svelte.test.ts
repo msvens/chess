@@ -35,8 +35,7 @@ vi.mock('$lib/api', async (importOriginal) => {
 	};
 });
 
-const organizations = { getClubName: (id: number) => `Club ${id}` };
-const make = () => new GroupResultsState(organizations);
+const make = () => new GroupResultsState();
 
 function tournament(type: number, over: Partial<TournamentDto> = {}): TournamentDto {
 	return {
@@ -150,15 +149,6 @@ describe('which endpoints get called', () => {
 		expect(state.individualResults).toEqual([]);
 		expect(state.teamResults).toEqual([]);
 	});
-
-	it('flags a loose team tournament, where rows arrive with no club', async () => {
-		getTournament.mockResolvedValue(
-			ok(tournament(ALLSVENSKAN, { teamtournamentPlayerListType: 3 } as Partial<TournamentDto>))
-		);
-		const state = make();
-		await state.load(5835, 16642);
-		expect(state.isLooseTeamTournament).toBe(true);
-	});
 });
 
 describe('refresh', () => {
@@ -255,10 +245,6 @@ describe('player labels', () => {
 		const s = make();
 		await s.load(5835, 16642);
 		expect(s.getPlayerName(42)).toContain('Carlsen');
-	});
-
-	it('resolves club names through the organizations store', () => {
-		expect(state().getClubName(7)).toBe('Club 7');
 	});
 });
 

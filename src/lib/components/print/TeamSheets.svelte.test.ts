@@ -2,7 +2,6 @@ import { render, screen, within } from '@testing-library/svelte';
 import { describe, expect, it } from 'vitest';
 import { createRawSnippet } from 'svelte';
 import type { TeamTournamentEndResultDto, TournamentRoundResultDto } from '$lib/api';
-import { ORGANIZATIONS_STATE_KEY, OrganizationsState } from '$lib/stores/organizations.svelte';
 import TeamPairingSheet from './TeamPairingSheet.svelte';
 import TeamStandingsSheet from './TeamStandingsSheet.svelte';
 
@@ -10,27 +9,30 @@ const sheetHeader = createRawSnippet(() => ({ render: () => '<header>Allsvenskan
 
 const CLUBS: Record<number, string> = { 10: 'SK Rockaden', 20: 'Wasa SK' };
 
-class TestOrganizations extends OrganizationsState {
-	constructor() {
-		super();
-		this.loading = false;
-	}
-	override async load() {}
-	override getClubName(orgNumber: number): string {
-		return CLUBS[orgNumber] ?? `Org ${orgNumber}`;
-	}
-}
-
-const context = () => new Map([[ORGANIZATIONS_STATE_KEY, new TestOrganizations()]]);
-
-const standing = (over: Partial<TeamTournamentEndResultDto>): TeamTournamentEndResultDto =>
-	({
-		contenderId: 10,
+const standing = (over: Partial<TeamTournamentEndResultDto>): TeamTournamentEndResultDto => {
+	const contenderId = (over.contenderId ?? 10) as number;
+	return {
+		contenderId,
 		teamNumber: 1,
+		club: { id: contenderId, name: CLUBS[contenderId] ?? `Klubb ${contenderId}` },
+		team: null,
 		place: 1,
 		points: 12,
 		secPoints: 28.5,
 		...over
+	} as TeamTournamentEndResultDto;
+};
+
+/** A school team: the name is on `team`, and there is no club. */
+const schoolStanding = (contenderId: number, name: string): TeamTournamentEndResultDto =>
+	({
+		contenderId,
+		teamNumber: -1,
+		club: null,
+		team: { id: contenderId, name },
+		place: 1,
+		points: 6,
+		secPoints: 14
 	}) as TeamTournamentEndResultDto;
 
 const boardRow = (over: Partial<TournamentRoundResultDto>): TournamentRoundResultDto =>
@@ -61,8 +63,7 @@ describe('TeamPairingSheet', () => {
 				fontPx: 13,
 				sheetHeader,
 				groupSuffix: ''
-			},
-			context: context()
+			}
 		});
 
 	it('lists the round matches with both club names', () => {
@@ -121,8 +122,7 @@ describe('TeamPairingSheet', () => {
 describe('TeamStandingsSheet', () => {
 	const setup = (standings: TeamTournamentEndResultDto[]) =>
 		render(TeamStandingsSheet, {
-			props: { standings, fontPx: 13, sheetHeader, groupSuffix: '' },
-			context: context()
+			props: { standings, fontPx: 13, sheetHeader, groupSuffix: '' }
 		});
 
 	it('orders by place and shows match points and board points', () => {
@@ -135,6 +135,15 @@ describe('TeamStandingsSheet', () => {
 		expect(cells(0)[2]).toHaveTextContent('12');
 		expect(cells(0)[3]).toHaveTextContent('28.5');
 		expect(cells(1)[1]).toHaveTextContent('Wasa SK');
+	});
+
+	it('names school teams, which carry no club at all', () => {
+		setup([
+			schoolStanding(16196, 'Bilingual Montessori School of Lund'),
+			schoolStanding(16342, 'Söraskolan L1')
+		]);
+		expect(cells(0)[1]).toHaveTextContent('Bilingual Montessori School of Lund');
+		expect(cells(1)[1]).toHaveTextContent('Söraskolan L1');
 	});
 
 	it('says so when there are no standings', () => {

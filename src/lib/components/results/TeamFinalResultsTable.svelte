@@ -13,13 +13,13 @@
 		DensityThresholds,
 		TableDensity
 	} from '$lib/components/ui/Table/tableTypes';
-	import { createTeamNameFormatter, isUnplaced, type TeamTournamentEndResultDto } from '$lib/api';
+	import { isUnplaced, type TeamTournamentEndResultDto } from '$lib/api';
+	import { teamNameOrId } from '$lib/results/teamNames';
 	import { language } from '$lib/stores/language.svelte';
 	import { getTranslation } from '$lib/translations';
 
 	interface TeamFinalResultsTableProps {
 		results: TeamTournamentEndResultDto[];
-		getClubName: (clubId: number) => string;
 		loading?: boolean;
 		error?: string;
 		onRowClick?: (result: TeamTournamentEndResultDto) => void;
@@ -29,7 +29,6 @@
 
 	let {
 		results,
-		getClubName,
 		loading = false,
 		error,
 		onRowClick,
@@ -42,8 +41,9 @@
 	);
 
 	// Built from the standings so a club fielding several teams gets Roman
-	// numerals that match everywhere else in the group.
-	let formatTeamName = $derived(createTeamNameFormatter(results, getClubName));
+	// numerals that match everywhere else in the group, and a school team gets
+	// the name carried on its own row.
+	let formatTeamName = $derived(teamNameOrId(results));
 
 	let columns = $derived<TableColumn<TeamTournamentEndResultDto>[]>([
 		{

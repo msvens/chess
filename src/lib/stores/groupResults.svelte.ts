@@ -36,7 +36,6 @@ import { buildPlayerMap } from '$lib/results/playerMap';
 import { playerCache, type PlayerDateRequest } from './playerCache.svelte';
 import { tournamentCache } from './tournamentCache.svelte';
 import { language } from './language.svelte';
-import { getOrganizationsState, type OrganizationsState } from './organizations.svelte';
 import { getTranslation } from '$lib/translations';
 
 export type { PlayerDateRequest };
@@ -56,20 +55,8 @@ export class GroupResultsState {
 	/** Epoch ms of the last successful results fetch; the UI formats it. */
 	lastUpdated = $state<number | null>(null);
 
-	#organizations: Pick<OrganizationsState, 'getClubName'>;
 	#results = new ResultsService();
 	#tournaments = new TournamentService();
-
-	/**
-	 * Club names come from the organizations store. Taken as an argument rather
-	 * than read from context in a field initializer, so the class can be
-	 * instantiated in a test — which is the whole point of keeping effects out of
-	 * it. The default resolves from context, so callers inside a component still
-	 * write `new GroupResultsState()`.
-	 */
-	constructor(organizations: Pick<OrganizationsState, 'getClubName'> = getOrganizationsState()) {
-		this.#organizations = organizations;
-	}
 
 	/**
 	 * Guards against a slower earlier load finishing after a later one. Switching
@@ -92,15 +79,6 @@ export class GroupResultsState {
 	get isIndividuallyPairedTeam(): boolean {
 		const type = this.tournament?.type;
 		return type != null && isTeamTournament(type) && !isTeamPairing(type);
-	}
-
-	/** Teams not bound to one club (Skol-SM); rows arrive with `club: null`. */
-	get isLooseTeamTournament(): boolean {
-		return this.tournament?.teamtournamentPlayerListType === 3;
-	}
-
-	get tournamentState(): number | null {
-		return this.tournament?.state ?? null;
 	}
 
 	get thinkingTime(): string | null {
@@ -280,10 +258,6 @@ export class GroupResultsState {
 
 	getPlayerClubId(playerId: number): number | null {
 		return this.#findPlayer(playerId)?.clubId ?? null;
-	}
-
-	getClubName(clubId: number): string {
-		return this.#organizations.getClubName(clubId);
 	}
 
 	getPlayerByDate(playerId: number, date: number): PlayerInfoDto | undefined {

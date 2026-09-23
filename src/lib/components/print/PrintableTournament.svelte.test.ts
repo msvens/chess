@@ -1,19 +1,7 @@
 import { render, screen } from '@testing-library/svelte';
 import { describe, expect, it } from 'vitest';
 import type { PrintData, PrintGroupData } from '$lib/print/printData';
-import { ORGANIZATIONS_STATE_KEY, OrganizationsState } from '$lib/stores/organizations.svelte';
 import PrintableTournament from './PrintableTournament.svelte';
-
-class TestOrganizations extends OrganizationsState {
-	constructor() {
-		super();
-		this.loading = false;
-	}
-	override async load() {}
-	override getClubName(orgNumber: number): string {
-		return `Club ${orgNumber}`;
-	}
-}
 
 const classGroup = (id: number, name: string) =>
 	({ id, name, rankingAlgorithm: null }) as unknown as PrintGroupData['group'];
@@ -47,8 +35,7 @@ const data = (groups: PrintGroupData[]): PrintData =>
 
 const setup = (groups: PrintGroupData[], round = 1) =>
 	render(PrintableTournament, {
-		props: { data: data(groups), round, fontMode: 'medium', auto: true },
-		context: new Map([[ORGANIZATIONS_STATE_KEY, new TestOrganizations()]])
+		props: { data: data(groups), round, fontMode: 'medium', auto: true }
 	});
 
 const pages = () => document.querySelectorAll('.print-page');
@@ -65,7 +52,14 @@ describe('PrintableTournament', () => {
 			group({
 				kind: 'team',
 				teamStandings: [
-					{ contenderId: 10, teamNumber: 1, place: 1, points: 12, secPoints: 28.5 }
+					{
+						contenderId: 10,
+						teamNumber: 1,
+						place: 1,
+						points: 12,
+						secPoints: 28.5,
+						club: { id: 10, name: 'Club 10' }
+					}
 				] as PrintGroupData['teamStandings']
 			})
 		]);

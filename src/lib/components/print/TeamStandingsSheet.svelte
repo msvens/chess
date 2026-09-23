@@ -5,8 +5,8 @@
 	 */
 	import type { Snippet } from 'svelte';
 	import PrintSheet from './PrintSheet.svelte';
-	import { createTeamNameFormatter, isUnplaced, type TeamTournamentEndResultDto } from '$lib/api';
-	import { getOrganizationsState } from '$lib/stores/organizations.svelte';
+	import { isUnplaced, type TeamTournamentEndResultDto } from '$lib/api';
+	import { teamNameOrId } from '$lib/results/teamNames';
 	import { language } from '$lib/stores/language.svelte';
 	import { getTranslation } from '$lib/translations';
 
@@ -19,13 +19,9 @@
 
 	let { standings, fontPx, sheetHeader, groupSuffix }: TeamStandingsSheetProps = $props();
 
-	const organizations = getOrganizationsState();
-
 	let print = $derived(getTranslation(language.current).pages.tournamentResults.print);
 
-	let teamName = $derived(
-		createTeamNameFormatter(standings, (orgNumber: number) => organizations.getClubName(orgNumber))
-	);
+	let teamName = $derived(teamNameOrId(standings));
 
 	let rows = $derived([...standings].sort((a, b) => a.place - b.place));
 	let title = $derived(groupSuffix ? `${print.standings} – ${groupSuffix}` : print.standings);
