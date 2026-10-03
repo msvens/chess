@@ -42,6 +42,25 @@
 	);
 	let legend = $derived(legendOrder(slices));
 
+	let chart = $state<HTMLElement>();
+
+	/**
+	 * Touch has no hover, so a tap pins the tooltip instead: a tap on a slice
+	 * shows it, the same slice again or a tap anywhere else on the page closes
+	 * it. Listened for on the window so the outside tap is seen.
+	 */
+	function tap(event: PointerEvent) {
+		if (event.pointerType === 'mouse') return;
+		if (!chart || !(event.target instanceof Node) || !chart.contains(event.target)) {
+			pointer = null;
+			return;
+		}
+		const box = chart.getBoundingClientRect();
+		const at = { x: event.clientX - box.left, y: event.clientY - box.top };
+		const slice = sliceAt(laid, width / 2, CHART_HEIGHT / 2, radius, at.x, at.y);
+		pointer = slice && slice !== hovered ? at : null;
+	}
+
 	/**
 	 * The chart's text alternative. The original offered none — the pie was
 	 * unreadable without a mouse, and the numbers appear nowhere else on the tab.
@@ -50,6 +69,8 @@
 		`${title}: ${slices.map((slice) => `${slice.label} ${slice.value}`).join(', ')}`
 	);
 </script>
+
+<svelte:window onpointerup={tap} />
 
 <div class="flex flex-col items-center">
 	{#if total === 0}
@@ -75,8 +96,13 @@
 				role="img"
 				aria-label={summary}
 				bind:clientWidth={width}
-				onmousemove={(event) => (pointer = { x: event.offsetX, y: event.offsetY })}
-				onmouseleave={() => (pointer = null)}
+				bind:this={chart}
+				onpointermove={(event) => {
+					if (event.pointerType === 'mouse') pointer = { x: event.offsetX, y: event.offsetY };
+				}}
+				onpointerleave={(event) => {
+					if (event.pointerType === 'mouse') pointer = null;
+				}}
 			>
 				<!-- Nothing until the card has been measured: `pieRadius` follows
 				     recharts in taking `Math.abs`, so an unmeasured card would draw a

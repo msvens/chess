@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/svelte';
+import { fireEvent, render, screen } from '@testing-library/svelte';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { RatingDataPoint } from '$lib/api';
 import EloRatingChart from './EloRatingChart.svelte';
@@ -68,5 +68,101 @@ describe('the legend', () => {
 		expect(swatch(labels.standard)).toBe('#0284c7');
 		expect(swatch(labels.rapid)).toBe('#be123c');
 		expect(swatch(labels.blitz)).toBe('#059669');
+	});
+});
+
+describe('the tooltip', () => {
+	beforeEach(() => {
+		getPlayerRatingHistory.mockReset();
+		getPlayerRatingHistory.mockResolvedValue({ status: 200, data: history });
+	});
+
+	// jsdom lays the chart out at x 0 with the 640px fallback width, so the two
+	// readings sit at the plot's edges: 40 and 630.
+	const FIRST = 40;
+	const SECOND = 630;
+	const tooltipFor = (rating: number) => screen.queryByText(`Elo: ${rating}`);
+
+	async function chart() {
+		draw();
+		return screen.findByRole('img', { name: 'Ratinghistorik' });
+	}
+
+	it('follows a mouse and goes when it leaves', async () => {
+		const box = await chart();
+		await fireEvent.pointerMove(box, { pointerType: 'mouse', clientX: FIRST });
+		expect(tooltipFor(2600)).toBeInTheDocument();
+
+		await fireEvent.pointerLeave(box, { pointerType: 'mouse' });
+		expect(tooltipFor(2600)).not.toBeInTheDocument();
+	});
+
+	/** Where the Elo (standard) series draws its dot for a reading. */
+	function eloDot(x: number) {
+		const circle = [...document.querySelectorAll('circle')].find(
+			(c) => c.getAttribute('fill') === '#0284c7' && Number(c.getAttribute('cx')) === x
+		);
+		return { clientX: x, clientY: Number(circle?.getAttribute('cy')) };
+	}
+
+	const tap = (target: Element, at: { clientX?: number; clientY?: number } = {}) =>
+		fireEvent.pointerUp(target, { pointerType: 'touch', ...at });
+
+	it('pins on a tap on a dot and survives the pointerleave a touch fires on lifting', async () => {
+		const box = await chart();
+		await tap(box, eloDot(SECOND));
+		await fireEvent.pointerLeave(box, { pointerType: 'touch' });
+		expect(tooltipFor(2610)).toBeInTheDocument();
+	});
+
+	it('accepts a tap a fingertip away from the dot', async () => {
+		const box = await chart();
+		const dot = eloDot(FIRST);
+		await tap(box, { clientX: dot.clientX + 10, clientY: dot.clientY + 10 });
+		expect(tooltipFor(2600)).toBeInTheDocument();
+	});
+
+	it('moves to another reading on a tap on its dot', async () => {
+		const box = await chart();
+		await tap(box, eloDot(FIRST));
+		await tap(box, eloDot(SECOND));
+		expect(tooltipFor(2600)).not.toBeInTheDocument();
+		expect(tooltipFor(2610)).toBeInTheDocument();
+	});
+
+	it('closes on a second tap on the same dot', async () => {
+		const box = await chart();
+		await tap(box, eloDot(FIRST));
+		await tap(box, eloDot(FIRST));
+		expect(tooltipFor(2600)).not.toBeInTheDocument();
+	});
+
+	it('closes on a tap on empty chart rather than snapping to the nearest reading', async () => {
+		// Snapping is what the mouse does, but on touch it left nowhere in the
+		// chart to tap for closing.
+		const box = await chart();
+		await tap(box, eloDot(FIRST));
+		await tap(box, { clientX: 320, clientY: 380 });
+		expect(tooltipFor(2600)).not.toBeInTheDocument();
+		expect(tooltipFor(2610)).not.toBeInTheDocument();
+	});
+
+	it('does not open on a tap on empty chart', async () => {
+		const box = await chart();
+		await tap(box, { clientX: 320, clientY: 380 });
+		expect(document.body.textContent).not.toMatch(/Elo: \d/);
+	});
+
+	it('closes on a tap outside the chart', async () => {
+		const box = await chart();
+		await tap(box, eloDot(FIRST));
+		await tap(document.body);
+		expect(tooltipFor(2600)).not.toBeInTheDocument();
+	});
+
+	it('ignores a touch moving across the chart, which is a scroll', async () => {
+		const box = await chart();
+		await fireEvent.pointerMove(box, { pointerType: 'touch', clientX: FIRST });
+		expect(tooltipFor(2600)).not.toBeInTheDocument();
 	});
 });
