@@ -199,9 +199,64 @@
 	let hoverIndex = $state(-1);
 	let hovered = $derived(hoverIndex >= 0 && hoverIndex < data.length ? data[hoverIndex] : null);
 
+	let chart = $state<HTMLElement>();
+
+	function readingAt(clientX: number) {
+		const box = chart?.getBoundingClientRect();
+		return box ? nearestIndex(clientX - box.left, data.length, [PLOT.left, plotRight]) : -1;
+	}
+
 	function trackPointer(event: PointerEvent) {
-		const box = (event.currentTarget as HTMLElement).getBoundingClientRect();
-		hoverIndex = nearestIndex(event.clientX - box.left, data.length, [PLOT.left, plotRight]);
+		if (event.pointerType === 'mouse') hoverIndex = readingAt(event.clientX);
+	}
+
+	/**
+	 * How close to a dot a tap must land to pin it — about half a fingertip.
+	 * Anything further is a tap on empty chart, which closes the tooltip.
+	 */
+	const TAP_RADIUS = 20;
+
+	/** The reading whose dot is within reach of a tap, or -1. */
+	function dotAt(clientX: number, clientY: number) {
+		const box = chart?.getBoundingClientRect();
+		if (!box) return -1;
+		const x = clientX - box.left;
+		const y = clientY - box.top;
+		let best = -1;
+		let bestDistance = TAP_RADIUS;
+		for (const line of lines) {
+			for (const dot of line.dots) {
+				const distance = Math.hypot(dot.x - x, dot.y - y);
+				if (distance <= bestDistance) {
+					best = dot.index;
+					bestDistance = distance;
+				}
+			}
+		}
+		return best;
+	}
+
+	/**
+	 * Touch has no hover, so a tap pins the tooltip instead: a tap on a dot
+	 * shows its reading; the same dot again, empty chart, or anywhere else on
+	 * the page closes it.
+	 *
+	 * Unlike the mouse, a tap does not snap to the nearest reading — that would
+	 * leave no empty spot in the chart to tap for closing.
+	 *
+	 * Listened for on the window so the outside tap is seen. Hover alone could
+	 * not work here: a tap sends no move before the finger lifts, the browser
+	 * fires `pointerleave` straight after, and a drag is taken over by scrolling.
+	 * A scroll ends in `pointercancel`, not `pointerup`, so it never pins.
+	 */
+	function tap(event: PointerEvent) {
+		if (event.pointerType === 'mouse') return;
+		if (!chart || !(event.target instanceof Node) || !chart.contains(event.target)) {
+			hoverIndex = -1;
+			return;
+		}
+		const index = dotAt(event.clientX, event.clientY);
+		hoverIndex = index === hoverIndex ? -1 : index;
 	}
 
 	// Measured, so the placement below is decided on the real size.
@@ -265,6 +320,8 @@
 	});
 </script>
 
+<svelte:window onpointerup={tap} />
+
 {#if showDatePickers}
 	<div class="mb-4 flex gap-3">
 		<DatePicker
@@ -302,8 +359,11 @@
 		role="img"
 		aria-label={ariaLabel}
 		bind:clientWidth={width}
+		bind:this={chart}
 		onpointermove={trackPointer}
-		onpointerleave={() => (hoverIndex = -1)}
+		onpointerleave={(event) => {
+			if (event.pointerType === 'mouse') hoverIndex = -1;
+		}}
 	>
 		<svg width="100%" {height} aria-hidden="true">
 			<!-- Grid: horizontals on the ticks, verticals on the readings. -->
