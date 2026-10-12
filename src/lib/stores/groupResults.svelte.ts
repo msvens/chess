@@ -101,6 +101,11 @@ export class GroupResultsState {
 		return this.group?.rankingAlgorithm ?? null;
 	}
 
+	/** Scoring is set per group: 1/½/0, Schackfyran 3/2/1 or 3/1/0. */
+	get pointSystem(): number | null {
+		return this.group?.pointSystem ?? null;
+	}
+
 	/**
 	 * Players named by the individual standings, for O(1) lookup.
 	 *

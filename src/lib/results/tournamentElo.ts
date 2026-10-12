@@ -17,6 +17,8 @@ import {
 	getPlayerPoints,
 	getPlayerRatingByRoundType,
 	getPlayerRatingStrict,
+	PointSystem,
+	PointValues,
 	RoundRatedType,
 	type PlayerInfoDto,
 	type PlayerRating
@@ -57,6 +59,8 @@ export interface TournamentSummary {
 	totalScore: number;
 	/** Games that were actually played — walkovers and non-results excluded. */
 	playedCount: number;
+	/** The most `playedCount` games could score: a win's worth each, in the event's point system. */
+	maxScore: number;
 	byRatingType: Record<RatingType, RatingTypeStats>;
 	/** The rating types this event actually produced games for. */
 	ratedTypes: RatingType[];
@@ -153,7 +157,8 @@ export function summarise(
 	matches: readonly PlayerMatch[],
 	memberId: number,
 	playerAt: PlayerAt,
-	rankingAlgorithm: number | null
+	rankingAlgorithm: number | null,
+	pointSystem: number | null
 ): TournamentSummary {
 	const byRatingType: Record<RatingType, RatingTypeStats> = {
 		standard: emptyStats(),
@@ -186,7 +191,22 @@ export function summarise(
 		(type) => byRatingType[type].gameCount > 0
 	);
 
-	return { totalScore, playedCount: played.length, byRatingType, ratedTypes };
+	return {
+		totalScore,
+		playedCount: played.length,
+		maxScore: played.length * winValue(pointSystem),
+		byRatingType,
+		ratedTypes
+	};
+}
+
+/** Points for a win in a group's point system; 1/½/0 when it is missing or unrecognised. */
+function winValue(pointSystem: number | null): number {
+	const system =
+		pointSystem === PointSystem.SCHACK4AN || pointSystem === PointSystem.POINT310
+			? pointSystem
+			: PointSystem.DEFAULT;
+	return PointValues[system].win;
 }
 
 function eloRatingType(type: PlayerRating['ratingType']): RatingType | null {

@@ -78,7 +78,8 @@
 			matches,
 			memberId,
 			(playerId, date) => results.getPlayerByDate(playerId, date),
-			results.rankingAlgorithm
+			results.rankingAlgorithm,
+			results.pointSystem
 		)
 	);
 
@@ -335,7 +336,7 @@
 							<div class="text-sm font-medium text-gray-900 dark:text-gray-200">
 								{summary.totalScore}
 								{pd.of}
-								{summary.playedCount}
+								{summary.maxScore}
 							</div>
 						</div>
 

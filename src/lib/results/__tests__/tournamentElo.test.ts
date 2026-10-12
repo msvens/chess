@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { ResultCode, RoundRatedType, type PlayerInfoDto } from '$lib/api';
+import { PointSystem, ResultCode, RoundRatedType, type PlayerInfoDto } from '$lib/api';
 import type { PlayerMatch } from '../playerMatches';
 import {
 	formatEloChange,
@@ -122,23 +122,42 @@ describe('summarise', () => {
 			match({ round: 2, isWalkover: true }),
 			match({ round: 3, isCountable: false })
 		];
-		expect(summarise(matches, ME, playerAt, STANDARD_ALGORITHM).playedCount).toBe(1);
+		expect(summarise(matches, ME, playerAt, STANDARD_ALGORITHM, null).playedCount).toBe(1);
 	});
 
 	it('excludes a walkover from the score as well as the count', () => {
 		const matches = [match(), match({ round: 2, isWalkover: true })];
-		expect(summarise(matches, ME, playerAt, STANDARD_ALGORITHM).totalScore).toBe(1);
+		expect(summarise(matches, ME, playerAt, STANDARD_ALGORITHM, null).totalScore).toBe(1);
 	});
 
 	it('scores through the result code, so an alternate point system is right', () => {
 		// Schack4an pays 3 for a win rather than 1.
 		const matches = [match({ resultCode: ResultCode.SCHACK4AN_WHITE_WIN })];
-		expect(summarise(matches, ME, playerAt, STANDARD_ALGORITHM).totalScore).toBe(3);
+		expect(summarise(matches, ME, playerAt, STANDARD_ALGORITHM, null).totalScore).toBe(3);
+	});
+
+	it('puts a win’s worth per played game in the maximum', () => {
+		// 11 games at 3/2/1, the shape behind the "31 of 11" report.
+		const matches = Array.from({ length: 11 }, (_, i) => match({ round: i + 1 }));
+		const at = (system: number | null) =>
+			summarise(matches, ME, playerAt, STANDARD_ALGORITHM, system).maxScore;
+		expect(at(PointSystem.DEFAULT)).toBe(11);
+		expect(at(PointSystem.SCHACK4AN)).toBe(33);
+		expect(at(PointSystem.POINT310)).toBe(33);
+	});
+
+	it('leaves walkovers out of the maximum, and reads an unknown system as 1/½/0', () => {
+		const matches = [match(), match({ round: 2, isWalkover: true })];
+		expect(
+			summarise(matches, ME, playerAt, STANDARD_ALGORITHM, PointSystem.SCHACK4AN).maxScore
+		).toBe(3);
+		expect(summarise(matches, ME, playerAt, STANDARD_ALGORITHM, null).maxScore).toBe(1);
+		expect(summarise(matches, ME, playerAt, STANDARD_ALGORITHM, 99).maxScore).toBe(1);
 	});
 
 	it('falls back to the row’s own points when there is no code', () => {
 		const matches = [match({ resultCode: undefined, playerPoints: 0.5 })];
-		expect(summarise(matches, ME, playerAt, STANDARD_ALGORITHM).totalScore).toBe(0.5);
+		expect(summarise(matches, ME, playerAt, STANDARD_ALGORITHM, null).totalScore).toBe(0.5);
 	});
 
 	it('keeps each rating type in its own bucket', () => {
@@ -148,7 +167,7 @@ describe('summarise', () => {
 			match({ round: 2, roundRatedType: RoundRatedType.BLITZ }),
 			match({ round: 3, roundRatedType: RoundRatedType.BLITZ })
 		];
-		const summary = summarise(matches, ME, playerAt, STANDARD_ALGORITHM);
+		const summary = summarise(matches, ME, playerAt, STANDARD_ALGORITHM, null);
 		expect(summary.byRatingType.standard.gameCount).toBe(1);
 		expect(summary.byRatingType.blitz.gameCount).toBe(2);
 		expect(summary.ratedTypes).toEqual(['standard', 'blitz']);
@@ -156,12 +175,12 @@ describe('summarise', () => {
 
 	it('names no rated types when nothing was rated', () => {
 		const matches = [match({ roundRatedType: RoundRatedType.UNRATED })];
-		expect(summarise(matches, ME, playerAt, STANDARD_ALGORITHM).ratedTypes).toEqual([]);
+		expect(summarise(matches, ME, playerAt, STANDARD_ALGORITHM, null).ratedTypes).toEqual([]);
 	});
 
 	it('counts a played-but-unrated game in the score, not in a bucket', () => {
 		const matches = [match({ roundRatedType: RoundRatedType.UNRATED })];
-		const summary = summarise(matches, ME, playerAt, STANDARD_ALGORITHM);
+		const summary = summarise(matches, ME, playerAt, STANDARD_ALGORITHM, null);
 		expect(summary.playedCount).toBe(1);
 		expect(summary.totalScore).toBe(1);
 		expect(summary.byRatingType.standard.gameCount).toBe(0);
