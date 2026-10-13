@@ -17,9 +17,9 @@ import {
 	TournamentService,
 	findTournamentGroup,
 	formatPlayerName,
+	formatPlayerRatingForRound,
 	formatRatingWithType,
 	getOpponentKind,
-	getPlayerRatingByRoundType,
 	getPlayerRatingStrict,
 	isTeamPairing,
 	isTeamTournament,
@@ -306,17 +306,14 @@ export class GroupResultsState {
 	 */
 	getPlayerEloByDateAndRound(playerId: number, date: number, roundNumber?: number): string {
 		const player = playerCache.getByDate(playerId, date) ?? this.playerMap.get(playerId);
-
-		if (roundNumber !== undefined) {
-			const roundRatedType = this.roundsMap.get(roundNumber)?.rated;
-			if (roundRatedType !== undefined && roundRatedType !== 0) {
-				const byRound = getPlayerRatingByRoundType(player?.elo, roundRatedType);
-				return formatRatingWithType(byRound.rating, byRound.ratingType, language.current);
-			}
-		}
-
-		const { rating, ratingType } = getPlayerRatingStrict(player?.elo, this.rankingAlgorithm);
-		return formatRatingWithType(rating, ratingType, language.current);
+		const roundRated =
+			roundNumber === undefined ? undefined : this.roundsMap.get(roundNumber)?.rated;
+		return formatPlayerRatingForRound(
+			player?.elo,
+			this.rankingAlgorithm,
+			roundRated,
+			language.current
+		);
 	}
 
 	/** Warm the cache for a round's players. Bye and walkover ids are dropped. */
