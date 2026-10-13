@@ -15,8 +15,7 @@ import {
 	calculatePerformanceRating,
 	getKFactorForRating,
 	getPlayerPoints,
-	getPlayerRatingByRoundType,
-	getPlayerRatingStrict,
+	getPlayerRatingForRound,
 	PointSystem,
 	PointValues,
 	RoundRatedType,
@@ -72,9 +71,10 @@ export type PlayerAt = (playerId: number, date: number) => PlayerInfoDto | undef
 /**
  * Which rating the two sides bring to a game.
  *
- * The round's own `rated` type wins where it has one, so a blitz round inside a
- * standard event is computed against blitz ratings. `rated === 0` means the
- * round was unrated and falls back to the group's algorithm.
+ * The rule is the SDK's `getPlayerRatingForRound`: the round's own `rated` type
+ * wins where it has one, so a blitz round inside a standard event is computed
+ * against blitz ratings; an unrated or unknown round falls back to the group's
+ * algorithm.
  */
 export function matchRatings(
 	match: PlayerMatch,
@@ -82,15 +82,8 @@ export function matchRatings(
 	opponentElo: PlayerInfoDto['elo'] | undefined,
 	rankingAlgorithm: number | null
 ): { playerRating: number | null; opponentRating: number | null; ratingType: RatingType | null } {
-	const byRound =
-		match.roundRatedType !== undefined && match.roundRatedType !== RoundRatedType.UNRATED;
-
-	const player = byRound
-		? getPlayerRatingByRoundType(playerElo, match.roundRatedType)
-		: getPlayerRatingStrict(playerElo, rankingAlgorithm);
-	const opponent = byRound
-		? getPlayerRatingByRoundType(opponentElo, match.roundRatedType)
-		: getPlayerRatingStrict(opponentElo, rankingAlgorithm);
+	const player = getPlayerRatingForRound(playerElo, rankingAlgorithm, match.roundRatedType);
+	const opponent = getPlayerRatingForRound(opponentElo, rankingAlgorithm, match.roundRatedType);
 
 	return {
 		playerRating: player.rating,
