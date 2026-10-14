@@ -3,6 +3,7 @@ import type { GameDto, PlayerInfoDto, TournamentDto } from '$lib/api';
 import { PlayerProfileState } from './playerProfile.svelte';
 import { playerCache } from './playerCache.svelte';
 import { tournamentCache } from './tournamentCache.svelte';
+import { batchOver } from '../../test-utils/playerBatch';
 
 const ME = 348805;
 const INDIVIDUAL = 3;
@@ -25,6 +26,7 @@ vi.mock('$lib/api', async (importOriginal) => {
 		},
 		PlayerService: class {
 			getPlayerInfo = (...a: unknown[]) => getPlayerInfo(...a);
+			getPlayerInfoBatch = batchOver((id, date) => getPlayerInfo(id, date));
 		},
 		TournamentService: class {
 			getTournamentFromGroupBatch = (...a: unknown[]) => getTournamentFromGroupBatch(...a);

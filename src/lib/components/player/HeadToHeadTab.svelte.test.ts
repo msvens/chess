@@ -5,6 +5,7 @@ import { PLAYER_PROFILE_KEY, PlayerProfileState } from '$lib/stores/playerProfil
 import { tournamentCache } from '$lib/stores/tournamentCache.svelte';
 import { playerCache } from '$lib/stores/playerCache.svelte';
 import HeadToHeadTab from './HeadToHeadTab.svelte';
+import { batchOver } from '../../../test-utils/playerBatch';
 
 const getPlayerInfo = vi.fn();
 
@@ -16,6 +17,7 @@ vi.mock('$lib/api', async (importOriginal) => {
 		...actual,
 		PlayerService: class {
 			getPlayerInfo = (...a: unknown[]) => getPlayerInfo(...a);
+			getPlayerInfoBatch = batchOver((id, date) => getPlayerInfo(id, date));
 		}
 	};
 });

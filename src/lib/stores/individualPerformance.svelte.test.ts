@@ -9,8 +9,9 @@ import {
 	type TournamentRoundResultDto
 } from '$lib/api';
 import type { PrintData, PrintGroupData } from '$lib/print/printData';
-import { IndividualPerformanceState, RATING_BATCH_SIZE } from './individualPerformance.svelte';
+import { IndividualPerformanceState } from './individualPerformance.svelte';
 import { playerCache } from './playerCache.svelte';
+import { batchOver } from '../../test-utils/playerBatch';
 
 const loadPrintData = vi.fn();
 const getPlayerInfo = vi.fn();
@@ -24,6 +25,7 @@ vi.mock('$lib/api', async (importOriginal) => ({
 	...(await importOriginal<typeof import('$lib/api')>()),
 	PlayerService: class {
 		getPlayerInfo = (...a: unknown[]) => getPlayerInfo(...a);
+		getPlayerInfoBatch = batchOver((id, date) => getPlayerInfo(id, date));
 	}
 }));
 
@@ -111,27 +113,25 @@ describe('IndividualPerformanceState', () => {
 		expect(state.rows.find((r) => r.playerId === 1)?.performance).not.toBeNull();
 	});
 
-	it('fetches the ratings of an earlier month in batches, and uses them', async () => {
+	it('fetches the ratings of an earlier month in one batch, and uses them', async () => {
 		// The results table is from October; the rounds were played in September.
-		const opponents = Array.from({ length: RATING_BATCH_SIZE + 3 }, (_, i) => 100 + i);
+		const opponents = Array.from({ length: 13 }, (_, i) => 100 + i);
 		const players = [player(1, 1500), ...opponents.map((id) => player(id, 1000))];
 		loadPrintData.mockResolvedValue(printData(rows(opponents, '2026-09-10'), players));
 		getPlayerInfo.mockImplementation(async (id: number) => ({
 			status: 200,
 			data: player(id, 2000, '2026-09-01')
 		}));
-		const batches = vi.spyOn(playerCache, 'fetchManyByDate');
+		const fetches = vi.spyOn(playerCache, 'fetchManyByDate');
 
 		const state = new IndividualPerformanceState();
 		await state.load(1);
 
-		expect(batches.mock.calls.every(([requests]) => requests.length <= RATING_BATCH_SIZE)).toBe(
-			true
-		);
-		expect(state.fetched).toBe(state.total);
+		// One call: splitting it up is the SDK's job now.
+		expect(fetches).toHaveBeenCalledTimes(1);
 		// Player 1 beat every opponent at their September rating of 2000.
 		expect(state.rows.find((r) => r.playerId === 1)?.performance).toBe(2800);
-		batches.mockRestore();
+		fetches.mockRestore();
 	});
 
 	it('falls back to the results table when a dated rating cannot be had', async () => {

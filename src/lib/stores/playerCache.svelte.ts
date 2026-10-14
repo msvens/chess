@@ -13,6 +13,7 @@
  */
 import {
 	PlayerService,
+	getMonthStartString,
 	getPlayerDateCacheKey,
 	normalizeEloLookupDate,
 	type PlayerInfoDto
@@ -74,30 +75,37 @@ export const playerCache = {
 	/**
 	 * Fetch many (player, date) pairs, skipping anything already known.
 	 *
-	 * `allSettled`, and a rejected or empty response is negative-cached like any
-	 * other miss — otherwise a player the API cannot answer for is retried on
+	 * One `getPlayerInfoBatch` call: the SDK sends a single bulk request and,
+	 * when the API rejects it over an id it does not know, falls back on its own,
+	 * returning one result per pair. Anything not found — missing or failed — is
+	 * negative-cached; otherwise a player the API cannot answer for is retried on
 	 * every render forever.
 	 */
 	async fetchManyByDate(requests: PlayerDateRequest[]): Promise<void> {
-		const missing: PlayerDateRequest[] = [];
+		// Keyed by cache key, so a pair asked for twice in one call is fetched once.
+		const missing: Record<string, PlayerDateRequest> = {};
 		for (const request of requests) {
 			const date = normalizeEloLookupDate(request.date);
 			const key = getPlayerDateCacheKey(request.playerId, date);
-			if (!cache.has(key)) missing.push({ playerId: request.playerId, date });
+			if (!cache.has(key)) missing[key] = { playerId: request.playerId, date };
 		}
-		if (missing.length === 0) return;
+		const keys = Object.keys(missing);
+		if (keys.length === 0) return;
 
-		const responses = await Promise.allSettled(
-			missing.map((request) => api().getPlayerInfo(request.playerId, eloMonthDate(request.date)))
-		);
+		const results = await api()
+			.getPlayerInfoBatch(
+				keys
+					.map((key) => missing[key])
+					.map(({ playerId, date }) => ({
+						id: playerId,
+						date: getMonthStartString(date)
+					}))
+			)
+			.catch(() => []);
 
-		responses.forEach((response, i) => {
-			const key = getPlayerDateCacheKey(missing[i].playerId, missing[i].date);
-			const data =
-				response.status === 'fulfilled' && response.value.status === 200
-					? response.value.data
-					: null;
-			cache.setFromResult(key, data);
+		keys.forEach((key, i) => {
+			const result = results[i];
+			cache.setFromResult(key, result?.status === 200 ? result.data : null);
 		});
 	},
 

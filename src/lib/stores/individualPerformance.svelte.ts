@@ -5,8 +5,8 @@
  * The ranking is the SDK's `getIndividualPerformance`; what lives here is
  * getting it ratings without flooding the API. Each opponent's rating is wanted
  * as of their round's month. The results tables already answer most of those
- * (`ratingsToFetch`); the rest are fetched a few at a time, since the player
- * cache fires whatever it is handed at once.
+ * (`ratingsToFetch`); the rest go to the player cache in one call, which the
+ * SDK turns into a single bulk request where it can.
  *
  * State and actions only, so it can be tested by instantiating it; the route
  * calls `load`.
@@ -27,17 +27,11 @@ import {
 import { parseDateToTimestamp } from '$lib/results/roundGrouping';
 import { playerCache } from './playerCache.svelte';
 
-/** Rating requests in flight at once. */
-export const RATING_BATCH_SIZE = 10;
-
 export class IndividualPerformanceState {
 	loading = $state(true);
 	/** Set when the tournament itself could not be loaded. */
 	failed = $state(false);
 	tournament = $state.raw<TournamentDto | null>(null);
-	/** Historical ratings fetched so far, and how many are needed. */
-	fetched = $state(0);
-	total = $state(0);
 
 	#inputs = $state.raw<PerformanceInputs | null>(null);
 	#token = 0;
@@ -74,8 +68,6 @@ export class IndividualPerformanceState {
 		const mine = ++this.#token;
 		this.loading = true;
 		this.failed = false;
-		this.fetched = 0;
-		this.total = 0;
 
 		try {
 			const data = await loadPrintData(tournamentId);
@@ -86,20 +78,12 @@ export class IndividualPerformanceState {
 			this.#inputs = inputs;
 			if (!this.available) return;
 
-			const needed = ratingsToFetch(data.tournament, inputs);
-			this.total = needed.length;
-
-			for (let start = 0; start < needed.length; start += RATING_BATCH_SIZE) {
-				const batch = needed.slice(start, start + RATING_BATCH_SIZE);
-				await playerCache.fetchManyByDate(
-					batch.map(({ playerId, roundDate }) => ({
-						playerId,
-						date: parseDateToTimestamp(roundDate)
-					}))
-				);
-				if (mine !== this.#token) return;
-				this.fetched += batch.length;
-			}
+			await playerCache.fetchManyByDate(
+				ratingsToFetch(data.tournament, inputs).map(({ playerId, roundDate }) => ({
+					playerId,
+					date: parseDateToTimestamp(roundDate)
+				}))
+			);
 		} catch {
 			if (mine !== this.#token) return;
 			this.failed = true;

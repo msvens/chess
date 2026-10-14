@@ -577,7 +577,7 @@ export interface Translations {
 				link: string;
 				title: string;
 				backToResults: string;
-				/** `{done}` and `{total}`: historical ratings fetched so far. */
+				/** While the historical ratings the list needs are fetched. */
 				loadingRatings: string;
 				/** Team and Schackfyran-only tournaments have no list. */
 				notAvailable: string;
@@ -1347,7 +1347,7 @@ const translations: Record<Language, Translations> = {
 					link: 'Individual performance',
 					title: 'Individual performance',
 					backToResults: 'Back to results',
-					loadingRatings: 'Loading ratings ({done} of {total})...',
+					loadingRatings: 'Loading ratings...',
 					notAvailable: 'There is no individual performance list for this tournament.',
 					performance: 'Perf',
 					noResults: 'No games played yet'
@@ -2116,7 +2116,7 @@ const translations: Record<Language, Translations> = {
 					link: 'Individuell prestation',
 					title: 'Individuell prestation',
 					backToResults: 'Tillbaka till resultat',
-					loadingRatings: 'Laddar ratingar ({done} av {total})...',
+					loadingRatings: 'Laddar ratingar...',
 					notAvailable:
 						'Det finns ingen lista över individuell prestation för den här turneringen.',
 					performance: 'Perf',

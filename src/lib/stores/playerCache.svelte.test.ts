@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { PlayerInfoDto } from '$lib/api';
 import { playerCache } from './playerCache.svelte';
+import { batchOver } from '../../test-utils/playerBatch';
 
 const AUG = new Date(2026, 7, 15).getTime();
 
@@ -9,12 +10,18 @@ const player = (id: number) => ({ id, firstName: 'A', lastName: `P${id}` }) as P
 // The store constructs its own PlayerService lazily; intercept the class so the
 // tests exercise the caching, not the network.
 const getPlayerInfo = vi.fn();
+/** What the cache handed the batch, call by call. */
+const batchCalls = { record: (requests: unknown) => requests };
 vi.mock('$lib/api', async (importOriginal) => {
 	const actual = await importOriginal<typeof import('$lib/api')>();
 	return {
 		...actual,
 		PlayerService: class {
 			getPlayerInfo = (...args: unknown[]) => getPlayerInfo(...args);
+			getPlayerInfoBatch = (requests: { id: number; date: string }[]) => {
+				batchCalls.record(requests);
+				return batchOver((id, date) => getPlayerInfo(id, date))(requests);
+			};
 		}
 	};
 });
@@ -73,6 +80,38 @@ describe('playerCache', () => {
 			{ playerId: 3, date: AUG }
 		]);
 		expect(getPlayerInfo).toHaveBeenCalledTimes(2);
+	});
+
+	it('asks for all the missing pairs in one batch, each pair once', async () => {
+		getPlayerInfo.mockImplementation((id: number) =>
+			Promise.resolve({ status: 200, data: player(id) })
+		);
+		const batch = vi.spyOn(batchCalls, 'record');
+
+		await playerCache.fetchManyByDate([
+			{ playerId: 1, date: AUG },
+			{ playerId: 2, date: AUG },
+			{ playerId: 1, date: new Date(2026, 7, 28).getTime() }
+		]);
+
+		expect(batch).toHaveBeenCalledTimes(1);
+		expect(batch.mock.calls[0][0]).toEqual([
+			{ id: 1, date: '2026-08-01' },
+			{ id: 2, date: '2026-08-01' }
+		]);
+		expect(playerCache.status(2, AUG)).toBe('found');
+	});
+
+	it('negative-caches a pair the batch reports as missing or failed', async () => {
+		getPlayerInfo.mockImplementation((id: number) =>
+			id === 1 ? Promise.resolve({ status: 204 }) : Promise.reject(new Error('timeout'))
+		);
+		await playerCache.fetchManyByDate([
+			{ playerId: 1, date: AUG },
+			{ playerId: 2, date: AUG }
+		]);
+		expect(playerCache.status(1, AUG)).toBe('missing');
+		expect(playerCache.status(2, AUG)).toBe('missing');
 	});
 
 	it('does nothing at all when every request is already cached', async () => {
