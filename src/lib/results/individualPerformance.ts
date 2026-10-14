@@ -1,45 +1,22 @@
 /**
- * The tournament-wide performance list: whether a tournament has one, and the
- * inputs and rating lookups the SDK's `getIndividualPerformance` needs.
+ * The inputs and rating lookups the SDK's `getIndividualPerformance` needs.
+ * Whether a tournament has a list at all is the SDK's `hasIndividualPerformance`.
  *
  * Pure, so the request-saving rule — which ratings the results tables already
  * answer — is tested without a store or a network.
  */
 import {
-	getGroupTimeControl,
 	getIndividualPerformanceLookups,
 	getMonthStartString,
 	normalizeEloLookupDate,
-	PointSystem,
 	type IndividualPerformanceLookup,
 	type PlayerInfoDto,
 	type TournamentDto,
 	type TournamentRoundResultDto
 } from '$lib/api';
-import { groupKindOf, type PrintGroupData } from '$lib/print/printData';
-import { flattenClasses } from './classTree';
+import type { PrintGroupData } from '$lib/print/printData';
 import { parseDateToTimestamp } from './roundGrouping';
 import { homeIsWhiteOnBoard } from './teamMatches';
-
-/**
- * Tournaments with at least one group a performance can come from: an
- * individual or team event, not Schackfyran-scored (the official list leaves
- * those out), and rated — its rounds or ranking name a rating list. An unrated
- * event would list everyone without a performance; the official site shows
- * such a list, with zeroes, and it means nothing. LASK-only groups count as
- * unrated here: no Elo performance comes from them.
- */
-export function hasIndividualPerformance(tournament: TournamentDto | null | undefined): boolean {
-	const kind = groupKindOf(tournament?.type);
-	if (!tournament || (kind !== 'individual' && kind !== 'team')) return false;
-	return flattenClasses(tournament).some((cls) =>
-		(cls.groups ?? []).some(
-			(group) =>
-				group.pointSystem !== PointSystem.SCHACK4AN &&
-				getGroupTimeControl(group).primary !== 'unknown'
-		)
-	);
-}
 
 /** What the list is built from: each group's rounds, and what is known about its players. */
 export interface PerformanceInputs {

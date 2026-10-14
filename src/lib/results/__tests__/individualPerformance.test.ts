@@ -8,18 +8,10 @@ import {
 	type TournamentRoundResultDto
 } from '$lib/api';
 import type { PrintGroupData } from '$lib/print/printData';
-import {
-	hasIndividualPerformance,
-	namesToFetch,
-	performanceInputs,
-	ratingsToFetch
-} from '../individualPerformance';
+import { namesToFetch, performanceInputs, ratingsToFetch } from '../individualPerformance';
 
-// Real tournament types: 3 individual, 2 team-with-team-pairings, 9 Schackfyran
-// (a team competition paired individually).
+// A real tournament type: 3 individual.
 const INDIVIDUAL = 3;
-const TEAM = 2;
-const SCHACKFYRAN = 9;
 
 const group = (id: number, pointSystem: number = PointSystem.DEFAULT) => ({
 	id,
@@ -90,53 +82,6 @@ const standings = [
 	{ contenderId: 100, club: { name: 'Växjö SK' } },
 	{ contenderId: 200, club: { name: 'Kalmar SK' } }
 ];
-
-describe('hasIndividualPerformance', () => {
-	it('is offered for an individual tournament', () => {
-		expect(hasIndividualPerformance(tournament(INDIVIDUAL))).toBe(true);
-	});
-
-	it('is offered for a team tournament', () => {
-		expect(hasIndividualPerformance(tournament(TEAM))).toBe(true);
-	});
-
-	it('is not offered for the individually paired Schackfyran format', () => {
-		expect(hasIndividualPerformance(tournament(SCHACKFYRAN))).toBe(false);
-	});
-
-	it('is not offered when every group plays Schackfyran scoring', () => {
-		const groups = [group(10, PointSystem.SCHACK4AN), group(11, PointSystem.SCHACK4AN)];
-		expect(hasIndividualPerformance(tournament(INDIVIDUAL, groups))).toBe(false);
-	});
-
-	it('is not offered for an unrated tournament', () => {
-		// Minior-Lag-DM 2025: ranking algorithm 5 (no rating), every round unrated.
-		const unrated = {
-			...group(10),
-			rankingAlgorithm: 5,
-			tournamentRounds: [1, 2].map((roundNumber) => ({
-				roundNumber,
-				rated: RoundRatedType.UNRATED
-			}))
-		};
-		expect(hasIndividualPerformance(tournament(INDIVIDUAL, [unrated]))).toBe(false);
-		expect(hasIndividualPerformance(tournament(TEAM, [unrated]))).toBe(false);
-	});
-
-	it('is offered when a group is rated by its ranking alone', () => {
-		const byRanking = { ...group(10), rankingAlgorithm: 1, tournamentRounds: [] };
-		expect(hasIndividualPerformance(tournament(INDIVIDUAL, [byRanking]))).toBe(true);
-	});
-
-	it('is offered when at least one group is ordinary', () => {
-		const groups = [group(10, PointSystem.SCHACK4AN), group(11)];
-		expect(hasIndividualPerformance(tournament(INDIVIDUAL, groups))).toBe(true);
-	});
-
-	it('is not offered before the tournament is known', () => {
-		expect(hasIndividualPerformance(null)).toBe(false);
-	});
-});
 
 describe('performanceInputs', () => {
 	it('merges every individual group’s players and keeps each group’s rounds', () => {

@@ -36,13 +36,13 @@
 	import {
 		getOpponentKind,
 		getTournamentStatus,
+		hasIndividualPerformance,
 		hasStandings,
 		normalizeEloLookupDate,
 		resolvePrizeMembers,
 		type TournamentRoundResultDto
 	} from '$lib/api';
 	import { findClassForGroup, firstGroupOf, flattenClasses } from '$lib/results/classTree';
-	import { hasIndividualPerformance } from '$lib/results/individualPerformance';
 	import { formatTeamId } from '$lib/results/teamId';
 	import { teamNameOrId } from '$lib/results/teamNames';
 	import { hasGroupEnded, isSingleDayToday } from '$lib/results/groupDates';
@@ -139,7 +139,9 @@
 	let selectedClass = $derived(findClassForGroup(allClasses, groupId));
 	let hasMultipleClasses = $derived(allClasses.length > 1);
 	let hasMultipleGroups = $derived((selectedClass?.groups?.length ?? 0) > 1);
-	let showPerformanceLink = $derived(hasIndividualPerformance(results.tournament));
+	let showPerformanceLink = $derived(
+		results.tournament !== null && hasIndividualPerformance(results.tournament)
+	);
 	/** With nothing to pick between, the group name is redundant beside the heading. */
 	let isSingleGroup = $derived(!hasMultipleClasses && !hasMultipleGroups);
 

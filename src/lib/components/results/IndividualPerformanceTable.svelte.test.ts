@@ -6,7 +6,7 @@ import IndividualPerformanceTable from './IndividualPerformanceTable.svelte';
 
 const row = (over: Partial<IndividualPerformanceRow>): IndividualPerformanceRow => ({
 	playerId: 1,
-	groupId: 10,
+	groupIds: [10],
 	games: 5,
 	won: 3,
 	drawn: 1,
@@ -64,8 +64,8 @@ describe('IndividualPerformanceTable', () => {
 		expect(cells(1)[8]).toBe('-');
 	});
 
-	it('links a name to the player’s games in their group', () => {
-		setup([row({ groupId: 18962 })]);
+	it('links a name to the player’s games in their main group', () => {
+		setup([row({ groupIds: [18962, 18963] })]);
 		expect(screen.getByRole('link', { name: 'Anna Svensson' })).toHaveAttribute(
 			'href',
 			'/results/7004/18962/1'

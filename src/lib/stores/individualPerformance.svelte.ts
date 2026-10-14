@@ -13,13 +13,13 @@
  */
 import {
 	getIndividualPerformance,
+	hasIndividualPerformance,
 	type IndividualPerformanceRow,
 	type PlayerInfoDto,
 	type TournamentDto
 } from '$lib/api';
 import { loadPrintData } from '$lib/print/printData';
 import {
-	hasIndividualPerformance,
 	namesToFetch,
 	performanceInputs,
 	ratingsToFetch,
@@ -38,7 +38,7 @@ export class IndividualPerformanceState {
 	#token = 0;
 
 	get available(): boolean {
-		return hasIndividualPerformance(this.tournament);
+		return this.tournament !== null && hasIndividualPerformance(this.tournament);
 	}
 
 	/** Empty until every rating has landed, so the list does not reshuffle as they do. */

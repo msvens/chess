@@ -3,8 +3,9 @@
 	 * The tournament-wide performance list, in the official list's order and
 	 * columns: rank, name, club, games, won / drawn / lost, points, PERF.
 	 *
-	 * Not sortable — the order is the ranking. A name links to the player's
-	 * games in their group, whose performance is the same number.
+	 * Not sortable — the order is the ranking. A player has one row for the
+	 * whole tournament, even across divisions; the name links to their games in
+	 * the group they played most in.
 	 */
 	import Link from '$lib/components/ui/Link.svelte';
 	import Table from '$lib/components/ui/Table/Table.svelte';
@@ -65,7 +66,7 @@
 </script>
 
 {#snippet nameCell(row: IndividualPerformanceRow)}
-	<Link href="/results/{tournamentId}/{row.groupId}/{row.playerId}" color="gray">
+	<Link href="/results/{tournamentId}/{row.groupIds[0]}/{row.playerId}" color="gray">
 		{nameOf(row.playerId)}
 	</Link>
 {/snippet}
@@ -75,5 +76,5 @@
 	{columns}
 	emptyMessage={tr.individualPerformance.noResults}
 	loadingMessage={labels.loadingResults}
-	getRowKey={(row) => `${row.groupId}-${row.playerId}`}
+	getRowKey={(row) => row.playerId}
 />

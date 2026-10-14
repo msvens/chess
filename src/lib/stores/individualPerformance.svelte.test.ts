@@ -196,8 +196,11 @@ describe('IndividualPerformanceState', () => {
 	});
 
 	it('offers no list for a Schackfyran-format tournament', async () => {
+		// Type 9 groups score 3/2/1 (checked on real ones), which the official list leaves out.
+		const schackfyran = tournament(9);
+		schackfyran.rootClasses![0].groups![0].pointSystem = PointSystem.SCHACK4AN;
 		loadPrintData.mockResolvedValue({
-			tournament: tournament(9),
+			tournament: schackfyran,
 			groups: []
 		} as unknown as PrintData);
 
