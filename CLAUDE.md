@@ -76,7 +76,8 @@ cannot work. Dev: the Vite proxy in `vite.config.ts`. Prod: nginx.
 404 _with_ a trailing slash, its one POST (`/player/list/`) 404s _without_. ChessTools is the
 same (`/fide/top_active/` requires the slash). The SDK emits the correct form per endpoint, so a
 "helpful" proxy rewrite is the only way to break it. `src/lib/api/__tests__/upstream.integration.test.ts`
-guards these assumptions on a daily schedule.
+guards the GET side on a daily schedule; the POST's slash is covered by the SDK's live
+`getPlayerList` test (`__tests__/players.test.ts`).
 
 # `static/data/`
 
