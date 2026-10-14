@@ -47,6 +47,32 @@ describe('PrintableTournament', () => {
 		expect(headings).toEqual(['Rond 1', 'Ställning']);
 	});
 
+	it('prints the rating of the type the round was rated under', () => {
+		// A standard-ranked group whose round 1 was rapid-rated: the sheet shows
+		// rapid ratings, as the round tab does, not the standard ones.
+		const elo = { rating: 1900, rapidRating: 1650 };
+		setup([
+			group({
+				group: {
+					id: 100,
+					name: 'Grupp A',
+					rankingAlgorithm: 1,
+					tournamentRounds: [{ roundNumber: 1, rated: 2 }]
+				} as unknown as PrintGroupData['group'],
+				roundResults: [
+					{ roundNr: 1, board: 1, homeId: 1, awayId: 2, homeResult: 0, awayResult: 0 }
+				] as unknown as PrintGroupData['roundResults'],
+				playerMap: new Map([
+					[1, { id: 1, firstName: 'Ann', lastName: 'A', elo }],
+					[2, { id: 2, firstName: 'Bo', lastName: 'B', elo: { rating: 1800 } }]
+				]) as unknown as PrintGroupData['playerMap']
+			})
+		]);
+		expect(screen.getByText('1650 S')).toBeTruthy();
+		expect(screen.queryByText('1900')).toBeNull();
+		expect(screen.queryByText('1800')).toBeNull();
+	});
+
 	it('gives a team group the team sheets', () => {
 		setup([
 			group({

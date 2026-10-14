@@ -98,6 +98,7 @@
 				pairings={group.roundResults}
 				playerMap={group.playerMap}
 				rankingAlgorithm={group.group.rankingAlgorithm}
+				roundRated={group.group.tournamentRounds?.find((r) => r.roundNumber === round)?.rated}
 				fontPx={effectiveFontPx(fontMode, auto, pairingRowCount(group))}
 				{sheetHeader}
 				{groupSuffix}

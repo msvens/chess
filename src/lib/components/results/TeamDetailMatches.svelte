@@ -39,7 +39,8 @@
 		/** Built from the group's standings, so both sides of a match resolve. */
 		formatTeamName: (contenderId: number, teamNumber: number) => string;
 		getPlayerName: (playerId: number, date?: number) => string;
-		getPlayerEloByDate: (playerId: number, date: number) => string;
+		/** Rating as of a month, of the type that round was rated under. */
+		getPlayerEloForRound: (playerId: number, date: number, roundNumber: number) => string;
 		tournamentId: number;
 		groupId: number;
 	}
@@ -50,7 +51,7 @@
 		selectedTeamNumber,
 		formatTeamName,
 		getPlayerName,
-		getPlayerEloByDate,
+		getPlayerEloForRound,
 		tournamentId,
 		groupId
 	}: TeamDetailMatchesProps = $props();
@@ -162,7 +163,7 @@
 			{
 				id: 'selectedElo',
 				header: tr.teamRoundResults.elo,
-				accessor: (game) => eloOf(game.homePlayerId, game.lookupDate),
+				accessor: (game) => eloOf(game.homePlayerId, game.lookupDate, card.round),
 				align: 'center',
 				noWrap: true,
 				width: '10%'
@@ -177,7 +178,7 @@
 			{
 				id: 'opponentElo',
 				header: tr.teamRoundResults.elo,
-				accessor: (game) => eloOf(game.awayPlayerId, game.lookupDate),
+				accessor: (game) => eloOf(game.awayPlayerId, game.lookupDate, card.round),
 				align: 'center',
 				noWrap: true,
 				width: '10%'
@@ -196,8 +197,10 @@
 		];
 	}
 
-	function eloOf(playerId: number, date: number): string {
-		return getOpponentKind(playerId) === 'paired' ? getPlayerEloByDate(playerId, date) : '-';
+	function eloOf(playerId: number, date: number, round: number): string {
+		return getOpponentKind(playerId) === 'paired'
+			? getPlayerEloForRound(playerId, date, round)
+			: '-';
 	}
 </script>
 

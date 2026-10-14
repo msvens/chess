@@ -384,19 +384,19 @@
 	]);
 
 	/**
-	 * The player's rating as it stood at the time of this game.
+	 * The player's rating as it stood at the time of this game, of the type the
+	 * round was rated under — a rapid round inside a standard-ranked group shows
+	 * rapid ratings, marked as such, the same as the player's match page.
 	 *
-	 * Deliberately the *group's* ranking algorithm, not the round's own `rated`
-	 * type — verified against resultat.schack.se, which shows the group rating
-	 * here even for a rapid- or blitz-rated round inside a standard-ranked group
-	 * (checked on groups 17723 and 17014). `getPlayerEloByDateAndRound` exists for
-	 * Elo *calculation*, where the round's type is what matters; this column is a
-	 * display of the ranking rating and must not use it.
+	 * Deliberately unlike resultat.schack.se, which shows the group's ranking
+	 * rating here whatever the round was rated under (groups 17723 and 17014).
+	 * That puts an unmarked standard rating next to a rapid game.
 	 */
 	function eloAt(row: TournamentRoundResultDto, playerId: number): string {
-		return results.getPlayerEloByDate(
+		return results.getPlayerEloByDateAndRound(
 			playerId,
-			normalizeEloLookupDate(parseDateToTimestamp(row.date))
+			normalizeEloLookupDate(parseDateToTimestamp(row.date)),
+			row.roundNr
 		);
 	}
 </script>
@@ -761,8 +761,8 @@
 									roundResults={results.teamRoundResults}
 									{formatTeamName}
 									getPlayerName={(playerId, date) => results.getPlayerName(playerId, date)}
-									getPlayerEloByDate={(playerId, date) =>
-										results.getPlayerEloByDate(playerId, date)}
+									getPlayerEloForRound={(playerId, date, roundNumber) =>
+										results.getPlayerEloByDateAndRound(playerId, date, roundNumber)}
 									fetchPlayersByDate={(requests) => results.fetchPlayersByDate(requests)}
 									{tournamentId}
 									{groupId}

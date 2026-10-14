@@ -34,7 +34,7 @@ function setup(over: Record<string, unknown> = {}) {
 			selectedTeamNumber: 1,
 			formatTeamName: (id: number) => `Club ${id}`,
 			getPlayerName: (id: number) => `Player ${id}`,
-			getPlayerEloByDate: (id: number) => `${1500 + id}`,
+			getPlayerEloForRound: (id: number) => `${1500 + id}`,
 			tournamentId: 5814,
 			groupId: 16559,
 			...over
@@ -93,7 +93,7 @@ describe('TeamDetailMatches', () => {
 				selectedTeamNumber: 1,
 				formatTeamName: (id: number) => `Club ${id}`,
 				getPlayerName: (id: number) => `Player ${id}`,
-				getPlayerEloByDate: () => '-',
+				getPlayerEloForRound: () => '-',
 				tournamentId: 5814,
 				groupId: 16559
 			}
@@ -117,7 +117,7 @@ describe('TeamDetailMatches', () => {
 				selectedTeamNumber: 1,
 				formatTeamName: (id: number) => `Club ${id}`,
 				getPlayerName: (id: number) => `Player ${id}`,
-				getPlayerEloByDate: () => '1500',
+				getPlayerEloForRound: () => '1500',
 				tournamentId: 5814,
 				groupId: 16559
 			}
@@ -133,7 +133,7 @@ describe('TeamDetailMatches', () => {
 				selectedTeamNumber: 1,
 				formatTeamName: (id: number) => `Club ${id}`,
 				getPlayerName: (id: number) => `Player ${id}`,
-				getPlayerEloByDate: () => '-',
+				getPlayerEloForRound: () => '-',
 				tournamentId: 5814,
 				groupId: 16559
 			}
