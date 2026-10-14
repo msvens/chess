@@ -16,11 +16,13 @@
 	interface IndividualPerformanceTableProps {
 		rows: IndividualPerformanceRow[];
 		tournamentId: number;
-		/** The player's record, for the name and club. */
+		/** The player's record, for the name. */
 		playerOf: (playerId: number) => PlayerInfoDto | undefined;
+		/** The club beside the name — in a team event, the club of the team they played for. */
+		clubOf: (playerId: number) => string | undefined;
 	}
 
-	let { rows, tournamentId, playerOf }: IndividualPerformanceTableProps = $props();
+	let { rows, tournamentId, playerOf, clubOf }: IndividualPerformanceTableProps = $props();
 
 	let tr = $derived(getTranslation(language.current).pages.tournamentResults);
 	let labels = $derived(tr.finalResultsTable);
@@ -42,7 +44,7 @@
 		{
 			id: 'club',
 			header: labels.club,
-			accessor: (row) => playerOf(row.playerId)?.club || '-',
+			accessor: (row) => clubOf(row.playerId) || '-',
 			// Club names are long and the least important column on a phone; clip
 			// rather than let them push the score columns off-screen.
 			cellClassName:

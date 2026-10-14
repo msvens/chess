@@ -24,7 +24,12 @@ const players: Record<number, PlayerInfoDto> = {
 
 function setup(rows: IndividualPerformanceRow[]) {
 	render(IndividualPerformanceTable, {
-		props: { rows, tournamentId: 7004, playerOf: (id: number) => players[id] }
+		props: {
+			rows,
+			tournamentId: 7004,
+			playerOf: (id: number) => players[id],
+			clubOf: (id: number) => players[id]?.club
+		}
 	});
 }
 

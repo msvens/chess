@@ -20,6 +20,7 @@ import {
 import { loadPrintData } from '$lib/print/printData';
 import {
 	hasIndividualPerformance,
+	namesToFetch,
 	performanceInputs,
 	ratingsToFetch,
 	type PerformanceInputs
@@ -48,9 +49,21 @@ export class IndividualPerformanceState {
 		);
 	});
 
-	/** A player as their group's results table has them, for the name and club. */
+	/**
+	 * A player's record for the name: their group's results table, or — in a
+	 * team event, whose tables have none — the record fetched at their first game.
+	 */
 	playerOf(playerId: number): PlayerInfoDto | undefined {
-		return this.#inputs?.snapshot.get(playerId);
+		const firstGame = this.#inputs?.firstGame.get(playerId);
+		return (
+			this.#inputs?.snapshot.get(playerId) ??
+			(firstGame ? playerCache.getByDate(playerId, parseDateToTimestamp(firstGame)) : undefined)
+		);
+	}
+
+	/** The club shown beside a player: the team's in a team event, else the player's own. */
+	clubOf(playerId: number): string | undefined {
+		return this.#inputs?.teamClub.get(playerId) ?? this.playerOf(playerId)?.club;
 	}
 
 	/**
@@ -79,10 +92,12 @@ export class IndividualPerformanceState {
 			if (!this.available) return;
 
 			await playerCache.fetchManyByDate(
-				ratingsToFetch(data.tournament, inputs).map(({ playerId, roundDate }) => ({
-					playerId,
-					date: parseDateToTimestamp(roundDate)
-				}))
+				[...ratingsToFetch(data.tournament, inputs), ...namesToFetch(inputs)].map(
+					({ playerId, roundDate }) => ({
+						playerId,
+						date: parseDateToTimestamp(roundDate)
+					})
+				)
 			);
 		} catch {
 			if (mine !== this.#token) return;
