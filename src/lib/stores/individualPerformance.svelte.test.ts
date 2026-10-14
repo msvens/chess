@@ -146,12 +146,68 @@ describe('IndividualPerformanceState', () => {
 		expect(state.rows.find((r) => r.playerId === 1)?.performance).toBe(2400);
 	});
 
-	it('offers no list for a team tournament', async () => {
-		loadPrintData.mockResolvedValue(printData([], [], 2));
+	it('builds the list for a team tournament from fetched records', async () => {
+		// Team tables carry no players: names, clubs and ratings all come from lookups.
+		// Player 1 (away, Kalmar SK) beats players 2, 3 and 4 (home, Växjö SK) on board 0
+		// of three matches; on board 0 the away team has white.
+		const rounds = [2, 3, 4].map(
+			(home, i) =>
+				({
+					roundNr: i + 1,
+					date: '2026-10-05',
+					homeId: 100,
+					awayId: 200,
+					games: [{ tableNr: 0, whiteId: 1, blackId: home, result: ResultCode.WHITE_WIN }]
+				}) as unknown as TournamentRoundResultDto
+		);
+		const data = {
+			tournament: tournament(2),
+			groups: [
+				{
+					group: tournament(2).rootClasses![0].groups![0],
+					kind: 'team',
+					roundResults: rounds,
+					playerMap: new Map(),
+					teamStandings: [
+						{ contenderId: 100, club: { name: 'Växjö SK' } },
+						{ contenderId: 200, club: { name: 'Kalmar SK' } }
+					]
+				}
+			]
+		} as unknown as PrintData;
+		loadPrintData.mockResolvedValue(data);
+		getPlayerInfo.mockImplementation(async (id: number) => ({
+			status: 200,
+			data: { ...player(id, 1600), club: 'Ljungby SK' }
+		}));
+		const fetches = vi.spyOn(playerCache, 'fetchManyByDate');
 
 		const state = new IndividualPerformanceState();
 		await state.load(1);
 
+		expect(state.available).toBe(true);
+		expect(fetches).toHaveBeenCalledTimes(1);
+		expect(state.rows.find((r) => r.playerId === 1)?.performance).toBe(2400);
+		expect(state.playerOf(1)?.lastName).toBe('P1');
+		// The team's club, not the player's own.
+		expect(state.clubOf(1)).toBe('Kalmar SK');
+		expect(state.clubOf(2)).toBe('Växjö SK');
+		fetches.mockRestore();
+	});
+
+	it('offers no list for a Schackfyran-format tournament', async () => {
+		// Type 9 groups score 3/2/1 (checked on real ones), which the official list leaves out.
+		const schackfyran = tournament(9);
+		schackfyran.rootClasses![0].groups![0].pointSystem = PointSystem.SCHACK4AN;
+		loadPrintData.mockResolvedValue({
+			tournament: schackfyran,
+			groups: []
+		} as unknown as PrintData);
+
+		const state = new IndividualPerformanceState();
+		await state.load(1);
+
+		expect(state.failed).toBe(false);
 		expect(state.available).toBe(false);
 		expect(state.rows).toEqual([]);
 	});

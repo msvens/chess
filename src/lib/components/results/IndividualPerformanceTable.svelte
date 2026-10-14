@@ -3,8 +3,9 @@
 	 * The tournament-wide performance list, in the official list's order and
 	 * columns: rank, name, club, games, won / drawn / lost, points, PERF.
 	 *
-	 * Not sortable — the order is the ranking. A name links to the player's
-	 * games in their group, whose performance is the same number.
+	 * Not sortable — the order is the ranking. A player has one row for the
+	 * whole tournament, even across divisions; the name links to their games in
+	 * the group they played most in.
 	 */
 	import Link from '$lib/components/ui/Link.svelte';
 	import Table from '$lib/components/ui/Table/Table.svelte';
@@ -16,11 +17,13 @@
 	interface IndividualPerformanceTableProps {
 		rows: IndividualPerformanceRow[];
 		tournamentId: number;
-		/** The player's record, for the name and club. */
+		/** The player's record, for the name. */
 		playerOf: (playerId: number) => PlayerInfoDto | undefined;
+		/** The club beside the name — in a team event, the club of the team they played for. */
+		clubOf: (playerId: number) => string | undefined;
 	}
 
-	let { rows, tournamentId, playerOf }: IndividualPerformanceTableProps = $props();
+	let { rows, tournamentId, playerOf, clubOf }: IndividualPerformanceTableProps = $props();
 
 	let tr = $derived(getTranslation(language.current).pages.tournamentResults);
 	let labels = $derived(tr.finalResultsTable);
@@ -42,7 +45,7 @@
 		{
 			id: 'club',
 			header: labels.club,
-			accessor: (row) => playerOf(row.playerId)?.club || '-',
+			accessor: (row) => clubOf(row.playerId) || '-',
 			// Club names are long and the least important column on a phone; clip
 			// rather than let them push the score columns off-screen.
 			cellClassName:
@@ -63,7 +66,7 @@
 </script>
 
 {#snippet nameCell(row: IndividualPerformanceRow)}
-	<Link href="/results/{tournamentId}/{row.groupId}/{row.playerId}" color="gray">
+	<Link href="/results/{tournamentId}/{row.groupIds[0]}/{row.playerId}" color="gray">
 		{nameOf(row.playerId)}
 	</Link>
 {/snippet}
@@ -73,5 +76,5 @@
 	{columns}
 	emptyMessage={tr.individualPerformance.noResults}
 	loadingMessage={labels.loadingResults}
-	getRowKey={(row) => `${row.groupId}-${row.playerId}`}
+	getRowKey={(row) => row.playerId}
 />

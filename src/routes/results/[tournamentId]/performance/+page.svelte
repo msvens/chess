@@ -60,6 +60,7 @@
 				rows={list.rows}
 				{tournamentId}
 				playerOf={(playerId) => list.playerOf(playerId)}
+				clubOf={(playerId) => list.clubOf(playerId)}
 			/>
 		{/if}
 	{:else if !list.loading}
