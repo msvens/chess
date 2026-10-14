@@ -100,37 +100,23 @@
 	//
 	// The Next version branched into three near-identical layouts by how many
 	// rating types had games (none / one / several). They are one list: a row per
-	// rated type, or a single dashed row when nothing was rated.
+	// rated type for the Elo change, or a single dashed row when nothing moved.
+	// The performance is one figure for the whole event, beside the first row.
 
 	const changeLabelOf = (type: RatingType) =>
 		type === 'rapid' ? elo.rapidEloChange : type === 'blitz' ? elo.blitzEloChange : elo.eloChange;
 
-	const performanceLabelOf = (type: RatingType) =>
-		type === 'rapid'
-			? elo.rapidPerformance
-			: type === 'blitz'
-				? elo.blitzPerformance
-				: elo.performanceRating;
-
 	let summaryRows = $derived(
 		summary.ratedTypes.length === 0
-			? [
-					{
-						key: 'none',
-						changeLabel: elo.eloChange,
-						change: '-',
-						performanceLabel: elo.performanceRating,
-						performance: '-'
-					}
-				]
+			? [{ key: 'none', changeLabel: elo.eloChange, change: '-' }]
 			: summary.ratedTypes.map((type) => ({
 					key: type,
 					changeLabel: changeLabelOf(type),
-					change: formatEloChange(summary.byRatingType[type]),
-					performanceLabel: performanceLabelOf(type),
-					performance: formatPerformance(summary.byRatingType[type])
+					change: formatEloChange(summary.byRatingType[type])
 				}))
 	);
+
+	let performance = $derived(formatPerformance(summary.performance));
 
 	// --- The games table ---
 
@@ -341,7 +327,7 @@
 						</div>
 
 						<div class="space-y-2">
-							{#each summaryRows as row (row.key)}
+							{#each summaryRows as row, index (row.key)}
 								<div class="grid grid-cols-2 gap-3">
 									<div>
 										<div class="text-xs text-gray-600 dark:text-gray-400">{row.changeLabel}</div>
@@ -349,14 +335,16 @@
 											{row.change}
 										</div>
 									</div>
-									<div>
-										<div class="text-xs text-gray-600 dark:text-gray-400">
-											{row.performanceLabel}
+									{#if index === 0}
+										<div>
+											<div class="text-xs text-gray-600 dark:text-gray-400">
+												{elo.performanceRating}
+											</div>
+											<div class="text-sm font-medium text-gray-900 dark:text-gray-200">
+												{performance}
+											</div>
 										</div>
-										<div class="text-sm font-medium text-gray-900 dark:text-gray-200">
-											{row.performance}
-										</div>
-									</div>
+									{/if}
 								</div>
 							{/each}
 						</div>

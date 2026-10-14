@@ -248,7 +248,22 @@ describe('the summary', () => {
 
 	it('collects the opponent’s rating for the performance calculation', () => {
 		const summary = summarise([game()], ME, RIVAL, meta, at);
-		expect(summary.byRatingType.standard.opponentRatings).toEqual([2000]);
+		expect(summary.performance.opponentRatings).toEqual([2000]);
+	});
+
+	it('pools every list into one performance', () => {
+		// Elo stays per list; the performance is one figure, as on the match page.
+		const games = [game({ id: 1, groupiD: 10 }), game({ id: 2, groupiD: 20, result: 0 })];
+		const summary = summarise(games, ME, RIVAL, meta, at);
+		expect(summary.performance.opponentRatings).toEqual([2000, 1900]);
+		expect(summary.performance.score).toBe(1.5);
+	});
+
+	it('gives an unrated player a performance but no Elo change', () => {
+		const unrated = (id: number) => (id === ME ? player(ME, null) : records[RIVAL]);
+		const summary = summarise([game()], ME, RIVAL, meta, unrated);
+		expect(summary.ratedTypes).toEqual([]);
+		expect(summary.performance.opponentRatings).toEqual([2000]);
 	});
 
 	it('has no rated types when nothing was rated', () => {
