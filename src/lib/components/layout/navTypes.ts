@@ -13,7 +13,8 @@ export interface NavBrand {
 	href: string;
 	/** Rendered as stacked lines, e.g. ['msvens', 'chess']. */
 	lines: string[];
-	logo?: string;
+	/** One logo per theme; the navbar shows the one for the current theme. */
+	logo?: { light: string; dark: string };
 }
 
 // --- Items inside a dropdown panel ---

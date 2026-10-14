@@ -10,6 +10,7 @@
 	 */
 	import { Bars3, Icon } from 'svelte-hero-icons';
 	import Link from '$lib/components/ui/Link.svelte';
+	import { theme } from '$lib/stores/theme.svelte';
 	import NavItemLink from './NavItem.svelte';
 	import NavDropdown from './NavDropdown.svelte';
 	import NavbarMobileMenu from './NavbarMobileMenu.svelte';
@@ -54,7 +55,13 @@
 		{#if brand.logo}
 			<!-- Plain <img>: the Next version passed `unoptimized`, so nothing was
 			     going through the image optimiser anyway. -->
-			<img src={brand.logo} alt="" width="40" height="40" class="h-10 w-auto object-contain" />
+			<img
+				src={brand.logo[theme.current]}
+				alt=""
+				width="40"
+				height="40"
+				class="h-10 w-10 object-contain"
+			/>
 		{/if}
 		<div>
 			{#each brand.lines as line (line)}

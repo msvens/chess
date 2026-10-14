@@ -44,6 +44,12 @@
 	);
 </script>
 
+<svelte:head>
+	<!-- Follows the site's theme, like the navbar logo. Until this runs the
+	     browser falls back to /favicon.ico, the dark one — dark is the default. -->
+	<link rel="icon" type="image/png" href="/favicon-{theme.current}.png" />
+</svelte:head>
+
 <Navbar {brand} display="text" centerItems={center} rightItems={right} />
 
 <main class="min-h-screen">
