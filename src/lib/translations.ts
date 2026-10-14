@@ -94,8 +94,6 @@ export interface Translations {
 			performanceRating: string;
 			rapidEloChange: string;
 			blitzEloChange: string;
-			rapidPerformance: string;
-			blitzPerformance: string;
 			/** The player has no rated months in the chosen range. */
 			noHistory: string;
 			/** The rating-history request failed. */
@@ -872,8 +870,6 @@ const translations: Record<Language, Translations> = {
 				performanceRating: 'Performance Rating',
 				rapidEloChange: 'Rapid Elo +/-',
 				blitzEloChange: 'Blitz Elo +/-',
-				rapidPerformance: 'Rapid Performance',
-				blitzPerformance: 'Blitz Performance',
 				noHistory: 'No rating history available',
 				historyError: 'Failed to load rating history'
 			},
@@ -1633,8 +1629,6 @@ const translations: Record<Language, Translations> = {
 				performanceRating: 'Elo prestation',
 				rapidEloChange: 'Snabb Elo +/-',
 				blitzEloChange: 'Blixt Elo +/-',
-				rapidPerformance: 'Snabb prestation',
-				blitzPerformance: 'Blixt prestation',
 				noHistory: 'Ingen ratinghistorik tillgänglig',
 				historyError: 'Kunde inte hämta ratinghistoriken'
 			},

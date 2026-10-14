@@ -169,7 +169,15 @@ describe('the summary panel', () => {
 
 		await vi.waitFor(() => expect(within(panel()).getByText('Blixt Elo +/-')).toBeInTheDocument());
 		expect(within(panel()).getByText('Elo +/-')).toBeInTheDocument();
-		expect(within(panel()).getByText('Blixt prestation')).toBeInTheDocument();
+	});
+
+	it('shows one performance across both lists', async () => {
+		withRatings();
+		setup([game({ id: 1, groupiD: 10 }), game({ id: 2, groupiD: 20 })]);
+
+		await vi.waitFor(() => expect(within(panel()).getByText('Blixt Elo +/-')).toBeInTheDocument());
+		expect(within(panel()).getAllByText('Elo prestation')).toHaveLength(1);
+		expect(within(panel()).queryByText('Blixt prestation')).toBeNull();
 	});
 
 	it('signs the Elo change, and totals it per list', async () => {

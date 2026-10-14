@@ -1,9 +1,18 @@
 import { describe, it, expect } from 'vitest';
-import { PointSystem, ResultCode, RoundRatedType, type PlayerInfoDto } from '$lib/api';
-import type { PlayerMatch } from '../playerMatches';
+import {
+	getIndividualPerformance,
+	PointSystem,
+	ResultCode,
+	RoundRatedType,
+	type PlayerInfoDto,
+	type TournamentDto,
+	type TournamentRoundResultDto
+} from '$lib/api';
+import { playerMatches, type PlayerMatch } from '../playerMatches';
 import {
 	formatEloChange,
 	formatPerformance,
+	performanceGame,
 	ratedGame,
 	summarise,
 	type PlayerAt
@@ -83,12 +92,6 @@ describe('ratedGame — the arithmetic', () => {
 		expect(rate(match({ result: 'loss' }))!.change).toBeLessThan(0);
 	});
 
-	it('scores a win, a draw and a loss as 1, ½ and 0', () => {
-		expect(rate(match({ result: 'win' }))!.score).toBe(1);
-		expect(rate(match({ result: 'draw' }))!.score).toBe(0.5);
-		expect(rate(match({ result: 'loss' }))!.score).toBe(0);
-	});
-
 	it('uses the round’s own rating type over the group algorithm', () => {
 		// The player is 1700 standard but 1600 blitz. A blitz-rated round inside a
 		// standard event must be computed against the blitz figure.
@@ -109,6 +112,42 @@ describe('ratedGame — the arithmetic', () => {
 		const junior = rate(match(), player({ rating: 1700 }, born), player({ rating: 1650 }))!;
 		const adult = rate(match(), player({ rating: 1700 }), player({ rating: 1650 }))!;
 		expect(Math.abs(junior.change)).toBeGreaterThan(Math.abs(adult.change));
+	});
+});
+
+describe('performanceGame', () => {
+	const opponent = player({ rating: 1800, rapidRating: 1750, blitzRating: 0 });
+	const perf = (m: PlayerMatch, them: PlayerInfoDto | undefined = opponent) =>
+		performanceGame(m, them, STANDARD_ALGORITHM);
+
+	it('scores a win, a draw and a loss as 1, ½ and 0', () => {
+		expect(perf(match({ result: 'win' }))!.score).toBe(1);
+		expect(perf(match({ result: 'draw' }))!.score).toBe(0.5);
+		expect(perf(match({ result: 'loss' }))!.score).toBe(0);
+	});
+
+	it('rates the opponent at the round’s own type', () => {
+		expect(perf(match())!.opponentRating).toBe(1800);
+		expect(perf(match({ roundRatedType: RoundRatedType.RAPID }))!.opponentRating).toBe(1750);
+	});
+
+	it('needs nothing from the player — an unrated player still counts', () => {
+		// The signature takes no player at all; this is the case `ratedGame` cannot do.
+		expect(rate(match(), player({ rating: 0 }))).toBeNull();
+		expect(perf(match())).not.toBeNull();
+	});
+
+	it('leaves out what was not played, or not rated', () => {
+		expect(perf(match({ isWalkover: true }))).toBeNull();
+		expect(perf(match({ isCountable: false }))).toBeNull();
+		expect(perf(match({ resultCode: ResultCode.WHITE_TOURIST_WO }))).toBeNull();
+		expect(perf(match({ roundRatedType: RoundRatedType.UNRATED }))).toBeNull();
+	});
+
+	it('leaves out an opponent with no rating of the round’s type', () => {
+		// Counting them as zero would drag the performance down by hundreds of points.
+		expect(perf(match({ roundRatedType: RoundRatedType.BLITZ }))).toBeNull();
+		expect(performanceGame(match(), undefined, STANDARD_ALGORITHM)).toBeNull();
 	});
 });
 
@@ -185,6 +224,26 @@ describe('summarise', () => {
 		expect(summary.totalScore).toBe(1);
 		expect(summary.byRatingType.standard.gameCount).toBe(0);
 	});
+
+	it('pools every rated game into one performance, while Elo stays per list', () => {
+		const matches = [
+			match({ round: 1, roundRatedType: RoundRatedType.RAPID }),
+			match({ round: 2, roundRatedType: RoundRatedType.STANDARD }),
+			match({ round: 3, roundRatedType: RoundRatedType.STANDARD, result: 'loss' })
+		];
+		const summary = summarise(matches, ME, playerAt, STANDARD_ALGORITHM, null);
+		expect(summary.ratedTypes).toEqual(['standard', 'rapid']);
+		expect(summary.performance.opponentRatings).toEqual([1650, 1650, 1650]);
+		expect(summary.performance.score).toBe(2);
+	});
+
+	it('gives an unrated player a performance but no Elo change', () => {
+		const unrated: PlayerAt = (id) =>
+			id === ME ? player({ rating: 0, rapidRating: 0, blitzRating: 0 }) : player();
+		const summary = summarise([match()], ME, unrated, STANDARD_ALGORITHM, null);
+		expect(summary.ratedTypes).toEqual([]);
+		expect(summary.performance.opponentRatings).toEqual([1700]);
+	});
 });
 
 describe('formatEloChange', () => {
@@ -210,12 +269,7 @@ describe('formatEloChange', () => {
 });
 
 describe('formatPerformance', () => {
-	const stats = (opponentRatings: number[], score: number) => ({
-		change: 0,
-		opponentRatings,
-		score,
-		gameCount: opponentRatings.length
-	});
+	const stats = (opponentRatings: number[], score: number) => ({ opponentRatings, score });
 
 	it('is 800 above the field for a perfect score', () => {
 		expect(formatPerformance(stats([1600, 1700, 1800], 3))).toBe('2500');
@@ -231,5 +285,93 @@ describe('formatPerformance', () => {
 
 	it('is a dash when nothing was rated', () => {
 		expect(formatPerformance(stats([], 0))).toBe('-');
+	});
+
+	it('is a dash below three games against rated opponents', () => {
+		// The official site shows none below three; two games is not enough.
+		expect(formatPerformance(stats([1600, 1700], 2))).toBe('-');
+	});
+});
+
+describe('agreeing with the SDK’s performance list', () => {
+	// The tournament list (`getIndividualPerformance`) and the match page must show the
+	// same number for the same player. One group with every awkward case: an
+	// unrated subject, a rapid round in a standard group, an unrated round, a
+	// walkover and an opponent with no rating.
+	const GROUP = 500;
+	const SUBJECT = 1;
+	const rounds = [
+		{ roundNumber: 1, rated: RoundRatedType.RAPID },
+		{ roundNumber: 2, rated: RoundRatedType.STANDARD },
+		{ roundNumber: 3, rated: RoundRatedType.STANDARD },
+		{ roundNumber: 4, rated: RoundRatedType.UNRATED },
+		{ roundNumber: 5, rated: RoundRatedType.STANDARD },
+		{ roundNumber: 6, rated: RoundRatedType.STANDARD }
+	];
+	const tournament = {
+		id: 1,
+		rootClasses: [
+			{
+				groups: [
+					{
+						id: GROUP,
+						pointSystem: PointSystem.DEFAULT,
+						rankingAlgorithm: STANDARD_ALGORITHM,
+						tournamentRounds: rounds
+					}
+				]
+			}
+		]
+	} as unknown as TournamentDto;
+
+	const row = (roundNr: number, opponent: number, result: number): TournamentRoundResultDto =>
+		({
+			roundNr,
+			date: '2026-01-15',
+			homeId: SUBJECT,
+			awayId: opponent,
+			homeResult: 0,
+			awayResult: 0,
+			games: [{ whiteId: SUBJECT, blackId: opponent, result }]
+		}) as unknown as TournamentRoundResultDto;
+	const rows = [
+		row(1, 11, ResultCode.WHITE_WIN),
+		row(2, 12, ResultCode.DRAW),
+		row(3, 13, ResultCode.BLACK_WIN),
+		row(4, 14, ResultCode.WHITE_WIN),
+		row(5, 15, ResultCode.WHITE_WIN_WO),
+		row(6, 16, ResultCode.WHITE_WIN)
+	];
+
+	const records: Record<number, PlayerInfoDto['elo'] | undefined> = {
+		[SUBJECT]: undefined,
+		11: { rating: 1900, rapidRating: 1850 } as PlayerInfoDto['elo'],
+		12: { rating: 1700 } as PlayerInfoDto['elo'],
+		13: { rating: 2000 } as PlayerInfoDto['elo'],
+		14: { rating: 1500 } as PlayerInfoDto['elo'],
+		15: { rating: 1600 } as PlayerInfoDto['elo'],
+		16: { rating: 0 } as PlayerInfoDto['elo']
+	};
+	const record = (id: number) => ({ ...player(), id, elo: records[id] }) as PlayerInfoDto;
+
+	it('gives the subject the same performance as the list', () => {
+		const listed = getIndividualPerformance(tournament, new Map([[GROUP, rows]]), (id) =>
+			record(id)
+		).find((r) => r.playerId === SUBJECT);
+
+		const matches = playerMatches({
+			memberId: SUBJECT,
+			isTeamTournament: false,
+			individualRoundResults: rows,
+			teamRoundResults: [],
+			ratedTypeOfRound: (round) => rounds.find((r) => r.roundNumber === round)?.rated
+		});
+		const summary = summarise(matches, SUBJECT, record, STANDARD_ALGORITHM, null);
+
+		// Rounds 1 (rapid 1850), 2 and 3 count: round 4 is unrated, 5 a walkover,
+		// 6 an unrated opponent.
+		expect(listed?.ratedGames).toBe(3);
+		expect(summary.performance.opponentRatings).toEqual([1850, 1700, 2000]);
+		expect(formatPerformance(summary.performance)).toBe(String(listed?.performance));
 	});
 });

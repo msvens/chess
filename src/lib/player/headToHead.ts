@@ -24,7 +24,13 @@ import {
 	type TournamentDto
 } from '$lib/api';
 import type { PlayerMatch } from '$lib/results/playerMatches';
-import { ratedGame, type RatingType, type RatingTypeStats } from '$lib/results/tournamentElo';
+import {
+	performanceGame,
+	ratedGame,
+	type PerformanceStats,
+	type RatingType,
+	type RatingTypeStats
+} from '$lib/results/tournamentElo';
 
 /** What a group contributes to a rating: when it counted, and against which list. */
 export interface GroupMeta {
@@ -43,6 +49,8 @@ export interface HeadToHeadSummary {
 	byRatingType: Record<RatingType, RatingTypeStats>;
 	/** The rating lists these games actually moved. */
 	ratedTypes: RatingType[];
+	/** One performance across every rated game, whatever its list — as per event. */
+	performance: PerformanceStats;
 }
 
 /** Just the games these two played against each other. */
@@ -183,12 +191,7 @@ export function eloChanges(
 	return changes;
 }
 
-const emptyStats = (): RatingTypeStats => ({
-	change: 0,
-	opponentRatings: [],
-	score: 0,
-	gameCount: 0
-});
+const emptyStats = (): RatingTypeStats => ({ change: 0, gameCount: 0 });
 
 /**
  * Totals for the panel under the table.
@@ -199,7 +202,7 @@ const emptyStats = (): RatingTypeStats => ({
  * produce a number that means nothing.
  *
  * A game counts towards "x of y" even when its tournament metadata is missing;
- * only the Elo buckets need a rating to fall into. That is the React version's
+ * only the Elo buckets and the performance need a rating. That is the React version's
  * behaviour, and it is the right one — the game was still played.
  */
 export function summarise(
@@ -215,6 +218,7 @@ export function summarise(
 		blitz: emptyStats()
 	};
 
+	const performance: PerformanceStats = { opponentRatings: [], score: 0 };
 	let totalScore = 0;
 	let playedCount = 0;
 
@@ -229,19 +233,24 @@ export function summarise(
 		playedCount += 1;
 
 		if (!groupMeta) continue;
+		const opponent = playerAt(opponentId, groupMeta.date);
+
+		const forPerformance = performanceGame(match, opponent, groupMeta.rankingAlgorithm);
+		if (forPerformance) {
+			performance.opponentRatings.push(forPerformance.opponentRating);
+			performance.score += forPerformance.score;
+		}
 
 		const rated = ratedGame(
 			match,
 			playerAt(memberId, groupMeta.date),
-			playerAt(opponentId, groupMeta.date),
+			opponent,
 			groupMeta.rankingAlgorithm
 		);
 		if (!rated) continue;
 
 		const stats = byRatingType[rated.ratingType];
 		stats.change += rated.change;
-		stats.opponentRatings.push(rated.opponentRating);
-		stats.score += rated.score;
 		stats.gameCount += 1;
 	}
 
@@ -249,5 +258,5 @@ export function summarise(
 		(type) => byRatingType[type].gameCount > 0
 	);
 
-	return { totalScore, playedCount, byRatingType, ratedTypes };
+	return { totalScore, playedCount, byRatingType, ratedTypes, performance };
 }

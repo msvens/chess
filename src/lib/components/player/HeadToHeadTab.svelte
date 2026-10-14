@@ -114,12 +114,6 @@
 		blitz: elo.blitzEloChange
 	});
 
-	const performanceLabels: Record<RatingType, string> = $derived({
-		standard: elo.performanceRating,
-		rapid: elo.rapidPerformance,
-		blitz: elo.blitzPerformance
-	});
-
 	/**
 	 * Which rating types the panel shows.
 	 *
@@ -234,13 +228,13 @@
 				</div>
 
 				<div class="space-y-2">
-					{#each panelTypes as type (type)}
+					{#each panelTypes as type, index (type)}
 						<div class="grid grid-cols-2 gap-3">
 							{@render figure(changeLabels[type], formatEloChange(summary.byRatingType[type]))}
-							{@render figure(
-								performanceLabels[type],
-								formatPerformance(summary.byRatingType[type])
-							)}
+							<!-- One performance across every list, beside the first Elo row. -->
+							{#if index === 0}
+								{@render figure(elo.performanceRating, formatPerformance(summary.performance))}
+							{/if}
 						</div>
 					{/each}
 				</div>

@@ -8,7 +8,10 @@
  *
  * A tournament can be rated under more than one time control — a blitz chain
  * inside a standard event — and Elo from different lists must never be added
- * together. Hence a bucket per rating type rather than one running total.
+ * together. Hence a bucket per rating type for the Elo change. Performance is
+ * the other way round: one per player per event, pooling every rated game at
+ * its own round's type, as the official site and the SDK's
+ * `getIndividualPerformance` do.
  */
 import {
 	calculateRatingChange,
@@ -16,6 +19,8 @@ import {
 	getKFactorForRating,
 	getPlayerPoints,
 	getPlayerRatingForRound,
+	isTouristBye,
+	MIN_RATED_GAMES_FOR_PERFORMANCE,
 	PointSystem,
 	PointValues,
 	RoundRatedType,
@@ -36,21 +41,30 @@ import type { PlayerMatch } from './playerMatches';
  */
 export type RatingType = 'standard' | 'rapid' | 'blitz';
 
-/** One game that counted towards a rating. */
+/** One game that moved the player's rating. */
 export interface RatedGame {
 	ratingType: RatingType;
 	/** Signed, already rounded to a tenth by the SDK. */
 	change: number;
+}
+
+/** One game that counts towards a performance rating. */
+export interface PerformanceGame {
 	opponentRating: number;
 	/** 1, ½ or 0. */
 	score: number;
 }
 
+/** Elo change for one rating list. */
 export interface RatingTypeStats {
 	change: number;
+	gameCount: number;
+}
+
+/** The games behind a performance rating, pooled across rating types. */
+export interface PerformanceStats {
 	opponentRatings: number[];
 	score: number;
-	gameCount: number;
 }
 
 export interface TournamentSummary {
@@ -61,8 +75,9 @@ export interface TournamentSummary {
 	/** The most `playedCount` games could score: a win's worth each, in the event's point system. */
 	maxScore: number;
 	byRatingType: Record<RatingType, RatingTypeStats>;
-	/** The rating types this event actually produced games for. */
+	/** The rating types this event moved the player's rating on. */
 	ratedTypes: RatingType[];
+	performance: PerformanceStats;
 }
 
 /** Look a player's record up as it stood in a given month. */
@@ -97,9 +112,8 @@ export function matchRatings(
  *
  * Null covers every reason a game does not move a rating: it was a walkover, the
  * code is not a result at all, the round was unrated, or either side has no
- * rating of the relevant type. A missing rating means the game is *excluded*,
- * not that it counts as zero — averaging a zero in would drag a performance
- * rating down by hundreds of points.
+ * rating of the relevant type — the change needs both ratings and the player's
+ * K-factor.
  */
 export function ratedGame(
 	match: PlayerMatch,
@@ -119,7 +133,7 @@ export function ratedGame(
 	);
 	if (!playerRating || !opponentRating || !ratingType) return null;
 
-	const score = match.result === 'win' ? 1 : match.result === 'draw' ? 0.5 : 0;
+	const score = scoreOf(match);
 	// The K-factor depends on the player's age *at the time of the round*, not
 	// today — juniors under 18 rated below 2300 get K=40.
 	const kFactor = getKFactorForRating(
@@ -132,18 +146,39 @@ export function ratedGame(
 
 	return {
 		ratingType,
-		change: calculateRatingChange(playerRating, opponentRating, score, kFactor),
-		opponentRating,
-		score
+		change: calculateRatingChange(playerRating, opponentRating, score, kFactor)
 	};
 }
 
-const emptyStats = (): RatingTypeStats => ({
-	change: 0,
-	opponentRatings: [],
-	score: 0,
-	gameCount: 0
-});
+/**
+ * What one game adds to a performance rating, or null when it adds nothing.
+ *
+ * Only the opponent's rating matters — an unrated player still gets a
+ * performance. The game must have been played (no walkover or tourist bye, a
+ * real result), in a rated round, against an opponent rated at that round's
+ * type. A missing rating *excludes* the game rather than counting as zero, which
+ * would drag the performance down by hundreds of points. These are the SDK's
+ * `getIndividualPerformance` rules, so this page and that list agree.
+ */
+export function performanceGame(
+	match: PlayerMatch,
+	opponent: PlayerInfoDto | undefined,
+	rankingAlgorithm: number | null
+): PerformanceGame | null {
+	if (match.isWalkover || !match.isCountable) return null;
+	if (match.resultCode !== undefined && isTouristBye(match.resultCode)) return null;
+	if (match.roundRatedType === RoundRatedType.UNRATED) return null;
+
+	const { rating } = getPlayerRatingForRound(opponent?.elo, rankingAlgorithm, match.roundRatedType);
+	if (!rating) return null;
+
+	return { opponentRating: rating, score: scoreOf(match) };
+}
+
+const scoreOf = (match: PlayerMatch): number =>
+	match.result === 'win' ? 1 : match.result === 'draw' ? 0.5 : 0;
+
+const emptyStats = (): RatingTypeStats => ({ change: 0, gameCount: 0 });
 
 /** Totals for the panel under the games table. */
 export function summarise(
@@ -159,24 +194,26 @@ export function summarise(
 		blitz: emptyStats()
 	};
 
+	const performance: PerformanceStats = { opponentRatings: [], score: 0 };
+
 	const played = matches.filter((match) => !match.isWalkover && match.isCountable);
 
 	let totalScore = 0;
 	for (const match of played) {
 		totalScore += pointsOf(match);
+		const opponent = playerAt(match.opponentId, match.roundDate);
 
-		const rated = ratedGame(
-			match,
-			playerAt(memberId, match.roundDate),
-			playerAt(match.opponentId, match.roundDate),
-			rankingAlgorithm
-		);
+		const forPerformance = performanceGame(match, opponent, rankingAlgorithm);
+		if (forPerformance) {
+			performance.opponentRatings.push(forPerformance.opponentRating);
+			performance.score += forPerformance.score;
+		}
+
+		const rated = ratedGame(match, playerAt(memberId, match.roundDate), opponent, rankingAlgorithm);
 		if (!rated) continue;
 
 		const stats = byRatingType[rated.ratingType];
 		stats.change += rated.change;
-		stats.opponentRatings.push(rated.opponentRating);
-		stats.score += rated.score;
 		stats.gameCount += 1;
 	}
 
@@ -189,7 +226,8 @@ export function summarise(
 		playedCount: played.length,
 		maxScore: played.length * winValue(pointSystem),
 		byRatingType,
-		ratedTypes
+		ratedTypes,
+		performance
 	};
 }
 
@@ -225,8 +263,12 @@ export function formatEloChange(stats: RatingTypeStats): string {
 	return rounded > 0 ? `+${rounded}` : String(rounded);
 }
 
-/** Performance rating for a bucket. A dash when nothing was rated. */
-export function formatPerformance(stats: RatingTypeStats): string {
-	if (stats.opponentRatings.length === 0) return '-';
+/**
+ * The performance rating, or a dash with fewer than
+ * `MIN_RATED_GAMES_FOR_PERFORMANCE` games against rated opponents — the official
+ * site shows none below that.
+ */
+export function formatPerformance(stats: PerformanceStats): string {
+	if (stats.opponentRatings.length < MIN_RATED_GAMES_FOR_PERFORMANCE) return '-';
 	return String(calculatePerformanceRating(stats.opponentRatings, stats.score));
 }
