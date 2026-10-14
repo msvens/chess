@@ -28,7 +28,8 @@ import type { NavBrand, NavItem, NavLinkItem, NavDropdownItem } from './navTypes
 
 export const brand: NavBrand = {
 	href: '/',
-	lines: ['msvens', 'chess']
+	lines: ['msvens', 'chess'],
+	logo: { light: '/logo-light.png', dark: '/logo-dark.png' }
 };
 
 /**

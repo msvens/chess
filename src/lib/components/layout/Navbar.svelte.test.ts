@@ -1,8 +1,10 @@
 import { render, screen, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
+import { tick } from 'svelte';
 import { describe, expect, it, vi } from 'vitest';
 import Navbar from './Navbar.svelte';
 import { brand, centerItems, rightItems } from './nav';
+import { theme } from '$lib/stores/theme.svelte';
 
 function renderNavbar(overrides: Partial<Parameters<typeof Navbar>[1]> = {}) {
 	return render(Navbar, {
@@ -30,6 +32,21 @@ describe('Navbar', () => {
 		// ...but the accessible name must not run them together. Two inline spans
 		// concatenate to "msvenschess" without the explicit label.
 		expect(homeLinks[0]).toHaveAccessibleName('msvens chess');
+	});
+
+	it('shows the logo for the current theme, and only that one', async () => {
+		// The logo is decorative (alt=""), so it is found through its container.
+		const { container } = renderNavbar();
+		const logos = () =>
+			[...container.querySelectorAll('img')].map((img) => img.getAttribute('src'));
+
+		theme.set('dark');
+		await tick();
+		expect(logos()).toEqual(['/logo-dark.png', '/logo-dark.png']);
+
+		theme.set('light');
+		await tick();
+		expect(logos()).toEqual(['/logo-light.png', '/logo-light.png']);
 	});
 
 	it('renders every primary section', () => {
