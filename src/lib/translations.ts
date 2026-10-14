@@ -568,6 +568,22 @@ export interface Translations {
 				teamAvgRating: string;
 				opponentAvgRating: string;
 			};
+			/**
+			 * The tournament-wide performance list, resultat.schack.se's
+			 * "Individuella resultat". Column headers reuse `finalResultsTable`.
+			 */
+			individualPerformance: {
+				/** The link to the list from a group page. */
+				link: string;
+				title: string;
+				backToResults: string;
+				/** `{done}` and `{total}`: historical ratings fetched so far. */
+				loadingRatings: string;
+				/** Team and Schackfyran-only tournaments have no list. */
+				notAvailable: string;
+				performance: string;
+				noResults: string;
+			};
 		};
 		elo: {
 			navigation: {
@@ -1326,6 +1342,15 @@ const translations: Record<Language, Translations> = {
 					position: 'Pos',
 					teamAvgRating: 'Team Avg Rating',
 					opponentAvgRating: 'Opponents Avg Rating'
+				},
+				individualPerformance: {
+					link: 'Individual performance',
+					title: 'Individual performance',
+					backToResults: 'Back to results',
+					loadingRatings: 'Loading ratings ({done} of {total})...',
+					notAvailable: 'There is no individual performance list for this tournament.',
+					performance: 'Perf',
+					noResults: 'No games played yet'
 				}
 			},
 			elo: {
@@ -2086,6 +2111,16 @@ const translations: Record<Language, Translations> = {
 					position: 'Plac',
 					teamAvgRating: 'Lagets medelranking',
 					opponentAvgRating: 'Motståndarnas medelranking'
+				},
+				individualPerformance: {
+					link: 'Individuell prestation',
+					title: 'Individuell prestation',
+					backToResults: 'Tillbaka till resultat',
+					loadingRatings: 'Laddar ratingar ({done} av {total})...',
+					notAvailable:
+						'Det finns ingen lista över individuell prestation för den här turneringen.',
+					performance: 'Perf',
+					noResults: 'Inga partier spelade ännu'
 				}
 			},
 			elo: {

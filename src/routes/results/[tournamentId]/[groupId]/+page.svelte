@@ -42,6 +42,7 @@
 		type TournamentRoundResultDto
 	} from '$lib/api';
 	import { findClassForGroup, firstGroupOf, flattenClasses } from '$lib/results/classTree';
+	import { hasIndividualPerformance } from '$lib/results/individualPerformance';
 	import { formatTeamId } from '$lib/results/teamId';
 	import { teamNameOrId } from '$lib/results/teamNames';
 	import { hasGroupEnded, isSingleDayToday } from '$lib/results/groupDates';
@@ -138,6 +139,7 @@
 	let selectedClass = $derived(findClassForGroup(allClasses, groupId));
 	let hasMultipleClasses = $derived(allClasses.length > 1);
 	let hasMultipleGroups = $derived((selectedClass?.groups?.length ?? 0) > 1);
+	let showPerformanceLink = $derived(hasIndividualPerformance(results.tournament));
 	/** With nothing to pick between, the group name is redundant beside the heading. */
 	let isSingleGroup = $derived(!hasMultipleClasses && !hasMultipleGroups);
 
@@ -449,7 +451,7 @@
 				<span>{results.tournament.start} - {results.tournament.end}</span>
 				{#if results.tournament.city}<span>{results.tournament.city}</span>{/if}
 			</div>
-			<div class="mt-3 text-sm">
+			<div class="mt-3 flex flex-wrap gap-4 text-sm">
 				<a
 					href="/print/{tournamentId}/{groupId}"
 					target="_blank"
@@ -458,6 +460,14 @@
 				>
 					{tr.print.printThisGroup}
 				</a>
+				{#if showPerformanceLink}
+					<a
+						href="/results/{tournamentId}/performance"
+						class="text-blue-600 hover:underline dark:text-blue-400"
+					>
+						{tr.individualPerformance.link}
+					</a>
+				{/if}
 			</div>
 		</div>
 
