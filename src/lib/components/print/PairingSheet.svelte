@@ -13,7 +13,7 @@
 		formatPlayerName,
 		formatRatingWithType,
 		getOpponentKind,
-		getPlayerRatingByAlgorithm,
+		getPlayerRatingForRound,
 		type PlayerInfoDto,
 		type TournamentRoundResultDto
 	} from '$lib/api';
@@ -26,6 +26,8 @@
 		pairings: TournamentRoundResultDto[];
 		playerMap: Map<number, PlayerInfoDto>;
 		rankingAlgorithm: number | null;
+		/** The round's `rated` type: its ratings are what the sheet shows, as on screen. */
+		roundRated?: number;
 		fontPx: number;
 		sheetHeader: Snippet;
 		/** Group name appended to the title, empty when it would be redundant. */
@@ -37,6 +39,7 @@
 		pairings,
 		playerMap,
 		rankingAlgorithm,
+		roundRated,
 		fontPx,
 		sheetHeader,
 		groupSuffix
@@ -71,7 +74,11 @@
 	function playerElo(id: number): string {
 		const player = playerMap.get(id);
 		if (!player) return '';
-		const { rating, ratingType } = getPlayerRatingByAlgorithm(player.elo, rankingAlgorithm);
+		const { rating, ratingType } = getPlayerRatingForRound(
+			player.elo,
+			rankingAlgorithm,
+			roundRated
+		);
 		return formatRatingWithType(rating, ratingType, language.current);
 	}
 

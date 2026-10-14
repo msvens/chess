@@ -39,7 +39,8 @@
 		/** Built from the group's standings, so both sides of a match resolve. */
 		formatTeamName: (contenderId: number, teamNumber: number) => string;
 		getPlayerName: (playerId: number, date?: number) => string;
-		getPlayerEloByDate: (playerId: number, date: number) => string;
+		/** Rating as of a month, of the type that round was rated under. */
+		getPlayerEloForRound: (playerId: number, date: number, roundNumber: number) => string;
 		fetchPlayersByDate: (requests: { playerId: number; date: number }[]) => Promise<void>;
 		tournamentId: number;
 		groupId: number;
@@ -49,7 +50,7 @@
 		roundResults,
 		formatTeamName,
 		getPlayerName,
-		getPlayerEloByDate,
+		getPlayerEloForRound,
 		fetchPlayersByDate,
 		tournamentId,
 		groupId
@@ -164,8 +165,9 @@
 	]);
 
 	function eloOf(playerId: number): string {
-		if (getOpponentKind(playerId) !== 'paired' || expandedDate == null) return '-';
-		return getPlayerEloByDate(playerId, expandedDate);
+		if (getOpponentKind(playerId) !== 'paired' || !expandedMatch || expandedDate == null)
+			return '-';
+		return getPlayerEloForRound(playerId, expandedDate, expandedMatch.roundNr);
 	}
 </script>
 

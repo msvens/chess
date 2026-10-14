@@ -219,7 +219,8 @@
 				selectedTeamNumber={team.teamNumber}
 				{formatTeamName}
 				getPlayerName={(playerId, date) => results.getPlayerName(playerId, date)}
-				getPlayerEloByDate={(playerId, date) => results.getPlayerEloByDate(playerId, date)}
+				getPlayerEloForRound={(playerId, date, roundNumber) =>
+					results.getPlayerEloByDateAndRound(playerId, date, roundNumber)}
 				{tournamentId}
 				{groupId}
 			/>

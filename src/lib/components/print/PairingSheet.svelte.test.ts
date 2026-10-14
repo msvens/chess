@@ -22,7 +22,8 @@ function setup(pairings: TournamentRoundResultDto[], round = 1) {
 			round,
 			pairings,
 			playerMap,
-			rankingAlgorithm: null,
+			// Standard Elo. With no algorithm the sheet shows no ratings, as the screen does.
+			rankingAlgorithm: 1,
 			fontPx: 13,
 			sheetHeader,
 			groupSuffix: ''

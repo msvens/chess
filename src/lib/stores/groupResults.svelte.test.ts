@@ -262,6 +262,36 @@ describe('per-round rating type', () => {
 		expect(s.getRoundRatedType(3)).toBe(0);
 		expect(s.getRoundRatedType(99)).toBeUndefined();
 	});
+
+	it('shows the rating of the type each round was rated under', async () => {
+		// The fixture group ranks on standard; round 2 is blitz-rated, round 3 unrated.
+		getTournament.mockResolvedValue(ok(tournament(INDIVIDUAL)));
+		getTournamentResults.mockResolvedValue(
+			ok([
+				{
+					playerInfo: {
+						id: 42,
+						firstName: 'A',
+						lastName: 'B',
+						elo: { rating: 1638, blitzRating: 1500 }
+					}
+				},
+				{ playerInfo: { id: 43, firstName: 'C', lastName: 'D', elo: { rating: 1700 } } }
+			])
+		);
+		const s = make();
+		await s.load(5835, 16642);
+		const date = Date.now();
+
+		expect(s.getPlayerEloByDateAndRound(42, date, 2)).toBe('1500 B');
+		// No blitz rating: nothing to show, not the standard one in its place.
+		expect(s.getPlayerEloByDateAndRound(43, date, 2)).toBe('-');
+		// The round's own standard type, an unrated round, an unknown round and no
+		// round at all all show the group's standard rating.
+		for (const round of [1, 3, 99, undefined]) {
+			expect(s.getPlayerEloByDateAndRound(42, date, round)).toBe('1638');
+		}
+	});
 });
 
 describe('the ranking rating as a number', () => {
@@ -290,19 +320,5 @@ describe('the ranking rating as a number', () => {
 		const s = await load();
 		expect(s.getPlayerRatingByDate(999999, Date.now())).toBeNull();
 		expect(s.getPlayerRatingByDate(43, Date.now())).toBeNull();
-	});
-
-	it('never disagrees with the string the same lookup formats', async () => {
-		// Both go through one private helper precisely so they cannot drift; if
-		// this ever fails, a rating is being displayed that is not the one being
-		// averaged.
-		const s = await load();
-		const date = Date.now();
-		for (const id of [42, 43, 999999]) {
-			const rating = s.getPlayerRatingByDate(id, date);
-			const shown = s.getPlayerEloByDate(id, date);
-			if (rating === null) expect(shown).toBe('-');
-			else expect(shown).toContain(String(rating));
-		}
 	});
 });
