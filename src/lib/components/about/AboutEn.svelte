@@ -80,5 +80,10 @@
 		</ul>
 	</div>
 
+	<p class="pt-4">
+		A special thanks to <strong>Jon Åslund</strong>, our excellent bug hunter, whose sharp eye has
+		caught many of the bugs fixed on this site.
+	</p>
+
 	<p class="pt-4">And finally, thanks to everyone who has tested the site and provided feedback!</p>
 </div>

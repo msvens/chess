@@ -79,5 +79,10 @@
 		</ul>
 	</div>
 
+	<p class="pt-4">
+		Ett särskilt tack till <strong>Jon Åslund</strong>, vår utmärkta buggjägare, vars skarpa öga har
+		hittat många av de buggar som rättats på sidan.
+	</p>
+
 	<p class="pt-4">Och slutligen, tack till alla som har testat sidan och gett feedback!</p>
 </div>
