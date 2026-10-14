@@ -6,6 +6,32 @@ All notable changes to msvens chess will be documented in this file.
 
 ---
 
+## [2.0.0] - 2026-10-14
+
+### Added
+
+- An "Individual performance" list for every tournament — all players of all groups ranked by their performance rating (Elo prestation), like the official "Individuella resultat". Works for individual and team tournaments; in a team league a player who played in several divisions gets one row covering all their games. Linked next to "Print this group" on the results page
+- The msvens chess logo, in the top bar and on the browser tab, in a light and a dark version
+
+### Changed
+
+- A player's performance in a tournament is now one figure for the whole event, pooling every rated game (rapid and standard rounds alike), as the official results do. Players without a rating now get one too, since it only depends on their opponents' ratings — and it's shown only from three games against rated opponents
+- Performance ratings are now calculated exactly as on the official site, so some move by a few points (more for near-perfect or near-zero scores)
+- Round results, team match boards and the printed pairing sheet now show the rating each round was actually played under: a rapid round in a standard tournament shows rapid ratings, marked as such
+- Pages that show many players — a player's opponents, team results, the performance list — load faster, fetching the players together instead of one by one
+- No performance list is offered for unrated tournaments, where nobody can have a performance
+
+### Fixed
+
+- The "Total X of Y" on a player's games in a Schackfyran (3-2-1) group now counts the maximum in that scoring — e.g. "31 of 33" instead of "31 of 11"
+- Before a group has any results, its table now lists the players seeded by rating instead of in random order with a placeholder place
+- School team tournaments (such as Skollags-SM) now show the schools' names instead of numbers, in standings and match results
+- The rating lists no longer show "No players found" when the federation's server is slow to answer; they wait longer, and a real failure now says so and offers a retry
+- The club map no longer shows an "API KEY REQUIRED" watermark across the tiles
+- Tapping the Elo chart or the opponent charts on a phone or tablet now shows the reading, which previously needed a mouse
+
+---
+
 ## [1.5.0] - 2026-08-19
 
 ### Added
