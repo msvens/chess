@@ -3,7 +3,7 @@ import type { GameDto, PlayerInfoDto, TournamentDto } from '$lib/api';
 import { PlayerProfileState } from './playerProfile.svelte';
 import { playerCache } from './playerCache.svelte';
 import { tournamentCache } from './tournamentCache.svelte';
-import { batchOver } from '../../test-utils/playerBatch';
+import { batchOver, firingItems } from '../../test-utils/batch';
 
 const ME = 348805;
 const INDIVIDUAL = 3;
@@ -29,7 +29,9 @@ vi.mock('$lib/api', async (importOriginal) => {
 			getPlayerInfoBatch = batchOver((id, date) => getPlayerInfo(id, date));
 		},
 		TournamentService: class {
-			getTournamentFromGroupBatch = (...a: unknown[]) => getTournamentFromGroupBatch(...a);
+			getTournamentFromGroupBatch = firingItems((ids, options) =>
+				getTournamentFromGroupBatch(ids, options)
+			);
 		}
 	};
 });
@@ -99,6 +101,7 @@ describe('loading a profile', () => {
 		expect(state.tournaments).toHaveLength(1);
 		expect(state.tournaments[0]).toMatchObject({ groupId: 10, gameCount: 1, wins: 1 });
 		expect(state.tournamentsLoading).toBe(false);
+		expect(state.tournamentsProgress).toEqual({ done: 1, total: 1 });
 	});
 
 	it('splits individual from team events', async () => {

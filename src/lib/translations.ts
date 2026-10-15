@@ -344,6 +344,8 @@ export interface Translations {
 			tournamentHistory: {
 				title: string;
 				loading: string;
+				/** `{done}` and `{total}`: tournaments fetched so far. */
+				loadingProgress: string;
 				error: string;
 				noTournaments: string;
 				place: string;
@@ -577,7 +579,7 @@ export interface Translations {
 				link: string;
 				title: string;
 				backToResults: string;
-				/** While the historical ratings the list needs are fetched. */
+				/** `{done}` and `{total}`: historical ratings fetched so far. */
 				loadingRatings: string;
 				/** Team and Schackfyran-only tournaments have no list. */
 				notAvailable: string;
@@ -1129,6 +1131,7 @@ const translations: Record<Language, Translations> = {
 				tournamentHistory: {
 					title: 'Tournament History',
 					loading: 'Loading tournaments...',
+					loadingProgress: 'Loading tournaments ({done} of {total})...',
 					error: 'Could not retrieve data',
 					noTournaments: 'No tournament history found.',
 					place: 'Place',
@@ -1347,7 +1350,7 @@ const translations: Record<Language, Translations> = {
 					link: 'Individual performance',
 					title: 'Individual performance',
 					backToResults: 'Back to results',
-					loadingRatings: 'Loading ratings...',
+					loadingRatings: 'Loading ratings ({done} of {total})...',
 					notAvailable: 'There is no individual performance list for this tournament.',
 					performance: 'Perf',
 					noResults: 'No games played yet'
@@ -1898,6 +1901,7 @@ const translations: Record<Language, Translations> = {
 				tournamentHistory: {
 					title: 'Turneringshistorik',
 					loading: 'Laddar turneringar...',
+					loadingProgress: 'Laddar turneringar ({done} av {total})...',
 					error: 'Kunde inte hämta data',
 					noTournaments: 'Ingen turneringshistorik hittades.',
 					place: 'Placering',
@@ -2116,7 +2120,7 @@ const translations: Record<Language, Translations> = {
 					link: 'Individuell prestation',
 					title: 'Individuell prestation',
 					backToResults: 'Tillbaka till resultat',
-					loadingRatings: 'Laddar ratingar...',
+					loadingRatings: 'Laddar ratingar ({done} av {total})...',
 					notAvailable:
 						'Det finns ingen lista över individuell prestation för den här turneringen.',
 					performance: 'Perf',

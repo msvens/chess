@@ -33,17 +33,35 @@ export const tournamentCache = {
 	 * uses `get()`. The React version had to return a Map because its reads were
 	 * not reactive and the caller needed the values in hand — that requirement is
 	 * gone, and with it a whole result map to assemble and thread around.
+	 *
+	 * Each tournament is stored as it arrives, and `onProgress` counts them —
+	 * the SDK fetches one group at a time, a few in parallel, so a long career
+	 * takes several rounds.
 	 */
-	async fetchMany(groupIds: number[]): Promise<void> {
+	async fetchMany(
+		groupIds: number[],
+		onProgress?: (done: number, total: number) => void
+	): Promise<void> {
 		const missing = groupIds.filter((id) => !byGroup.has(id));
 		if (missing.length === 0) return;
 
-		const responses = await api().getTournamentFromGroupBatch(missing);
-		responses.forEach((response, i) => {
-			// Skip ids the batch could not resolve rather than caching undefined,
-			// so a later attempt can still succeed.
-			if (response.data) byGroup.set(missing[i], response.data);
+		let done = 0;
+		onProgress?.(0, missing.length);
+
+		// Skip ids the batch could not resolve rather than caching undefined, so a
+		// later attempt can still succeed.
+		const store = (groupId: number, data: TournamentDto | null) => {
+			if (data && !byGroup.has(groupId)) byGroup.set(groupId, data);
+		};
+		const responses = await api().getTournamentFromGroupBatch(missing, {
+			onItem: (response, i) => {
+				store(missing[i], response.data);
+				onProgress?.(++done, missing.length);
+			}
 		});
+		// The returned array is the complete answer; `onItem` only gets results in
+		// earlier.
+		responses.forEach((response, i) => store(missing[i], response.data));
 	},
 
 	/**

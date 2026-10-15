@@ -5,7 +5,7 @@ import { PLAYER_PROFILE_KEY, PlayerProfileState } from '$lib/stores/playerProfil
 import { tournamentCache } from '$lib/stores/tournamentCache.svelte';
 import { playerCache } from '$lib/stores/playerCache.svelte';
 import HeadToHeadTab from './HeadToHeadTab.svelte';
-import { batchOver } from '../../../test-utils/playerBatch';
+import { batchOver } from '../../../test-utils/batch';
 
 const getPlayerInfo = vi.fn();
 

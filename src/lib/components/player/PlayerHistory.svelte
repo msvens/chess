@@ -73,12 +73,14 @@
 		<PlayerTournamentList
 			tournaments={profile.individualTournaments}
 			loading={profile.tournamentsLoading}
+			progress={profile.tournamentsProgress}
 			failed={profile.gamesFailed}
 		/>
 	{:else if selected === 'team'}
 		<PlayerTournamentList
 			tournaments={profile.teamTournaments}
 			loading={profile.tournamentsLoading}
+			progress={profile.tournamentsProgress}
 			failed={profile.gamesFailed}
 		/>
 	{:else if selected === 'opponents'}

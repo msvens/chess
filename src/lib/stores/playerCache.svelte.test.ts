@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { PlayerInfoDto } from '$lib/api';
+import type { BatchOptions, PlayerInfoDto } from '$lib/api';
 import { playerCache } from './playerCache.svelte';
-import { batchOver } from '../../test-utils/playerBatch';
+import { batchOver } from '../../test-utils/batch';
 
 const AUG = new Date(2026, 7, 15).getTime();
 
@@ -12,15 +12,28 @@ const player = (id: number) => ({ id, firstName: 'A', lastName: `P${id}` }) as P
 const getPlayerInfo = vi.fn();
 /** What the cache handed the batch, call by call. */
 const batchCalls = { record: (requests: unknown) => requests };
+/** `next` makes the next batch call reject as a whole; `silent` drops its `onItem` calls. */
+const batchFails = { next: false, silent: false };
 vi.mock('$lib/api', async (importOriginal) => {
 	const actual = await importOriginal<typeof import('$lib/api')>();
 	return {
 		...actual,
 		PlayerService: class {
 			getPlayerInfo = (...args: unknown[]) => getPlayerInfo(...args);
-			getPlayerInfoBatch = (requests: { id: number; date: string }[]) => {
+			getPlayerInfoBatch = (
+				requests: { id: number; date: string }[],
+				options?: BatchOptions<PlayerInfoDto>
+			) => {
 				batchCalls.record(requests);
-				return batchOver((id, date) => getPlayerInfo(id, date))(requests);
+				if (batchFails.next) {
+					batchFails.next = false;
+					return Promise.reject(new Error('network'));
+				}
+				// `silent`: answer without calling `onItem`, like an SDK that has none.
+				return batchOver((id, date) => getPlayerInfo(id, date))(
+					requests,
+					batchFails.silent ? undefined : options
+				);
 			};
 		}
 	};
@@ -100,6 +113,61 @@ describe('playerCache', () => {
 			{ id: 2, date: '2026-08-01' }
 		]);
 		expect(playerCache.status(2, AUG)).toBe('found');
+	});
+
+	it('stores each player as it arrives, before the whole batch is done', async () => {
+		// Player 2 answers at once, player 1 only when released.
+		let release: () => void = () => {};
+		getPlayerInfo.mockImplementation((id: number) =>
+			id === 1
+				? new Promise((resolve) => (release = () => resolve({ status: 200, data: player(1) })))
+				: Promise.resolve({ status: 200, data: player(2) })
+		);
+		const progress: [number, number][] = [];
+		const fetching = playerCache.fetchManyByDate(
+			[
+				{ playerId: 1, date: AUG },
+				{ playerId: 2, date: AUG }
+			],
+			(done, total) => progress.push([done, total])
+		);
+
+		await vi.waitFor(() => expect(playerCache.status(2, AUG)).toBe('found'));
+		expect(playerCache.status(1, AUG)).toBe('unfetched');
+		expect(progress).toEqual([
+			[0, 2],
+			[1, 2]
+		]);
+
+		release();
+		await fetching;
+		expect(playerCache.status(1, AUG)).toBe('found');
+		expect(progress.at(-1)).toEqual([2, 2]);
+	});
+
+	it('stores the returned results even if no onItem call delivers them', async () => {
+		// A stale bundle of an older SDK ignored the callback and left the cache empty.
+		batchFails.silent = true;
+		getPlayerInfo.mockImplementation((id: number) =>
+			Promise.resolve({ status: 200, data: player(id) })
+		);
+		await playerCache.fetchManyByDate([
+			{ playerId: 1, date: AUG },
+			{ playerId: 2, date: AUG }
+		]);
+		batchFails.silent = false;
+		expect(playerCache.status(1, AUG)).toBe('found');
+		expect(playerCache.status(2, AUG)).toBe('found');
+	});
+
+	it('negative-caches every pair when the batch itself fails', async () => {
+		batchFails.next = true;
+		await playerCache.fetchManyByDate([
+			{ playerId: 1, date: AUG },
+			{ playerId: 2, date: AUG }
+		]);
+		expect(playerCache.status(1, AUG)).toBe('missing');
+		expect(playerCache.status(2, AUG)).toBe('missing');
 	});
 
 	it('negative-caches a pair the batch reports as missing or failed', async () => {

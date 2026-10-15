@@ -1,16 +1,22 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { TournamentDto } from '$lib/api';
+import type { BatchOptions, TournamentDto } from '$lib/api';
 import { tournamentCache } from './tournamentCache.svelte';
+import { firingItems } from '../../test-utils/batch';
 
 const tournament = (id: number) => ({ id, name: `T${id}` }) as TournamentDto;
 
 const getTournamentFromGroupBatch = vi.fn();
+/** When set, the batch answers without calling `onItem`, like an SDK that has none. */
+const silent = { on: false };
 vi.mock('$lib/api', async (importOriginal) => {
 	const actual = await importOriginal<typeof import('$lib/api')>();
 	return {
 		...actual,
 		TournamentService: class {
-			getTournamentFromGroupBatch = (...args: unknown[]) => getTournamentFromGroupBatch(...args);
+			getTournamentFromGroupBatch = (ids: number[], options?: BatchOptions<TournamentDto>) =>
+				silent.on
+					? getTournamentFromGroupBatch(ids)
+					: firingItems<TournamentDto>((i, o) => getTournamentFromGroupBatch(i, o))(ids, options);
 		}
 	};
 });
@@ -42,7 +48,36 @@ describe('tournamentCache', () => {
 		getTournamentFromGroupBatch.mockResolvedValue([{ data: tournament(2) }]);
 
 		await tournamentCache.fetchMany([100, 200]);
-		expect(getTournamentFromGroupBatch).toHaveBeenCalledWith([200]);
+		expect(getTournamentFromGroupBatch.mock.calls[0][0]).toEqual([200]);
+	});
+
+	it('stores each tournament as it arrives and counts them', async () => {
+		getTournamentFromGroupBatch.mockResolvedValue([
+			{ data: tournament(1), error: null, status: 200 },
+			{ data: null, error: 'timeout', status: 408 }
+		]);
+		const progress: [number, number][] = [];
+		await tournamentCache.fetchMany([100, 200], (done, total) => progress.push([done, total]));
+
+		expect(progress).toEqual([
+			[0, 2],
+			[1, 2],
+			[2, 2]
+		]);
+		expect(tournamentCache.get(100)).toBeDefined();
+		// An unresolved id is still not cached, so a later attempt can succeed.
+		expect(tournamentCache.get(200)).toBeUndefined();
+	});
+
+	it('stores the returned results even if no onItem call delivers them', async () => {
+		// A stale bundle of an older SDK ignored the callback and left the cache empty.
+		silent.on = true;
+		getTournamentFromGroupBatch.mockResolvedValue([
+			{ data: tournament(1), error: null, status: 200 }
+		]);
+		await tournamentCache.fetchMany([100]);
+		silent.on = false;
+		expect(tournamentCache.get(100)?.name).toBe('T1');
 	});
 
 	it('makes no request when everything is already cached', async () => {
