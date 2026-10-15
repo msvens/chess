@@ -9,12 +9,13 @@
 	 * It is `fixed`, hence PageSpacing: content would otherwise start underneath it.
 	 */
 	import { Bars3, Icon } from 'svelte-hero-icons';
+	import IconButton from '$lib/components/ui/IconButton.svelte';
 	import Link from '$lib/components/ui/Link.svelte';
 	import { theme } from '$lib/stores/theme.svelte';
 	import NavItemLink from './NavItem.svelte';
 	import NavDropdown from './NavDropdown.svelte';
 	import NavbarMobileMenu from './NavbarMobileMenu.svelte';
-	import type { NavBrand, NavDisplay, NavItem } from './navTypes';
+	import type { NavBrand, NavDisplay, NavIconAction, NavItem } from './navTypes';
 
 	interface NavbarProps {
 		brand: NavBrand;
@@ -22,6 +23,8 @@
 		showBorder?: boolean;
 		centerItems?: NavItem[];
 		rightItems?: NavItem[];
+		/** Icon buttons before the right items (theme, language); in the phone row too. */
+		actions?: NavIconAction[];
 	}
 
 	let {
@@ -29,7 +32,8 @@
 		display = 'text',
 		showBorder = true,
 		centerItems = [],
-		rightItems = []
+		rightItems = [],
+		actions = []
 	}: NavbarProps = $props();
 
 	let menuOpen = $state(false);
@@ -40,6 +44,22 @@
 	const brandClass =
 		'flex items-center gap-2 text-base font-light leading-tight tracking-widest uppercase text-gray-900 dark:text-gray-200';
 </script>
+
+{#snippet actionButton(action: NavIconAction, size: 'small' | 'medium')}
+	<IconButton
+		icon={action.icon}
+		title={action.label}
+		onclick={action.onClick}
+		{size}
+		tooltipPlacement="bottom"
+	>
+		{#if action.emoji}
+			<span class={size === 'small' ? 'text-lg leading-none' : 'text-xl leading-none'}>
+				{action.emoji}
+			</span>
+		{/if}
+	</IconButton>
+{/snippet}
 
 {#snippet brandMark()}
 	<!-- The wordmark is two block spans, which the accessible-name algorithm
@@ -92,6 +112,9 @@
 			</div>
 
 			<div class="flex items-center justify-end gap-1">
+				{#each actions as action (action.id)}
+					{@render actionButton(action, 'small')}
+				{/each}
 				{#each rightItems as item (item.id)}
 					{#if item.kind === 'link'}
 						<NavItemLink {item} {display} />
@@ -106,14 +129,19 @@
 		<div class="flex h-12 items-center justify-between md:hidden">
 			<div class="flex items-center">{@render brandMark()}</div>
 
-			<button
-				onclick={() => (menuOpen = !menuOpen)}
-				aria-expanded={menuOpen}
-				class="inline-flex h-10 w-10 items-center justify-center rounded-full text-gray-600 transition-colors hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
-			>
-				<Icon src={Bars3} class="h-6 w-6" aria-hidden="true" />
-				<span class="sr-only">Menu</span>
-			</button>
+			<div class="flex items-center gap-1">
+				{#each actions as action (action.id)}
+					{@render actionButton(action, 'medium')}
+				{/each}
+				<button
+					onclick={() => (menuOpen = !menuOpen)}
+					aria-expanded={menuOpen}
+					class="inline-flex h-10 w-10 items-center justify-center rounded-full text-gray-600 transition-colors hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
+				>
+					<Icon src={Bars3} class="h-6 w-6" aria-hidden="true" />
+					<span class="sr-only">Menu</span>
+				</button>
+			</div>
 		</div>
 	</div>
 

@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { tick } from 'svelte';
 import { describe, expect, it, vi } from 'vitest';
 import Navbar from './Navbar.svelte';
-import { brand, centerItems, rightItems } from './nav';
+import { brand, centerItems, iconActions, rightItems } from './nav';
 import { theme } from '$lib/stores/theme.svelte';
 
 function renderNavbar(overrides: Partial<Parameters<typeof Navbar>[1]> = {}) {
@@ -12,7 +12,8 @@ function renderNavbar(overrides: Partial<Parameters<typeof Navbar>[1]> = {}) {
 			brand,
 			display: 'text',
 			centerItems: centerItems('sv'),
-			rightItems: rightItems('sv', 'dark', vi.fn(), vi.fn()),
+			rightItems: rightItems('sv'),
+			actions: iconActions('sv', 'dark', vi.fn(), vi.fn()),
 			...overrides
 		}
 	});
@@ -56,6 +57,25 @@ describe('Navbar', () => {
 				screen.getAllByRole('link', { name: new RegExp(item.label, 'i') }).length
 			).toBeGreaterThan(0);
 		}
+	});
+
+	it('shows the theme and language buttons on desktop and on the phone row', () => {
+		renderNavbar();
+		// Swedish, dark: offers light mode and English.
+		expect(screen.getAllByRole('button', { name: 'Ljust Läge' })).toHaveLength(2);
+		expect(screen.getAllByRole('button', { name: 'English' })).toHaveLength(2);
+		expect(screen.getAllByText('🇬🇧')).toHaveLength(2);
+	});
+
+	it('switches theme and language from the buttons', async () => {
+		const user = userEvent.setup();
+		const onTheme = vi.fn();
+		const onLanguage = vi.fn();
+		renderNavbar({ actions: iconActions('sv', 'dark', onTheme, onLanguage) });
+		await user.click(screen.getAllByRole('button', { name: 'Ljust Läge' })[0]);
+		await user.click(screen.getAllByRole('button', { name: 'English' })[0]);
+		expect(onTheme).toHaveBeenCalledOnce();
+		expect(onLanguage).toHaveBeenCalledOnce();
 	});
 
 	it('exposes a mobile menu button', () => {

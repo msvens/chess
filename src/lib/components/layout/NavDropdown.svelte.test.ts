@@ -3,13 +3,26 @@ import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import NavDropdown from './NavDropdown.svelte';
 import { moreDropdown } from './nav';
+import type { NavDropdownItem } from './navTypes';
 
-function renderDropdown(onTheme = vi.fn(), onLanguage = vi.fn()) {
-	const item = moreDropdown('en', 'dark', onTheme, onLanguage);
+function renderDropdown() {
+	const item = moreDropdown('en');
 	const result = render(NavDropdown, { props: { item, display: 'text' } });
 	const toggle = screen.getByRole('button', { name: item.label });
-	return { ...result, toggle, onTheme, onLanguage };
+	return { ...result, toggle };
 }
+
+/** A dropdown with an action and a divider — kinds More itself no longer uses. */
+const withAction = (onClick: () => void): NavDropdownItem => ({
+	kind: 'dropdown',
+	id: 'tools',
+	label: 'Tools',
+	items: [
+		{ kind: 'link', id: 'guide', href: '/guide', label: 'Guide' },
+		{ kind: 'divider' },
+		{ kind: 'action', id: 'reset', label: 'Reset', onClick }
+	]
+});
 
 describe('NavDropdown', () => {
 	it('starts collapsed', () => {
@@ -53,19 +66,19 @@ describe('NavDropdown', () => {
 		expect(toggle).toHaveAttribute('aria-expanded', 'true');
 	});
 
-	it('invokes the theme and language actions', async () => {
+	it('invokes an action item', async () => {
 		const user = userEvent.setup();
-		const { toggle, onTheme, onLanguage } = renderDropdown();
-		await user.click(toggle);
-		await user.click(screen.getByRole('button', { name: /light mode/i }));
-		await user.click(screen.getByRole('button', { name: /svenska/i }));
-		expect(onTheme).toHaveBeenCalledOnce();
-		expect(onLanguage).toHaveBeenCalledOnce();
+		const onClick = vi.fn();
+		render(NavDropdown, { props: { item: withAction(onClick), display: 'text' } });
+		await user.click(screen.getByRole('button', { name: 'Tools' }));
+		await user.click(screen.getByRole('button', { name: 'Reset' }));
+		expect(onClick).toHaveBeenCalledOnce();
 	});
 
-	it('renders a divider between the links and the toggles', () => {
-		const item = moreDropdown('en', 'dark', vi.fn(), vi.fn());
-		const { container } = render(NavDropdown, { props: { item, display: 'text' } });
+	it('renders a divider item', () => {
+		const { container } = render(NavDropdown, {
+			props: { item: withAction(vi.fn()), display: 'text' }
+		});
 		expect(container.querySelectorAll('.border-t').length).toBeGreaterThan(0);
 	});
 });

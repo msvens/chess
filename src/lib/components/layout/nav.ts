@@ -6,7 +6,7 @@
  * active-route rule can be unit-tested without rendering anything.
  *
  * It is a function rather than a constant because every label is translated and
- * the theme/language entries flip with current state — so it is rebuilt whenever
+ * the theme/language buttons flip with current state — so it is rebuilt whenever
  * those change, which in Svelte means calling it inside a `$derived`.
  */
 import {
@@ -24,7 +24,7 @@ import {
 import type { Language } from '$lib/i18n';
 import { getTranslation } from '$lib/translations';
 import type { Theme } from '$lib/stores/theme.svelte';
-import type { NavBrand, NavItem, NavLinkItem, NavDropdownItem } from './navTypes';
+import type { NavBrand, NavDropdownItem, NavIconAction, NavItem, NavLinkItem } from './navTypes';
 
 export const brand: NavBrand = {
 	href: '/',
@@ -78,12 +78,7 @@ export function centerItems(language: Language): NavLinkItem[] {
 	];
 }
 
-export function moreDropdown(
-	language: Language,
-	theme: Theme,
-	onToggleTheme: () => void,
-	onToggleLanguage: () => void
-): NavDropdownItem {
+export function moreDropdown(language: Language): NavDropdownItem {
 	const t = getTranslation(language);
 	return {
 		kind: 'dropdown',
@@ -104,31 +99,39 @@ export function moreDropdown(
 				href: '/guide',
 				icon: BookOpen,
 				label: t.navbar.navigation.guide
-			},
-			{ kind: 'divider' },
-			{
-				kind: 'action',
-				id: 'theme',
-				// Label and icon describe what you'd switch TO, not the current state.
-				icon: theme === 'dark' ? Sun : Moon,
-				label: theme === 'dark' ? t.navbar.lightMode : t.navbar.darkMode,
-				onClick: onToggleTheme
-			},
-			{
-				kind: 'action',
-				id: 'language',
-				label: language === 'en' ? '🇸🇪 Svenska' : '🇺🇸 English',
-				onClick: onToggleLanguage
 			}
 		]
 	};
 }
 
-export function rightItems(
+export function rightItems(language: Language): NavItem[] {
+	return [moreDropdown(language)];
+}
+
+/**
+ * The theme and language buttons beside "More". Each shows what you would
+ * switch TO, not the current state: the sun in dark mode, the Swedish flag on
+ * the English site.
+ */
+export function iconActions(
 	language: Language,
 	theme: Theme,
 	onToggleTheme: () => void,
 	onToggleLanguage: () => void
-): NavItem[] {
-	return [moreDropdown(language, theme, onToggleTheme, onToggleLanguage)];
+): NavIconAction[] {
+	const t = getTranslation(language);
+	return [
+		{
+			id: 'theme',
+			icon: theme === 'dark' ? Sun : Moon,
+			label: theme === 'dark' ? t.navbar.lightMode : t.navbar.darkMode,
+			onClick: onToggleTheme
+		},
+		{
+			id: 'language',
+			emoji: language === 'en' ? '🇸🇪' : '🇬🇧',
+			label: language === 'en' ? t.navbar.language.swedish : t.navbar.language.english,
+			onClick: onToggleLanguage
+		}
+	];
 }

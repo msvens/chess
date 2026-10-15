@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import { brand, centerItems, isActiveRoute, moreDropdown, rightItems } from './nav';
+import { Moon, Sun } from 'svelte-hero-icons';
+import { brand, centerItems, iconActions, isActiveRoute, moreDropdown, rightItems } from './nav';
 
 describe('isActiveRoute', () => {
 	it('matches the section exactly', () => {
@@ -60,65 +61,65 @@ describe('nav structure', () => {
 });
 
 describe('more dropdown', () => {
-	const noop = () => {};
-
-	it('holds the two secondary links, a divider, then the two toggles', () => {
-		const items = moreDropdown('sv', 'dark', noop, noop).items;
+	it('holds the two secondary links', () => {
+		// Theme and language moved out to their own buttons beside it.
+		const items = moreDropdown('sv').items;
 		expect(items.map((i) => (i.kind === 'divider' ? 'divider' : i.id))).toEqual([
 			'junior',
-			'guide',
-			'divider',
-			'theme',
-			'language'
+			'guide'
 		]);
 	});
 
-	// Both toggles advertise the destination, not the current state — showing
-	// "Dark mode" while already dark would read as a status, not an action.
+	it('is the only right-hand item', () => {
+		const items = rightItems('sv');
+		expect(items).toHaveLength(1);
+		expect(items[0].id).toBe('more');
+	});
+});
+
+describe('icon actions', () => {
+	const noop = () => {};
+	const byId = (actions: ReturnType<typeof iconActions>, id: string) =>
+		actions.find((a) => a.id === id);
+
+	it('puts the theme first, then the language', () => {
+		expect(iconActions('sv', 'dark', noop, noop).map((a) => a.id)).toEqual(['theme', 'language']);
+	});
+
+	// Both advertise the destination, not the current state — a moon while
+	// already dark would read as a status, not an action.
 	it('offers the theme you would switch TO', () => {
-		const dark = moreDropdown('en', 'dark', noop, noop).items.find(
-			(i) => 'id' in i && i.id === 'theme'
-		);
-		const light = moreDropdown('en', 'light', noop, noop).items.find(
-			(i) => 'id' in i && i.id === 'theme'
-		);
-		expect(dark).toMatchObject({ label: 'Light Mode' });
-		expect(light).toMatchObject({ label: 'Dark Mode' });
+		expect(byId(iconActions('en', 'dark', noop, noop), 'theme')).toMatchObject({
+			icon: Sun,
+			label: 'Light Mode'
+		});
+		expect(byId(iconActions('en', 'light', noop, noop), 'theme')).toMatchObject({
+			icon: Moon,
+			label: 'Dark Mode'
+		});
+		expect(byId(iconActions('sv', 'dark', noop, noop), 'theme')).toMatchObject({
+			label: 'Ljust Läge'
+		});
 	});
 
-	it('translates the theme label too', () => {
-		const sv = moreDropdown('sv', 'dark', noop, noop).items.find(
-			(i) => 'id' in i && i.id === 'theme'
-		);
-		expect(sv).toMatchObject({ label: 'Ljust Läge' });
-	});
-
-	it('offers the language you would switch TO', () => {
-		const fromEn = moreDropdown('en', 'dark', noop, noop).items.find(
-			(i) => 'id' in i && i.id === 'language'
-		);
-		const fromSv = moreDropdown('sv', 'dark', noop, noop).items.find(
-			(i) => 'id' in i && i.id === 'language'
-		);
-		expect(fromEn).toMatchObject({ label: '🇸🇪 Svenska' });
-		expect(fromSv).toMatchObject({ label: '🇺🇸 English' });
+	it('offers the language you would switch TO, as its flag', () => {
+		expect(byId(iconActions('en', 'dark', noop, noop), 'language')).toMatchObject({
+			emoji: '🇸🇪',
+			label: 'Svenska'
+		});
+		expect(byId(iconActions('sv', 'dark', noop, noop), 'language')).toMatchObject({
+			emoji: '🇬🇧',
+			label: 'English'
+		});
 	});
 
 	it('wires the handlers through', () => {
 		const onTheme = vi.fn();
 		const onLanguage = vi.fn();
-		const items = moreDropdown('sv', 'dark', onTheme, onLanguage).items;
-		const theme = items.find((i) => 'id' in i && i.id === 'theme');
-		const language = items.find((i) => 'id' in i && i.id === 'language');
-		if (theme?.kind === 'action') theme.onClick();
-		if (language?.kind === 'action') language.onClick();
+		const actions = iconActions('sv', 'dark', onTheme, onLanguage);
+		byId(actions, 'theme')?.onClick();
+		byId(actions, 'language')?.onClick();
 		expect(onTheme).toHaveBeenCalledOnce();
 		expect(onLanguage).toHaveBeenCalledOnce();
-	});
-
-	it('is the only right-hand item', () => {
-		const items = rightItems('sv', 'dark', noop, noop);
-		expect(items).toHaveLength(1);
-		expect(items[0].id).toBe('more');
 	});
 });
