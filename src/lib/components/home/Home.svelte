@@ -1,7 +1,8 @@
 <script lang="ts">
 	/**
 	 * The front page. Ports `app/page.tsx`: a hero, links into the four main
-	 * sections, the data partners, and shortcuts to the other language and theme.
+	 * sections and the data partners. The language and theme switches live in
+	 * the top bar.
 	 */
 	import {
 		BuildingOffice2,
@@ -40,7 +41,6 @@
 		'rounded-lg border border-gray-200 p-5 transition-colors hover:border-gray-400 dark:border-gray-700 dark:hover:border-gray-500';
 	const partnerHeadingClass =
 		'mb-3 text-xs tracking-wide text-gray-500 uppercase dark:text-gray-400';
-	const preferenceClass = 'underline hover:text-gray-900 dark:hover:text-gray-200';
 </script>
 
 <div class="mb-16 text-center md:mb-24">
@@ -103,14 +103,4 @@
 			</a>
 		</div>
 	</aside>
-</div>
-
-<div class="mt-16 text-center text-sm text-gray-500 dark:text-gray-400">
-	<button type="button" onclick={() => language.toggle()} class={preferenceClass}>
-		{t.preferences.otherLanguage}
-	</button>
-	·
-	<button type="button" onclick={() => theme.toggle()} class={preferenceClass}>
-		{theme.current === 'dark' ? t.preferences.lightMode : t.preferences.darkMode}
-	</button>
 </div>

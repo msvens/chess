@@ -75,12 +75,6 @@ export interface Translations {
 			collaborationLabel: string;
 			usingLabel: string;
 		};
-		preferences: {
-			/** Written in the *other* language, so a visitor who cannot read this one can still find it. */
-			otherLanguage: string;
-			darkMode: string;
-			lightMode: string;
-		};
 	};
 	common: {
 		eloLabels: {
@@ -869,11 +863,6 @@ const translations: Record<Language, Translations> = {
 			partners: {
 				collaborationLabel: 'Fetching data from',
 				usingLabel: 'And'
-			},
-			preferences: {
-				otherLanguage: 'Tillgänglig på svenska',
-				darkMode: 'Dark mode',
-				lightMode: 'Light mode'
 			}
 		},
 		common: {
@@ -1638,11 +1627,6 @@ const translations: Record<Language, Translations> = {
 			partners: {
 				collaborationLabel: 'Hämtar data från',
 				usingLabel: 'Och'
-			},
-			preferences: {
-				otherLanguage: 'Available in English',
-				darkMode: 'Mörkt läge',
-				lightMode: 'Ljust läge'
 			}
 		},
 		common: {

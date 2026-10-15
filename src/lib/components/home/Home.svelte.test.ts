@@ -1,5 +1,4 @@
 import { render, screen } from '@testing-library/svelte';
-import userEvent from '@testing-library/user-event';
 import { tick } from 'svelte';
 import { afterEach, describe, expect, it } from 'vitest';
 import { language } from '$lib/stores/language.svelte';
@@ -59,19 +58,8 @@ describe('Home', () => {
 		);
 	});
 
-	it('offers the other language, labelled in that language', async () => {
+	it('leaves the language and theme switches to the top bar', () => {
 		render(Home);
-		await userEvent.setup().click(screen.getByRole('button', { name: 'Available in English' }));
-
-		expect(language.current).toBe('en');
-		expect(screen.getByRole('button', { name: 'Tillgänglig på svenska' })).toBeInTheDocument();
-	});
-
-	it('offers the opposite theme', async () => {
-		render(Home);
-		await userEvent.setup().click(screen.getByRole('button', { name: 'Ljust läge' }));
-
-		expect(theme.current).toBe('light');
-		expect(screen.getByRole('button', { name: 'Mörkt läge' })).toBeInTheDocument();
+		expect(screen.queryByRole('button')).toBeNull();
 	});
 });
