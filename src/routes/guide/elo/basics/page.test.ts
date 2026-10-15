@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/svelte';
 import { afterEach, describe, expect, it } from 'vitest';
 import { language } from '$lib/stores/language.svelte';
 import Basics from './+page.svelte';
-import Calculation from '../calculation/+page.svelte';
+import Calculation from '../formula/+page.svelte';
 import FinePrint from '../fine-print/+page.svelte';
 
 /**

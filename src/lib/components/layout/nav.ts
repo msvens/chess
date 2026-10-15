@@ -10,7 +10,6 @@
  * those change, which in Svelte means calling it inside a `$derived`.
  */
 import {
-	AcademicCap,
 	BookOpen,
 	BuildingOffice2,
 	Calendar,
@@ -72,9 +71,7 @@ export function centerItems(language: Language): NavLinkItem[] {
 			href: '/organizations',
 			icon: BuildingOffice2,
 			label: t.navbar.navigation.organizations
-		},
-		// Not translated: "Elo" is the same word in both languages.
-		{ kind: 'link', id: 'elo', href: '/elo', icon: AcademicCap, label: 'Elo' }
+		}
 	];
 }
 

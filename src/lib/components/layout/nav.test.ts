@@ -34,22 +34,20 @@ describe('nav structure', () => {
 		expect(brand.lines).toEqual(['msvens', 'chess']);
 	});
 
-	it('lists the five primary sections in order', () => {
+	it('lists the four primary sections in order', () => {
+		// Elo moved under the guide, reached through More.
 		expect(centerItems('sv').map((i) => i.href)).toEqual([
 			'/calendar',
 			'/results',
 			'/players',
-			'/organizations',
-			'/elo'
+			'/organizations'
 		]);
 	});
 
-	it('translates labels, except Elo which is the same word in both', () => {
-		const sv = centerItems('sv');
-		const en = centerItems('en');
-		expect(sv.map((i) => i.label)).not.toEqual(en.map((i) => i.label));
-		expect(sv.at(-1)!.label).toBe('Elo');
-		expect(en.at(-1)!.label).toBe('Elo');
+	it('translates labels', () => {
+		expect(centerItems('sv').map((i) => i.label)).not.toEqual(
+			centerItems('en').map((i) => i.label)
+		);
 	});
 
 	it('gives every item an icon and a stable id', () => {

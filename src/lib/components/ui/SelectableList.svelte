@@ -12,6 +12,7 @@
 	import { escapeKey } from '$lib/attachments/escapeKey';
 	import {
 		DEFAULT_LIST_THRESHOLDS,
+		groupRuns,
 		resolveListDensity,
 		type ListDensity,
 		type ListDensityThresholds,
@@ -56,6 +57,8 @@
 		resolveListDensity(density, mobile.current, items.length, densityThresholds)
 	);
 	let selectedItem = $derived(items.find((item) => item.id === selectedId));
+	/** Items under a shared `group` render together beneath its heading. */
+	let runs = $derived(groupRuns(items));
 
 	/*
 	 * `dropdownMaxHeight` is deliberately sized to end on HALF a row, so an
@@ -76,6 +79,8 @@
 		{
 			triggerPadding: string;
 			itemPadding: string;
+			/** `itemPadding` with a deeper left inset, for items under a group heading. */
+			groupedItemPadding: string;
 			fontSize: string;
 			subtitleSize: string;
 			lineHeight: string;
@@ -85,6 +90,7 @@
 		compact: {
 			triggerPadding: 'px-3 py-1.5',
 			itemPadding: 'px-3 py-1',
+			groupedItemPadding: 'pl-6 pr-3 py-1',
 			fontSize: 'text-sm',
 			subtitleSize: 'text-xs',
 			lineHeight: 'leading-tight',
@@ -93,6 +99,7 @@
 		normal: {
 			triggerPadding: 'px-3 py-2',
 			itemPadding: 'px-3 py-1.5',
+			groupedItemPadding: 'pl-6 pr-3 py-1.5',
 			fontSize: 'text-sm',
 			subtitleSize: 'text-xs',
 			lineHeight: 'leading-normal',
@@ -101,6 +108,7 @@
 		comfortable: {
 			triggerPadding: 'px-4 py-3',
 			itemPadding: 'px-4 py-3',
+			groupedItemPadding: 'pl-8 pr-4 py-3',
 			fontSize: 'text-sm',
 			subtitleSize: 'text-xs',
 			lineHeight: 'leading-relaxed',
@@ -132,6 +140,47 @@
 		if (variant === 'dropdown') open = false;
 	}
 </script>
+
+<!-- One row, shared by grouped and ungrouped items; only the padding differs
+     (an indent under a heading). The padding is passed whole rather than
+     added to, so two Tailwind padding classes never compete. -->
+{#snippet dropdownOption(item: SelectableListItem, padding: string)}
+	{@const selected = item.id === selectedId}
+	<!-- shrink-0: the column has a max-height, so without it a long list
+	     could compress its items instead of scrolling. -->
+	<button
+		role="option"
+		aria-selected={selected}
+		onclick={() => select(item.id)}
+		title={item.tooltip}
+		class="w-full shrink-0 rounded text-left transition-colors {padding} {d.lineHeight} {itemHoverBg} {selected
+			? `${itemSelectedBg} font-medium text-gray-900 dark:text-gray-200`
+			: 'text-gray-600 dark:text-gray-400'}"
+	>
+		<div class="whitespace-nowrap {d.fontSize}">{item.label}</div>
+		{#if item.subtitle}
+			<div class="mt-0.5 opacity-70 {d.subtitleSize}">{item.subtitle}</div>
+		{/if}
+	</button>
+{/snippet}
+
+{#snippet verticalOption(item: SelectableListItem, padding: string)}
+	{@const selected = item.id === selectedId}
+	<button
+		role="option"
+		aria-selected={selected}
+		onclick={() => select(item.id)}
+		title={item.tooltip}
+		class="w-full rounded text-left text-xs transition-colors hover:bg-gray-100 dark:hover:bg-gray-800 {padding} {selected
+			? 'bg-gray-100 font-medium text-gray-900 dark:bg-gray-800 dark:text-gray-200'
+			: 'text-gray-600 dark:text-gray-400'}"
+	>
+		<div class="font-medium">{item.label}</div>
+		{#if item.subtitle}
+			<div class="mt-1 text-xs opacity-70">{item.subtitle}</div>
+		{/if}
+	</button>
+{/snippet}
 
 {#if variant === 'dropdown'}
 	<div class={cls}>
@@ -191,24 +240,24 @@
 						role="listbox"
 						class="flex [scrollbar-width:thin] [scrollbar-color:#cbd5e1_transparent] flex-col overflow-y-auto px-2 py-1 dark:[scrollbar-color:#475569_transparent] {d.dropdownMaxHeight}"
 					>
-						{#each items as item (item.id)}
-							{@const selected = item.id === selectedId}
-							<!-- shrink-0: the column has a max-height, so without it a long list
-							     could compress its items instead of scrolling. -->
-							<button
-								role="option"
-								aria-selected={selected}
-								onclick={() => select(item.id)}
-								title={item.tooltip}
-								class="w-full shrink-0 rounded text-left transition-colors {d.itemPadding} {d.lineHeight} {itemHoverBg} {selected
-									? `${itemSelectedBg} font-medium text-gray-900 dark:text-gray-200`
-									: 'text-gray-600 dark:text-gray-400'}"
-							>
-								<div class="whitespace-nowrap {d.fontSize}">{item.label}</div>
-								{#if item.subtitle}
-									<div class="mt-0.5 opacity-70 {d.subtitleSize}">{item.subtitle}</div>
-								{/if}
-							</button>
+						{#each runs as run, r (r)}
+							{#if run.group}
+								<div role="group" aria-label={run.group} class="flex shrink-0 flex-col">
+									<div
+										aria-hidden="true"
+										class="text-xs font-semibold tracking-wide text-gray-500 uppercase dark:text-gray-400 {d.itemPadding}"
+									>
+										{run.group}
+									</div>
+									{#each run.items as item (item.id)}
+										{@render dropdownOption(item, d.groupedItemPadding)}
+									{/each}
+								</div>
+							{:else}
+								{#each run.items as item (item.id)}
+									{@render dropdownOption(item, d.itemPadding)}
+								{/each}
+							{/if}
 						{/each}
 					</div>
 				</div>
@@ -222,22 +271,24 @@
 		{/if}
 
 		<div class="flex flex-col gap-1" role="listbox">
-			{#each items as item (item.id)}
-				{@const selected = item.id === selectedId}
-				<button
-					role="option"
-					aria-selected={selected}
-					onclick={() => select(item.id)}
-					title={item.tooltip}
-					class="w-full rounded px-3 py-2 text-left text-xs transition-colors hover:bg-gray-100 dark:hover:bg-gray-800 {selected
-						? 'bg-gray-100 font-medium text-gray-900 dark:bg-gray-800 dark:text-gray-200'
-						: 'text-gray-600 dark:text-gray-400'}"
-				>
-					<div class="font-medium">{item.label}</div>
-					{#if item.subtitle}
-						<div class="mt-1 text-xs opacity-70">{item.subtitle}</div>
-					{/if}
-				</button>
+			{#each runs as run, r (r)}
+				{#if run.group}
+					<div role="group" aria-label={run.group} class="flex flex-col gap-1">
+						<div
+							aria-hidden="true"
+							class="px-3 pt-2 text-xs font-semibold tracking-wide text-gray-500 uppercase dark:text-gray-400"
+						>
+							{run.group}
+						</div>
+						{#each run.items as item (item.id)}
+							{@render verticalOption(item, 'pl-6 pr-3 py-2')}
+						{/each}
+					</div>
+				{:else}
+					{#each run.items as item (item.id)}
+						{@render verticalOption(item, 'px-3 py-2')}
+					{/each}
+				{/if}
 			{/each}
 		</div>
 	</div>

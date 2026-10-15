@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/svelte';
+import { render, screen, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import SelectableList from './SelectableList.svelte';
@@ -120,5 +120,62 @@ describe('SelectableList — vertical', () => {
 		});
 		await user.click(screen.getByRole('option', { name: /standard/i }));
 		expect(onSelect).toHaveBeenCalledWith('a');
+	});
+});
+
+describe('SelectableList — grouped items', () => {
+	const grouped: SelectableListItem[] = [
+		{ id: 'formats', label: 'Formats' },
+		{ id: 'basics', label: 'Basics', group: 'Elo' },
+		{ id: 'formula', label: 'Formula', group: 'Elo' }
+	];
+
+	it.each(['vertical', 'dropdown'] as const)(
+		'%s: puts grouped items in a named group under a heading',
+		async (variant) => {
+			render(SelectableList, {
+				props: {
+					items: grouped,
+					selectedId: 'formats',
+					onSelect: vi.fn(),
+					variant,
+					placeholder: ''
+				}
+			});
+			if (variant === 'dropdown') await userEvent.setup().click(screen.getByRole('button'));
+
+			const group = screen.getByRole('group', { name: 'Elo' });
+			expect(
+				within(group)
+					.getAllByRole('option')
+					.map((o) => o.textContent?.trim())
+			).toEqual(['Basics', 'Formula']);
+			// The heading is text, not something to pick.
+			expect(screen.queryByRole('option', { name: 'Elo' })).toBeNull();
+			expect(screen.getByRole('option', { name: 'Formats' })).toBeInTheDocument();
+		}
+	);
+
+	it('selects a grouped item', async () => {
+		const onSelect = vi.fn();
+		render(SelectableList, {
+			props: {
+				items: grouped,
+				selectedId: 'formats',
+				onSelect,
+				variant: 'vertical',
+				placeholder: ''
+			}
+		});
+		await userEvent.setup().click(screen.getByRole('option', { name: 'Formula' }));
+		expect(onSelect).toHaveBeenCalledWith('formula');
+	});
+
+	it('adds no group to a list without groups', () => {
+		render(SelectableList, {
+			props: { items, selectedId: 'a', onSelect: vi.fn(), variant: 'vertical', placeholder: '' }
+		});
+		expect(screen.queryByRole('group')).toBeNull();
+		expect(screen.getAllByRole('option')).toHaveLength(3);
 	});
 });

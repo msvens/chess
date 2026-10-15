@@ -18,6 +18,31 @@ export interface SelectableListItem {
 	subtitle?: string;
 	/** Native tooltip on the row. */
 	tooltip?: string;
+	/**
+	 * A heading this item sits under, indented. Consecutive items sharing it
+	 * form one group; the heading itself cannot be selected.
+	 */
+	group?: string;
+}
+
+/** A run of consecutive items: under one heading, or ungrouped. */
+export interface ListRun<T extends SelectableListItem> {
+	group?: string;
+	items: T[];
+}
+
+/**
+ * Split a list into runs of consecutive items with the same `group`, so each
+ * group renders once under its heading. A list without groups is one run.
+ */
+export function groupRuns<T extends SelectableListItem>(items: readonly T[]): ListRun<T>[] {
+	const runs: ListRun<T>[] = [];
+	for (const item of items) {
+		const last = runs.at(-1);
+		if (last && last.group === item.group) last.items.push(item);
+		else runs.push({ group: item.group, items: [item] });
+	}
+	return runs;
 }
 
 export const DEFAULT_LIST_THRESHOLDS: ListDensityThresholds = { comfortable: 10, normal: 20 };
