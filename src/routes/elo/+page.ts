@@ -1,6 +1,6 @@
 import { redirect } from '@sveltejs/kit';
 
-/** `/elo` has no page of its own; the first section is the landing. */
+/** Elo moved under the guide; the old section root lands on its first page. */
 export function load() {
-	redirect(307, '/elo/basics');
+	redirect(301, '/guide/elo/basics');
 }

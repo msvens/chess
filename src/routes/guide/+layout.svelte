@@ -1,22 +1,30 @@
 <script lang="ts">
 	/**
-	 * The guide section. Ports `app/guide/layout.tsx` — the Elo section's layout
-	 * with one entry, like the junior section, kept because it is what makes the
-	 * page look like the rest of the app.
+	 * The guide section: tournament formats, then the Elo pages under their own
+	 * heading. A dropdown under `lg`, a sticky vertical list above it — the same
+	 * `SelectableList` twice, so the two never drift apart.
 	 */
 	import type { Snippet } from 'svelte';
 	import { goto } from '$app/navigation';
+	import { page } from '$app/state';
 	import PageLayout from '$lib/components/layout/PageLayout.svelte';
 	import SelectableList from '$lib/components/ui/SelectableList.svelte';
+	import { GUIDE_SECTIONS, activeGuideSection } from '$lib/components/guide/sections';
 	import { language } from '$lib/stores/language.svelte';
 	import { getTranslation } from '$lib/translations';
 
 	let { children }: { children: Snippet } = $props();
 
-	const FORMATS = '/guide/formats';
-
 	let t = $derived(getTranslation(language.current));
-	let items = $derived([{ id: 'formats', label: t.pages.guide.navigation.formats }]);
+	let items = $derived(
+		GUIDE_SECTIONS.map((s) => ({ id: s.id, label: s.label(t), group: s.group }))
+	);
+	let activeId = $derived(activeGuideSection(page.url.pathname));
+
+	function select(id: string | number) {
+		const section = GUIDE_SECTIONS.find((s) => s.id === id);
+		if (section) goto(section.path);
+	}
 </script>
 
 <PageLayout maxWidth="5xl">
@@ -24,8 +32,8 @@
 		<SelectableList
 			variant="dropdown"
 			{items}
-			selectedId="formats"
-			onSelect={() => goto(FORMATS)}
+			selectedId={activeId}
+			onSelect={select}
 			placeholder={t.pages.guide.navigation.formats}
 		/>
 	</div>
@@ -36,8 +44,8 @@
 				<SelectableList
 					variant="vertical"
 					{items}
-					selectedId="formats"
-					onSelect={() => goto(FORMATS)}
+					selectedId={activeId}
+					onSelect={select}
 					placeholder={t.pages.guide.navigation.formats}
 				/>
 			</div>
