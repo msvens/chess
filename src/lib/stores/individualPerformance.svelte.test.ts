@@ -11,7 +11,7 @@ import {
 import type { PrintData, PrintGroupData } from '$lib/print/printData';
 import { IndividualPerformanceState } from './individualPerformance.svelte';
 import { playerCache } from './playerCache.svelte';
-import { batchOver } from '../../test-utils/playerBatch';
+import { batchOver } from '../../test-utils/batch';
 
 const loadPrintData = vi.fn();
 const getPlayerInfo = vi.fn();
@@ -127,8 +127,10 @@ describe('IndividualPerformanceState', () => {
 		const state = new IndividualPerformanceState();
 		await state.load(1);
 
-		// One call: splitting it up is the SDK's job now.
+		// One call: splitting it up is the SDK's job now. It still reports progress.
 		expect(fetches).toHaveBeenCalledTimes(1);
+		expect(state.total).toBeGreaterThan(0);
+		expect(state.fetched).toBe(state.total);
 		// Player 1 beat every opponent at their September rating of 2000.
 		expect(state.rows.find((r) => r.playerId === 1)?.performance).toBe(2800);
 		fetches.mockRestore();

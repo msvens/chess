@@ -25,6 +25,24 @@ const row = (over: Partial<TournamentParticipation> = {}): TournamentParticipati
 });
 
 describe('a history row', () => {
+	it('counts the tournaments while they load, once their number is known', () => {
+		render(PlayerTournamentList, {
+			tournaments: [],
+			loading: true,
+			progress: { done: 23, total: 62 }
+		});
+		expect(screen.getByText(/23.*62/)).toBeInTheDocument();
+	});
+
+	it('says only that it is loading before the number is known', () => {
+		render(PlayerTournamentList, {
+			tournaments: [],
+			loading: true,
+			progress: { done: 0, total: 0 }
+		});
+		expect(screen.queryByText(/\d+.*\d+/)).toBeNull();
+	});
+
 	it('links to the group it is for', () => {
 		render(PlayerTournamentList, { tournaments: [row()] });
 		expect(screen.getByRole('link', { name: /Rilton Cup/ })).toHaveAttribute(

@@ -53,7 +53,9 @@
 			<p class="text-gray-600 dark:text-gray-400">{ip.notAvailable}</p>
 		{:else if list.loading}
 			<p class="text-gray-600 dark:text-gray-400">
-				{ip.loadingRatings}
+				{ip.loadingRatings
+					.replace('{done}', String(list.fetched))
+					.replace('{total}', String(list.total))}
 			</p>
 		{:else}
 			<IndividualPerformanceTable

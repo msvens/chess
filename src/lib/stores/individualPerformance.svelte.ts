@@ -33,6 +33,9 @@ export class IndividualPerformanceState {
 	/** Set when the tournament itself could not be loaded. */
 	failed = $state(false);
 	tournament = $state.raw<TournamentDto | null>(null);
+	/** Historical ratings fetched so far, and how many are needed. */
+	fetched = $state(0);
+	total = $state(0);
 
 	#inputs = $state.raw<PerformanceInputs | null>(null);
 	#token = 0;
@@ -81,6 +84,8 @@ export class IndividualPerformanceState {
 		const mine = ++this.#token;
 		this.loading = true;
 		this.failed = false;
+		this.fetched = 0;
+		this.total = 0;
 
 		try {
 			const data = await loadPrintData(tournamentId);
@@ -97,7 +102,12 @@ export class IndividualPerformanceState {
 						playerId,
 						date: parseDateToTimestamp(roundDate)
 					})
-				)
+				),
+				(done, total) => {
+					if (mine !== this.#token) return;
+					this.fetched = done;
+					this.total = total;
+				}
 			);
 		} catch {
 			if (mine !== this.#token) return;

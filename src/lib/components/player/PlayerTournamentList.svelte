@@ -21,11 +21,18 @@
 	interface PlayerTournamentListProps {
 		tournaments: TournamentParticipation[];
 		loading?: boolean;
+		/** While loading: tournaments fetched so far, once their number is known. */
+		progress?: { done: number; total: number };
 		/** The games-derived data could not be fetched; the rows cannot be built. */
 		failed?: boolean;
 	}
 
-	let { tournaments, loading = false, failed = false }: PlayerTournamentListProps = $props();
+	let {
+		tournaments,
+		loading = false,
+		progress,
+		failed = false
+	}: PlayerTournamentListProps = $props();
 
 	let t = $derived(getTranslation(language.current).pages.playerDetail.tournamentHistory);
 	let locale = $derived(localeOf(language.current));
@@ -74,7 +81,13 @@
 
 {#if loading}
 	<div class="py-8 text-center">
-		<div class="text-gray-600 dark:text-gray-400">{t.loading}</div>
+		<div class="text-gray-600 dark:text-gray-400">
+			{progress && progress.total > 0
+				? t.loadingProgress
+						.replace('{done}', String(progress.done))
+						.replace('{total}', String(progress.total))
+				: t.loading}
+		</div>
 	</div>
 {:else if failed}
 	<div class="py-8 text-center">

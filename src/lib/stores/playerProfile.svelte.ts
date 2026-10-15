@@ -56,6 +56,8 @@ export class PlayerProfileState {
 	/** Groups entered but not yet played; they carry no games to derive from. */
 	upcomingGroupIds = $state<number[]>([]);
 	tournamentsLoading = $state(true);
+	/** Tournaments fetched so far for the history, and how many it needs. */
+	tournamentsProgress = $state({ done: 0, total: 0 });
 
 	/** The opponent whose head-to-head tab is open, if any. */
 	selectedOpponentId = $state<number | null>(null);
@@ -152,6 +154,7 @@ export class PlayerProfileState {
 		this.player = null;
 		this.games = [];
 		this.upcomingGroupIds = [];
+		this.tournamentsProgress = { done: 0, total: 0 };
 		this.selectedOpponentId = null;
 		this.selectedOpponentName = null;
 
@@ -195,7 +198,9 @@ export class PlayerProfileState {
 		this.upcomingGroupIds =
 			entries.status === 200 && entries.data ? upcomingGroupIds(entries.data, played) : [];
 
-		await tournamentCache.fetchMany([...played, ...this.upcomingGroupIds]);
+		await tournamentCache.fetchMany([...played, ...this.upcomingGroupIds], (done, total) => {
+			if (mine === this.#token) this.tournamentsProgress = { done, total };
+		});
 		if (mine !== this.#token) return;
 		this.tournamentsLoading = false;
 

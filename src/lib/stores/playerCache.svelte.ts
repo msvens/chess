@@ -77,11 +77,16 @@ export const playerCache = {
 	 *
 	 * One `getPlayerInfoBatch` call: the SDK sends a single bulk request and,
 	 * when the API rejects it over an id it does not know, falls back on its own,
-	 * returning one result per pair. Anything not found — missing or failed — is
-	 * negative-cached; otherwise a player the API cannot answer for is retried on
-	 * every render forever.
+	 * returning one result per pair. Each result is stored as it arrives, so
+	 * pages reading the cache fill in progressively; `onProgress` counts them,
+	 * starting at `(0, total)` once the size is known. Anything not found —
+	 * missing or failed — is negative-cached; otherwise a player the API cannot
+	 * answer for is retried on every render forever.
 	 */
-	async fetchManyByDate(requests: PlayerDateRequest[]): Promise<void> {
+	async fetchManyByDate(
+		requests: PlayerDateRequest[],
+		onProgress?: (done: number, total: number) => void
+	): Promise<void> {
 		// Keyed by cache key, so a pair asked for twice in one call is fetched once.
 		const missing: Record<string, PlayerDateRequest> = {};
 		for (const request of requests) {
@@ -92,18 +97,29 @@ export const playerCache = {
 		const keys = Object.keys(missing);
 		if (keys.length === 0) return;
 
+		let done = 0;
+		onProgress?.(0, keys.length);
+
 		const results = await api()
 			.getPlayerInfoBatch(
-				keys
-					.map((key) => missing[key])
-					.map(({ playerId, date }) => ({
-						id: playerId,
-						date: getMonthStartString(date)
-					}))
+				keys.map((key) => ({
+					id: missing[key].playerId,
+					date: getMonthStartString(missing[key].date)
+				})),
+				{
+					onItem: (result, i) => {
+						cache.setFromResult(keys[i], result.status === 200 ? result.data : null);
+						onProgress?.(++done, keys.length);
+					}
+				}
 			)
 			.catch(() => []);
 
+		// The returned array is the complete answer; `onItem` only gets results in
+		// earlier. Store whatever it did not deliver, and record a pair a failed
+		// batch left unanswered as a miss like any other failure.
 		keys.forEach((key, i) => {
+			if (cache.has(key)) return;
 			const result = results[i];
 			cache.setFromResult(key, result?.status === 200 ? result.data : null);
 		});
