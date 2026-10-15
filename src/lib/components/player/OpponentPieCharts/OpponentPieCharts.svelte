@@ -7,11 +7,16 @@
 	 * `MutationObserver` to learn the theme; the theme store already knows, so
 	 * that goes entirely.
 	 *
-	 * Every card is 200px tall at both breakpoints. The original asked for
+	 * One legend beneath all three instead of one under each: the colours are
+	 * bound to the outcome, never to the pie, so three keys said the same thing
+	 * three times, and on a phone each wrapped onto two lines.
+	 *
+	 * The charts are 176px tall at both breakpoints. The original asked for
 	 * `className="md:h-[320px]"` on the responsive container, but recharts writes
-	 * an inline height, so the class never applied — 200 is what live shows.
+	 * an inline height, so the class never applied.
 	 */
 	import PieCard from './PieCard.svelte';
+	import PieLegend from './PieLegend.svelte';
 	import type { Slice } from './pie';
 	import type { ColorStats } from '$lib/api';
 	import { language } from '$lib/stores/language.svelte';
@@ -50,9 +55,12 @@
 </script>
 
 {#if hasGames}
-	<div class="mb-8 grid grid-cols-3 gap-2 md:gap-6">
-		{#each cards as { title, slices } (title)}
-			<PieCard {title} {slices} noGamesLabel={t.charts.noGames} />
-		{/each}
+	<div class="mb-8">
+		<div class="grid grid-cols-3 gap-2 md:gap-6">
+			{#each cards as { title, slices } (title)}
+				<PieCard {title} {slices} noGamesLabel={t.charts.noGames} showLegend={false} />
+			{/each}
+		</div>
+		<PieLegend slices={cards[0].slices} />
 	</div>
 {/if}

@@ -43,10 +43,18 @@ describe('the legend', () => {
 		expect([...positions].sort((a, b) => a - b)).toEqual(positions);
 	});
 
-	it('keeps a row for an outcome that never happened', () => {
+	it('is shown once, beneath all three pies, with every outcome', () => {
+		// An outcome that never happened keeps its entry.
 		draw(stats(10, 0, 5));
-		// Three cards, three rows each.
-		expect(screen.getAllByText('Remier')).toHaveLength(3);
+		expect(screen.getAllByText('Remier')).toHaveLength(1);
+		expect(screen.getAllByText('Vinster')).toHaveLength(1);
+		expect(screen.getAllByText('Förluster')).toHaveLength(1);
+	});
+
+	it('stays when a pie has no games', () => {
+		draw(stats(10, 0, 0), stats(0, 0, 0), stats(10, 0, 0));
+		expect(screen.getByText('Inga partier')).toBeInTheDocument();
+		expect(screen.getByText('Vinster')).toBeInTheDocument();
 	});
 
 	it('binds each colour to its outcome, not to a legend position', () => {
