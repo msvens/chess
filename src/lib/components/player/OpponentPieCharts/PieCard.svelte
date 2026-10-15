@@ -1,6 +1,7 @@
 <script lang="ts">
 	/**
-	 * One pie, with its heading, its percentages and its legend.
+	 * One pie, with its heading, its percentages and — unless `showLegend` is
+	 * off — its legend.
 	 * Ports the `PieChartCard` inner component of `OpponentPieCharts.tsx`.
 	 *
 	 * Its own component rather than a snippet because each card measures itself
@@ -9,13 +10,13 @@
 	import {
 		LABEL_FLOOR,
 		arcs,
-		legendOrder,
 		pieRadius,
 		sliceAt,
 		slicePercent,
 		tooltipText,
 		type Slice
 	} from './pie';
+	import PieLegend from './PieLegend.svelte';
 	import { theme } from '$lib/stores/theme.svelte';
 
 	interface PieCardProps {
@@ -23,11 +24,13 @@
 		slices: Slice[];
 		/** Shown in place of the chart when this colour was never played. */
 		noGamesLabel: string;
+		/** The colour key under the pie. Off where several pies share one key. */
+		showLegend?: boolean;
 	}
 
-	let { title, slices, noGamesLabel }: PieCardProps = $props();
+	let { title, slices, noGamesLabel, showLegend = true }: PieCardProps = $props();
 
-	/** The chart box; with the legend row beneath it this makes 200, as recharts did. */
+	/** The chart box; with the legend row beneath it the card is 200, as recharts made it. */
 	const CHART_HEIGHT = 176;
 
 	let width = $state(0);
@@ -40,7 +43,6 @@
 	let hovered = $derived(
 		pointer ? sliceAt(laid, width / 2, CHART_HEIGHT / 2, radius, pointer.x, pointer.y) : null
 	);
-	let legend = $derived(legendOrder(slices));
 
 	let chart = $state<HTMLElement>();
 
@@ -154,18 +156,9 @@
 				{/if}
 			</div>
 
-			<!-- A zero entry keeps its row: it is how a player learns they have
-			     never drawn as black. -->
-			<div class="flex flex-wrap justify-center gap-3 pt-[10px] text-[11px]">
-				{#each legend as entry (entry.label)}
-					<span class="flex items-center gap-1.5 text-gray-600 dark:text-gray-400">
-						<svg width="8" height="8" aria-hidden="true">
-							<circle cx="4" cy="4" r="4" fill={entry.colour} />
-						</svg>
-						{entry.label}
-					</span>
-				{/each}
-			</div>
+			{#if showLegend}
+				<PieLegend {slices} />
+			{/if}
 		</div>
 	{/if}
 </div>
