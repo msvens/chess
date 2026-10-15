@@ -57,6 +57,72 @@
 	</p>
 
 	<div class="pt-6">
+		<h2 class="mb-4 text-xl font-medium text-gray-900 dark:text-gray-200">Who's Behind It</h2>
+		<p>
+			msvens chess is built and maintained by Martin Svensson. You can find me on
+			<Link href="https://linkedin.com/in/msvens" external>LinkedIn</Link>.
+		</p>
+	</div>
+
+	<div class="pt-6">
+		<h2 class="mb-4 text-xl font-medium text-gray-900 dark:text-gray-200">Technical Details</h2>
+		<p class="mb-3">The site is open source, and so is the library behind it:</p>
+		<ul class="ml-2 list-inside list-disc space-y-2">
+			<li>
+				<Link href="https://github.com/msvens/chess" external>msvens/chess</Link> — this website
+			</li>
+			<li>
+				<Link href="https://github.com/msvens/schack-se-sdk" external>msvens/schack-se-sdk</Link> — a
+				TypeScript SDK for the Swedish Chess Federation's API, which also does the calculations: results,
+				standings, Elo changes and performance ratings
+			</li>
+		</ul>
+
+		<p class="mt-4 mb-3">The website is built with:</p>
+		<ul class="ml-2 list-inside list-disc space-y-2">
+			<li>
+				<Link href="https://svelte.dev/docs/kit" external>SvelteKit</Link>, as a static site
+				rendered in the browser
+			</li>
+			<li><Link href="https://svelte.dev" external>Svelte 5</Link></li>
+			<li><Link href="https://www.typescriptlang.org" external>TypeScript</Link></li>
+			<li><Link href="https://tailwindcss.com" external>Tailwind CSS v4</Link></li>
+			<li><Link href="https://heroicons.com" external>Heroicons</Link></li>
+			<li>
+				<Link href="https://leafletjs.com" external>Leaflet</Link> — the club and tournament maps
+			</li>
+			<li><Link href="https://vitest.dev" external>Vitest</Link> — the tests</li>
+		</ul>
+
+		<p class="mt-4">
+			The data comes from the Swedish Chess Federation's API at schack.se, and FIDE ratings from
+			<Link href="https://chesstools.org" external>ChessTools</Link>.
+		</p>
+	</div>
+
+	<div class="pt-6">
+		<h2 class="mb-4 text-xl font-medium text-gray-900 dark:text-gray-200">Other Projects</h2>
+		<ul class="ml-2 list-inside list-disc space-y-2">
+			<li>
+				<Link href="https://www.mellowtech.org" external>Mellowtech Photos</Link> — my photo blog
+			</li>
+			<li>
+				<Link href="https://resume.msvens.com" external>Resume</Link> — my full resume
+			</li>
+			<li>
+				<Link href="https://www.rockaden.com" external>SK Rockaden</Link> — a redesign of the Stockholm
+				chess club's website: a WordPress block theme with dark mode and a Swedish/English switch (<Link
+					href="https://github.com/msvens/rockaden-wp"
+					external>rockaden-wp</Link
+				>), and a club plugin for training, tournaments, the calendar and the Swedish Chess
+				Federation's member system (<Link href="https://github.com/msvens/chess-wp-plugin" external
+					>chess-wp-plugin</Link
+				>)
+			</li>
+		</ul>
+	</div>
+
+	<div class="pt-6">
 		<h2 class="mb-4 text-xl font-medium text-gray-900 dark:text-gray-200">
 			Links & Acknowledgments
 		</h2>
