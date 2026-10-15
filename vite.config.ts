@@ -5,10 +5,9 @@ import { sveltekit } from '@sveltejs/kit/vite';
 import { svelteTesting } from '@testing-library/svelte/vite';
 import { fileURLToPath } from 'node:url';
 
-// Upstreams. In production nginx owns these two prefixes (see
-// configs/providers/upcloud/mellowtech/etc/nginx/sites-available/chess.conf);
-// in dev the Vite proxy below stands in for it, so the app always talks to
-// same-origin /api/* and never needs CORS.
+// Upstreams. In production nginx owns these two prefixes; in dev the Vite
+// proxy below stands in for it, so the app always talks to same-origin
+// /api/* and never needs CORS.
 //
 // The proxy is NOT optional: SSF answers a CORS preflight with 403, and the SDK
 // sets `Content-Type: application/json` on every request (including bodyless
