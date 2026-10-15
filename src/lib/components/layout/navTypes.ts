@@ -73,4 +73,16 @@ export interface NavDropdownItem {
 
 export type NavItem = NavLinkItem | NavDropdownItem;
 
+/**
+ * A round icon button in the top bar (theme, language). Shows `icon`, or
+ * `emoji` where the content is not an icon; `label` is its tooltip and name.
+ */
+export interface NavIconAction {
+	id: string;
+	icon?: IconSource;
+	emoji?: string;
+	label: string;
+	onClick: () => void;
+}
+
 export type NavDisplay = 'icon' | 'text' | 'both';

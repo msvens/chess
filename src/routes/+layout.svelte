@@ -4,7 +4,7 @@
 	import { language, initLanguage } from '$lib/stores/language.svelte';
 	import { theme, initTheme } from '$lib/stores/theme.svelte';
 	import { setOrganizationsState } from '$lib/stores/organizations.svelte';
-	import { brand, centerItems, rightItems } from '$lib/components/layout/nav';
+	import { brand, centerItems, iconActions, rightItems } from '$lib/components/layout/nav';
 	import Navbar from '$lib/components/layout/Navbar.svelte';
 	import Footer from '$lib/components/layout/Footer.svelte';
 
@@ -34,8 +34,9 @@
 	// Rebuilt whenever the language or theme changes — every label is translated and
 	// the two toggles advertise the state they'd switch to.
 	let center = $derived(centerItems(language.current));
-	let right = $derived(
-		rightItems(
+	let right = $derived(rightItems(language.current));
+	let actions = $derived(
+		iconActions(
 			language.current,
 			theme.current,
 			() => theme.toggle(),
@@ -50,7 +51,7 @@
 	<link rel="icon" type="image/png" href="/favicon-{theme.current}.png" />
 </svelte:head>
 
-<Navbar {brand} display="text" centerItems={center} rightItems={right} />
+<Navbar {brand} display="text" centerItems={center} rightItems={right} {actions} />
 
 <main class="min-h-screen">
 	{@render children()}
