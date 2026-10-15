@@ -3,6 +3,7 @@ import { defineConfig } from 'vitest/config';
 import adapter from '@sveltejs/adapter-static';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { svelteTesting } from '@testing-library/svelte/vite';
+import { fileURLToPath } from 'node:url';
 
 // Upstreams. In production nginx owns these two prefixes (see
 // configs/providers/upcloud/mellowtech/etc/nginx/sites-available/chess.conf);
@@ -37,6 +38,13 @@ export default defineConfig({
 		// dev URL, nginx upstream and every bookmark stay unchanged.
 		port: 3001,
 		strictPort: true,
+		watch: {
+			// `pnpm build` (part of `pnpm check`) rewrites build/index.html, and a
+			// running dev server takes a changed .html file for a source change and
+			// reloads the page. The production output is never source, so ignore
+			// exactly this folder — anchored, so a `build/` elsewhere still reloads.
+			ignored: [`${fileURLToPath(new URL('./build', import.meta.url))}/**`]
+		},
 		proxy: {
 			// IMPORTANT: these rewrites substitute the prefix and nothing else. Do not
 			// add slash normalisation here or in nginx. The SSF API is inconsistent —
