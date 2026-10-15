@@ -59,6 +59,72 @@
 	</p>
 
 	<div class="pt-6">
+		<h2 class="mb-4 text-xl font-medium text-gray-900 dark:text-gray-200">Vem står bakom?</h2>
+		<p>
+			msvens schack byggs och underhålls av Martin Svensson. Du hittar mig på
+			<Link href="https://linkedin.com/in/msvens" external>LinkedIn</Link>.
+		</p>
+	</div>
+
+	<div class="pt-6">
+		<h2 class="mb-4 text-xl font-medium text-gray-900 dark:text-gray-200">Teknik</h2>
+		<p class="mb-3">Sidan är öppen källkod, liksom biblioteket den bygger på:</p>
+		<ul class="ml-2 list-inside list-disc space-y-2">
+			<li>
+				<Link href="https://github.com/msvens/chess" external>msvens/chess</Link> — den här webbplatsen
+			</li>
+			<li>
+				<Link href="https://github.com/msvens/schack-se-sdk" external>msvens/schack-se-sdk</Link> — ett
+				TypeScript-SDK för Svenska Schackförbundets API, som även gör beräkningarna: resultat, ställningar,
+				Elo-förändringar och prestationsrating
+			</li>
+		</ul>
+
+		<p class="mt-4 mb-3">Webbplatsen är byggd med:</p>
+		<ul class="ml-2 list-inside list-disc space-y-2">
+			<li>
+				<Link href="https://svelte.dev/docs/kit" external>SvelteKit</Link>, som en statisk sida som
+				körs i webbläsaren
+			</li>
+			<li><Link href="https://svelte.dev" external>Svelte 5</Link></li>
+			<li><Link href="https://www.typescriptlang.org" external>TypeScript</Link></li>
+			<li><Link href="https://tailwindcss.com" external>Tailwind CSS v4</Link></li>
+			<li><Link href="https://heroicons.com" external>Heroicons</Link></li>
+			<li>
+				<Link href="https://leafletjs.com" external>Leaflet</Link> — kartorna över klubbar och turneringar
+			</li>
+			<li><Link href="https://vitest.dev" external>Vitest</Link> — testerna</li>
+		</ul>
+
+		<p class="mt-4">
+			Data kommer från Svenska Schackförbundets API på schack.se, och FIDE-ratingen från
+			<Link href="https://chesstools.org" external>ChessTools</Link>.
+		</p>
+	</div>
+
+	<div class="pt-6">
+		<h2 class="mb-4 text-xl font-medium text-gray-900 dark:text-gray-200">Andra projekt</h2>
+		<ul class="ml-2 list-inside list-disc space-y-2">
+			<li>
+				<Link href="https://www.mellowtech.org" external>Mellowtech Photos</Link> — min fotoblogg
+			</li>
+			<li>
+				<Link href="https://resume.msvens.com" external>CV</Link> — mitt fullständiga CV
+			</li>
+			<li>
+				<Link href="https://www.rockaden.com" external>SK Rockaden</Link> — en ny design av Stockholmsklubbens
+				webbplats: ett WordPress-blocktema med mörkt läge och svensk/engelsk växling (<Link
+					href="https://github.com/msvens/rockaden-wp"
+					external>rockaden-wp</Link
+				>), och ett klubbtillägg för träningar, turneringar, kalendern och Svenska Schackförbundets
+				medlemssystem (<Link href="https://github.com/msvens/chess-wp-plugin" external
+					>chess-wp-plugin</Link
+				>)
+			</li>
+		</ul>
+	</div>
+
+	<div class="pt-6">
 		<h2 class="mb-4 text-xl font-medium text-gray-900 dark:text-gray-200">Länkar & Tack</h2>
 		<ul class="ml-2 list-inside list-disc space-y-2">
 			<li>
