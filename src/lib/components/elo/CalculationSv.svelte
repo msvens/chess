@@ -20,6 +20,11 @@
 			är FIDE Elo-ratingar. Ett förväntat resultat på 0,75 innebär att du förväntas ta 75% &mdash; ungefär
 			att vinna 3 av 4 partier.
 		</p>
+		<p class="mt-3 leading-relaxed text-gray-700 dark:text-gray-300">
+			FIDE räknar inte med formeln direkt: det förväntade resultatet slås upp i en tabell
+			(ratingreglementet &sect;8.1.2), i hela procent. Formeln är approximationen bakom tabellen.
+			Vår kalkylator använder FIDE:s tabell.
+		</p>
 	</section>
 
 	<section>
@@ -51,9 +56,9 @@
 		<h2 class="mb-3 text-xl font-semibold text-gray-900 dark:text-gray-200">400-poängstaket</h2>
 		<p class="leading-relaxed text-gray-700 dark:text-gray-300">
 			FIDE tillämpar ett tak: om ratingskillnaden mellan två spelare överstiger 400 behandlas den
-			som exakt 400 vid beräkning. Det innebär att det förväntade resultatet alltid ligger mellan
-			cirka 8% och 92%, vilket förhindrar extrema ratingförändringar när en mycket starkare spelare
-			möter en mycket svagare.
+			som exakt 400 vid beräkning. Det innebär att det förväntade resultatet alltid ligger mellan 8%
+			och 92%, vilket förhindrar extrema ratingförändringar när en mycket starkare spelare möter en
+			mycket svagare.
 		</p>
 	</section>
 

@@ -3,12 +3,10 @@ import type { FideActivePlayer, FidePlayer, FidePlayerInfo, PlayerInfoDto } from
 import {
 	DEFAULT_RATING,
 	activeRating,
-	expectedScore,
 	fromFideActivePlayer,
 	fromFidePlayerInfo,
 	fromFideSearchHit,
 	fromSsfPlayer,
-	ratingChange,
 	resolveKFactor,
 	selectedRating,
 	type LookedUpPlayer,
@@ -167,29 +165,5 @@ describe('mapping lookups', () => {
 			name: 'Carlsen, Magnus (NOR)',
 			ratings: { standard: 2830, rapid: 0, blitz: 0 }
 		});
-	});
-});
-
-describe('the 400-point cap', () => {
-	it('capped: a 1000-point gap scores the same as a 400-point gap', () => {
-		expect(expectedScore(2400, 1400, true)).toBeCloseTo(expectedScore(1800, 1400, true), 10);
-	});
-
-	it('uncapped: the gap keeps counting', () => {
-		expect(expectedScore(2400, 1400, false)).toBeGreaterThan(expectedScore(1800, 1400, false));
-		expect(expectedScore(2400, 1400, false)).toBeCloseTo(0.9968, 3);
-	});
-
-	it('agrees with the SDK inside the cap either way', () => {
-		expect(expectedScore(1500, 1600, false)).toBeCloseTo(expectedScore(1500, 1600, true), 10);
-		expect(ratingChange(1500, 1600, 1, 20, false)).toBeCloseTo(
-			ratingChange(1500, 1600, 1, 20, true),
-			10
-		);
-	});
-
-	it('uncapped change is K × (S − E), to a tenth like the SDK', () => {
-		expect(ratingChange(2400, 1400, 0, 10, false)).toBe(-10);
-		expect(ratingChange(2400, 1400, 0, 40, false)).toBe(-39.9);
 	});
 });

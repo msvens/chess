@@ -77,12 +77,12 @@ describe('Calculator', () => {
 	});
 
 	it('works out a game from two typed ratings — the numbers a player checks by hand', async () => {
-		// 1500 beats 1600: E = 1/(1+10^(100/400)) = 0.360, ΔR = 20 × 0.640 = 12.8.
+		// 1500 beats 1600: FIDE's table gives E = 0.36 for a 100-point gap, ΔR = 20 × 0.64 = 12.8.
 		const user = setup();
 		await enterRatings(user, '1500', '1600');
 
 		const white = card(/^Vit/);
-		expect(white.getByText(/Förväntat resultat/).parentElement).toHaveTextContent('36.0%');
+		expect(white.getByText(/Förväntat resultat/).parentElement).toHaveTextContent('36%');
 		expect(white.getByText('+12.8')).toBeInTheDocument();
 		expect(white.getByText(/Ny rating/).parentElement).toHaveTextContent('1513');
 		// A win is a performance of the opponent's rating + 800.
@@ -90,7 +90,7 @@ describe('Calculator', () => {
 		expect(white.getByText('K = 20')).toBeInTheDocument();
 
 		const black = card(/^Svart/);
-		expect(black.getByText(/Förväntat resultat/).parentElement).toHaveTextContent('64.0%');
+		expect(black.getByText(/Förväntat resultat/).parentElement).toHaveTextContent('64%');
 		expect(black.getByText('-12.8')).toBeInTheDocument();
 		expect(black.getByText(/Ny rating/).parentElement).toHaveTextContent('1587');
 	});
@@ -126,14 +126,15 @@ describe('Calculator', () => {
 
 	it('caps the difference at 400 unless told not to, and says when the cap would have applied', async () => {
 		const user = setup();
+		// Capped, the table stops at 0.92; uncapped, a 1000-point gap is past its last band (735).
 		await enterRatings(user, '2400', '1400');
 		const expected = () =>
 			card(/^Vit/).getByText(/Förväntat resultat/).parentElement?.textContent ?? '';
-		expect(expected()).toContain('90.9%');
+		expect(expected()).toContain('92%');
 		expect(screen.queryByText(/Utan gräns/)).toBeNull();
 
 		await user.click(screen.getByRole('checkbox', { name: 'Ta bort 400-poängsgräns' }));
-		expect(expected()).toContain('99.7%');
+		expect(expected()).toContain('100%');
 		expect(
 			screen.getByText('Utan gräns — ratingskillnad 1000 (normalt begränsad till 400)')
 		).toBeInTheDocument();
