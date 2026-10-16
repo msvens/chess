@@ -7,7 +7,7 @@ describe('ExpectedScoreWidget', () => {
 	it('starts at 1500 v 1500: an even game', () => {
 		render(ExpectedScoreWidget);
 		expect(screen.getByLabelText('Din rating')).toHaveValue(1500);
-		expect(screen.getByText(/Ditt förväntade resultat/).parentElement).toHaveTextContent('50.0%');
+		expect(screen.getByText(/Ditt förväntade resultat/).parentElement).toHaveTextContent('50%');
 		expect(screen.getByText(/Ratingskillnad/)).toHaveTextContent('Ratingskillnad: 0 poäng');
 	});
 
@@ -18,8 +18,8 @@ describe('ExpectedScoreWidget', () => {
 		await user.clear(opponent);
 		await user.type(opponent, '1600');
 
-		expect(screen.getByText(/Ditt förväntade resultat/).parentElement).toHaveTextContent('36.0%');
-		expect(screen.getByText(/Motståndarens förväntade/).parentElement).toHaveTextContent('64.0%');
+		expect(screen.getByText(/Ditt förväntade resultat/).parentElement).toHaveTextContent('36%');
+		expect(screen.getByText(/Motståndarens förväntade/).parentElement).toHaveTextContent('64%');
 		expect(screen.getByText(/Ratingskillnad/)).toHaveTextContent('100 poäng');
 		expect(screen.getByText(/Ratingskillnad/)).not.toHaveTextContent('begränsad');
 	});
@@ -31,7 +31,7 @@ describe('ExpectedScoreWidget', () => {
 		await user.clear(opponent);
 		await user.type(opponent, '2500');
 
-		expect(screen.getByText(/Ditt förväntade resultat/).parentElement).toHaveTextContent('9.1%');
+		expect(screen.getByText(/Ditt förväntade resultat/).parentElement).toHaveTextContent('8%');
 		expect(screen.getByText(/Ratingskillnad/)).toHaveTextContent(
 			'Ratingskillnad: 1000 poäng (begränsad till 400)'
 		);

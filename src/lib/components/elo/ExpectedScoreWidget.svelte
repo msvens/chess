@@ -18,7 +18,8 @@
 	let valid = $derived(player > 0 && opponent > 0);
 	let difference = $derived(Math.abs(player - opponent));
 
-	const percent = (score: number) => `${(score * 100).toFixed(1)}%`;
+	/** FIDE's table gives whole percentages, so there are no decimals to show. */
+	const percent = (score: number) => `${Math.round(score * 100)}%`;
 </script>
 
 <div class="space-y-4 rounded-lg border border-gray-200 p-4 dark:border-gray-700">

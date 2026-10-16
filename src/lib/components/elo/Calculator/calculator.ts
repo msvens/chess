@@ -1,12 +1,10 @@
 /**
  * The calculator's pure part: turning a looked-up player into a rating and a
- * K-factor for the chosen time control, and the maths for the "remove the
- * 400-point cap" switch. Split out from the component because none of it needs
- * a DOM to assert.
+ * K-factor for the chosen time control. Split out from the component because
+ * none of it needs a DOM to assert. The Elo maths itself, capped or not, is the
+ * SDK's.
  */
 import {
-	calculateExpectedScore,
-	calculateRatingChange,
 	formatPlayerName,
 	getKFactorForRating,
 	type FideActivePlayer,
@@ -171,24 +169,6 @@ export function fromFideActivePlayer(player: FideActivePlayer): LookedUpPlayer {
 		kFactors: null,
 		birthYear: null
 	};
-}
-
-/** Expected score, with or without FIDE's 400-point cap on the difference. */
-export function expectedScore(player: number, opponent: number, capped: boolean): number {
-	if (capped) return calculateExpectedScore(player, opponent);
-	return 1 / (1 + Math.pow(10, (opponent - player) / 400));
-}
-
-export function ratingChange(
-	player: number,
-	opponent: number,
-	actualScore: number,
-	k: number,
-	capped: boolean
-): number {
-	if (capped) return calculateRatingChange(player, opponent, actualScore, k);
-	// Rounded to a tenth as the SDK does, so the two agree inside the cap.
-	return Math.round(k * (actualScore - expectedScore(player, opponent, false)) * 10) / 10;
 }
 
 export function scoreOf(result: GameResult): number {

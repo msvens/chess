@@ -14,7 +14,9 @@
 	import PlayerInput from './PlayerInput.svelte';
 	import {
 		RATING_DIFFERENCE_CAP,
+		calculateExpectedScore,
 		calculatePerformanceRating,
+		calculateRatingChange,
 		fideService,
 		type FideActivePlayer
 	} from '$lib/api';
@@ -24,8 +26,6 @@
 		ELO_TYPES,
 		EMPTY_SELECTION,
 		GAME_RESULTS,
-		expectedScore,
-		ratingChange,
 		resolveKFactor,
 		scoreOf,
 		selectedRating,
@@ -109,8 +109,8 @@
 				{
 					name: player1.lookedUp?.name || calc.player1,
 					rating: r1,
-					expected: expectedScore(r1, r2, capped),
-					change: ratingChange(r1, r2, score1, k1.k, capped),
+					expected: calculateExpectedScore(r1, r2, { capped }),
+					change: calculateRatingChange(r1, r2, score1, k1.k, { capped }),
 					performance: calculatePerformanceRating([r2], score1),
 					k: k1.k,
 					kFromProfile: k1.fromProfile
@@ -118,8 +118,8 @@
 				{
 					name: player2.lookedUp?.name || calc.player2,
 					rating: r2,
-					expected: expectedScore(r2, r1, capped),
-					change: ratingChange(r2, r1, score2, k2.k, capped),
+					expected: calculateExpectedScore(r2, r1, { capped }),
+					change: calculateRatingChange(r2, r1, score2, k2.k, { capped }),
 					performance: calculatePerformanceRating([r1], score2),
 					k: k2.k,
 					kFromProfile: k2.fromProfile
@@ -254,7 +254,7 @@
 					<div class="space-y-1 text-sm text-gray-700 dark:text-gray-300">
 						<p>
 							<span class="text-gray-500 dark:text-gray-400">{calc.expectedScore}:</span>
-							{(side.expected * 100).toFixed(1)}%
+							{Math.round(side.expected * 100)}%
 						</p>
 						<p>
 							<span class="text-gray-500 dark:text-gray-400">{calc.ratingChange}:</span>

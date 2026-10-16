@@ -20,6 +20,11 @@
 			FIDE Elo ratings. An expected score of 0.75 means you&apos;re expected to score 75% &mdash; roughly
 			winning 3 out of 4 games.
 		</p>
+		<p class="mt-3 leading-relaxed text-gray-700 dark:text-gray-300">
+			FIDE doesn&apos;t compute this formula directly: it looks the expected score up in a table
+			(Rating Regulations &sect;8.1.2), in whole percentages. The formula is the approximation
+			behind that table. Our calculator uses FIDE&apos;s table.
+		</p>
 	</section>
 
 	<section>
@@ -51,9 +56,8 @@
 		<h2 class="mb-3 text-xl font-semibold text-gray-900 dark:text-gray-200">The 400-Point Cap</h2>
 		<p class="leading-relaxed text-gray-700 dark:text-gray-300">
 			FIDE applies a cap: if the rating difference between two players exceeds 400, it is treated as
-			exactly 400 for calculation purposes. This means the expected score is always between about 8%
-			and 92%, preventing extreme rating changes when a much stronger player faces a much weaker
-			one.
+			exactly 400 for calculation purposes. This means the expected score is always between 8% and
+			92%, preventing extreme rating changes when a much stronger player faces a much weaker one.
 		</p>
 	</section>
 
