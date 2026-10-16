@@ -19,6 +19,7 @@ import {
 	isWalkoverResultCode,
 	normalizeEloLookupDate,
 	parseLocalDate,
+	type GameDisplay,
 	type GameDto,
 	type PlayerInfoDto,
 	type TournamentDto
@@ -97,6 +98,51 @@ export function groupMetaFor(
 	}
 
 	return meta;
+}
+
+/**
+ * When each group was played: its start, falling back to the tournament's.
+ *
+ * Games carry no date of their own, so this is the best date a game has — two
+ * games from the same group share it. Groups whose tournament is not loaded yet,
+ * or that have no parseable date, are left out.
+ */
+export function groupStarts(
+	games: readonly GameDto[],
+	tournamentOf: (groupId: number) => TournamentDto | undefined
+): Map<number, string> {
+	const starts = new Map<number, string>();
+
+	for (const game of games) {
+		if (starts.has(game.groupiD)) continue;
+
+		const tournament = tournamentOf(game.groupiD);
+		if (!tournament) continue;
+		const found = findTournamentGroup(tournament, game.groupiD);
+		if (!found) continue;
+
+		const start = found.group.start || tournament.start;
+		if (Number.isNaN(parseLocalDate(start).getTime())) continue;
+		starts.set(game.groupiD, start);
+	}
+
+	return starts;
+}
+
+/**
+ * Newest first, by the group's start. Within one group the higher game id goes
+ * first — ids are handed out as results are entered, so in practice that is the
+ * later round. Games with no known date go last.
+ */
+export function newestFirst(
+	games: readonly GameDisplay[],
+	starts: ReadonlyMap<number, string>
+): GameDisplay[] {
+	const time = (game: GameDisplay) => {
+		const start = starts.get(game.groupId);
+		return start === undefined ? -Infinity : parseLocalDate(start).getTime();
+	};
+	return [...games].sort((a, b) => time(b) - time(a) || b.gameId - a.gameId);
 }
 
 /** Every (player, month) pair these games need a historical rating for. */

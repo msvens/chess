@@ -291,6 +291,12 @@ describe('formatPerformance', () => {
 		// The official site shows none below three; two games is not enough.
 		expect(formatPerformance(stats([1600, 1700], 2))).toBe('-');
 	});
+
+	it('takes a lower minimum where the caller allows one', () => {
+		// Head-to-head shows a performance from a single game.
+		expect(formatPerformance(stats([1600], 1), 1)).toBe('2400');
+		expect(formatPerformance(stats([], 0), 1)).toBe('-');
+	});
 });
 
 describe('agreeing with the SDK’s performance list', () => {
