@@ -264,11 +264,14 @@ export function formatEloChange(stats: RatingTypeStats): string {
 }
 
 /**
- * The performance rating, or a dash with fewer than
- * `MIN_RATED_GAMES_FOR_PERFORMANCE` games against rated opponents — the official
- * site shows none below that.
+ * The performance rating, or a dash with fewer than `minGames` games against
+ * rated opponents. The default is `MIN_RATED_GAMES_FOR_PERFORMANCE` — the
+ * official site shows none below that for a tournament.
  */
-export function formatPerformance(stats: PerformanceStats): string {
-	if (stats.opponentRatings.length < MIN_RATED_GAMES_FOR_PERFORMANCE) return '-';
+export function formatPerformance(
+	stats: PerformanceStats,
+	minGames: number = MIN_RATED_GAMES_FOR_PERFORMANCE
+): string {
+	if (stats.opponentRatings.length < minGames) return '-';
 	return String(calculatePerformanceRating(stats.opponentRatings, stats.score));
 }

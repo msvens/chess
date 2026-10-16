@@ -1,9 +1,17 @@
 import { describe, expect, it } from 'vitest';
-import type { GameDto, PlayerInfoDto, TournamentClassDto, TournamentDto } from '$lib/api';
+import type {
+	GameDisplay,
+	GameDto,
+	PlayerInfoDto,
+	TournamentClassDto,
+	TournamentDto
+} from '$lib/api';
 import {
 	eloChanges,
 	groupMetaFor,
+	groupStarts,
 	headToHeadGames,
+	newestFirst,
 	ratingRequests,
 	summarise,
 	type GroupMeta
@@ -100,6 +108,54 @@ describe('when and how a group counted', () => {
 			return tournament(id, RANKING.standard);
 		});
 		expect(calls).toBe(1);
+	});
+});
+
+describe('the date a game is shown with', () => {
+	it('is the group start, as written', () => {
+		const starts = groupStarts([game()], lookup({ 10: tournament(10, RANKING.standard) }));
+		expect(starts.get(10)).toBe('2025-01-15');
+	});
+
+	it('falls back to the tournament start', () => {
+		const starts = groupStarts(
+			[game()],
+			lookup({ 10: tournament(10, RANKING.standard, null, '2024-06-05') })
+		);
+		expect(starts.get(10)).toBe('2024-06-05');
+	});
+
+	it('is missing when the tournament is unknown or the date unreadable', () => {
+		expect(groupStarts([game()], lookup({})).size).toBe(0);
+		expect(
+			groupStarts([game()], lookup({ 10: tournament(10, 1, 'nonsense', 'nonsense') })).size
+		).toBe(0);
+	});
+});
+
+describe('the order of the games', () => {
+	const row = (gameId: number, groupId: number) => ({ gameId, groupId }) as GameDisplay;
+	const order = (rows: GameDisplay[], starts: Record<number, string>) =>
+		newestFirst(rows, new Map(Object.entries(starts).map(([k, v]) => [Number(k), v]))).map(
+			(r) => r.gameId
+		);
+
+	it('puts the newest event first, whatever order the games came in', () => {
+		expect(
+			order([row(1, 10), row(2, 20), row(3, 30)], {
+				10: '2023-05-01',
+				20: '2025-01-15',
+				30: '2024-09-09'
+			})
+		).toEqual([2, 3, 1]);
+	});
+
+	it('puts the later game of one event first', () => {
+		expect(order([row(7, 10), row(9, 10)], { 10: '2025-01-15' })).toEqual([9, 7]);
+	});
+
+	it('puts games with no known date last', () => {
+		expect(order([row(1, 99), row(2, 10)], { 10: '2020-01-01' })).toEqual([2, 1]);
 	});
 });
 

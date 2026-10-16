@@ -390,6 +390,10 @@ export interface Translations {
 			total: string;
 			noMatchesFound: string;
 			loadingMatches: string;
+			/** Beside a performance that rests on a single game. */
+			performanceOneGame: string;
+			/** Beside a performance that rests on a few games; `{count}`. */
+			performanceGames: string;
 			of: string;
 			/** The member id in the URL is not a number. */
 			invalidMemberId: string;
@@ -1171,6 +1175,8 @@ const translations: Record<Language, Translations> = {
 				total: 'Total',
 				noMatchesFound: 'No matches found',
 				loadingMatches: 'Loading matches...',
+				performanceOneGame: '1 game',
+				performanceGames: '{count} games',
 				of: 'of',
 				invalidMemberId: 'Invalid player ID'
 			},
@@ -1936,6 +1942,8 @@ const translations: Record<Language, Translations> = {
 				total: 'Totalt',
 				noMatchesFound: 'Inga partier hittades',
 				loadingMatches: 'Laddar partier...',
+				performanceOneGame: '1 parti',
+				performanceGames: '{count} partier',
 				of: 'av',
 				invalidMemberId: 'Ogiltigt spelar-ID'
 			},

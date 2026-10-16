@@ -14,6 +14,7 @@
 	import Link from '$lib/components/ui/Link.svelte';
 	import type { TournamentParticipation } from '$lib/player/participations';
 	import { parseLocalDate } from '$lib/api';
+	import { compactDate } from '$lib/player/compactDate';
 	import { language } from '$lib/stores/language.svelte';
 	import { localeOf } from '$lib/i18n';
 	import { getTranslation } from '$lib/translations';
@@ -36,16 +37,6 @@
 
 	let t = $derived(getTranslation(language.current).pages.playerDetail.tournamentHistory);
 	let locale = $derived(localeOf(language.current));
-
-	/**
-	 * `2025-06-27` → `2025-6-27`: ISO order without the leading zeros, which is
-	 * what the mobile column has room for.
-	 */
-	function compactDate(value: string): string {
-		const date = parseLocalDate(value);
-		if (Number.isNaN(date.getTime())) return value;
-		return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
-	}
 
 	/** Within one year the year is said once, at the end: `6-27 - 7-6 2025`. */
 	function compactRange(start: string, end: string): string {

@@ -18,15 +18,19 @@
 		formatRatingWithType,
 		gamesToDisplayFormat,
 		getPlayerRatingStrict,
+		MIN_RATED_GAMES_FOR_PERFORMANCE,
 		type GameDisplay
 	} from '$lib/api';
 	import {
 		eloChanges,
 		groupMetaFor,
+		groupStarts,
 		headToHeadGames,
+		newestFirst,
 		ratingRequests,
 		summarise
 	} from '$lib/player/headToHead';
+	import { compactDate } from '$lib/player/compactDate';
 	import { formatEloChange, formatPerformance, type RatingType } from '$lib/results/tournamentElo';
 	import { getPlayerProfileState } from '$lib/stores/playerProfile.svelte';
 	import { playerCache } from '$lib/stores/playerCache.svelte';
@@ -54,6 +58,9 @@
 	);
 
 	let meta = $derived(groupMetaFor(games, (groupId) => tournamentCache.get(groupId)));
+
+	/** The date shown under each tournament, and what the rows are sorted by. */
+	let starts = $derived(groupStarts(games, (groupId) => tournamentCache.get(groupId)));
 
 	/**
 	 * Both players' ratings as they stood at each event.
@@ -83,18 +90,37 @@
 		memberId === null ? null : summarise(games, memberId, opponentId, meta, at)
 	);
 
+	/**
+	 * Against one opponent a single rated game is enough for a performance —
+	 * unlike a tournament, which needs `MIN_RATED_GAMES_FOR_PERFORMANCE`. Below
+	 * that it says how few games it rests on, since one win alone reads as the
+	 * opponent's rating + 800.
+	 */
+	let performance = $derived.by(() => {
+		if (!summary) return '-';
+		const value = formatPerformance(summary.performance, 1);
+		const rated = summary.performance.opponentRatings.length;
+		if (rated === 0 || rated >= MIN_RATED_GAMES_FOR_PERFORMANCE) return value;
+		const games =
+			rated === 1 ? pd.performanceOneGame : pd.performanceGames.replace('{count}', String(rated));
+		return `${value} (${games})`;
+	});
+
 	let displayGames = $derived(
 		memberId === null
 			? []
-			: gamesToDisplayFormat(
-					games,
-					memberId,
-					profile.playerMap,
-					profile.tournamentMap,
-					profile.currentPlayerName,
-					profile.opponentsLoading(games),
-					ot.table.retrieving,
-					ot.table.unknown
+			: newestFirst(
+					gamesToDisplayFormat(
+						games,
+						memberId,
+						profile.playerMap,
+						profile.tournamentMap,
+						profile.currentPlayerName,
+						profile.opponentsLoading(games),
+						ot.table.retrieving,
+						ot.table.unknown
+					),
+					starts
 				)
 	);
 
@@ -155,12 +181,18 @@
 </script>
 
 {#snippet tournamentCell(game: GameDisplay)}
+	{@const start = starts.get(game.groupId)}
 	<Link
 		href="/results/{game.tournamentId}/{game.groupId}"
 		class="block max-w-20 truncate md:max-w-48"
 	>
 		<span title={game.tournamentName}>{game.tournamentName}</span>
 	</Link>
+	{#if start}
+		<span class="block text-xs text-gray-500 tabular-nums dark:text-gray-400">
+			{compactDate(start)}
+		</span>
+	{/if}
 {/snippet}
 
 {#snippet side(id: number, name: string)}
@@ -233,7 +265,7 @@
 							{@render figure(changeLabels[type], formatEloChange(summary.byRatingType[type]))}
 							<!-- One performance across every list, beside the first Elo row. -->
 							{#if index === 0}
-								{@render figure(elo.performanceRating, formatPerformance(summary.performance))}
+								{@render figure(elo.performanceRating, performance)}
 							{/if}
 						</div>
 					{/each}

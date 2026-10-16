@@ -26,7 +26,12 @@ const ME = 500;
 const RIVAL = 600;
 const RANKING = { standard: 1, blitz: 7 } as const;
 
-const tournament = (groupId: number, name: string, ranking: number): TournamentDto =>
+const tournament = (
+	groupId: number,
+	name: string,
+	ranking: number,
+	start = '2025-01-15'
+): TournamentDto =>
 	({
 		id: groupId * 10,
 		name,
@@ -41,7 +46,7 @@ const tournament = (groupId: number, name: string, ranking: number): TournamentD
 					{
 						id: groupId,
 						name: 'A',
-						start: '2025-01-15',
+						start,
 						end: '2025-01-20',
 						rankingAlgorithm: ranking
 					}
@@ -91,7 +96,7 @@ function withRatings() {
 
 function setup(games: GameDto[], prepare: (state: PlayerProfileState) => void = () => {}) {
 	tournamentCache.add(10, tournament(10, 'Rilton Cup', RANKING.standard));
-	tournamentCache.add(20, tournament(20, 'Blixt-KM', RANKING.blitz));
+	tournamentCache.add(20, tournament(20, 'Blixt-KM', RANKING.blitz, '2025-02-03'));
 
 	const state = new PlayerProfileState();
 	state.memberId = ME;
@@ -190,6 +195,36 @@ describe('the summary panel', () => {
 		await vi.waitFor(() => expect(within(panel()).getByText('+10')).toBeInTheDocument());
 	});
 
+	it('shows a performance from a single rated game, and says it rests on one', async () => {
+		// Against one opponent there is no three-game minimum. A win against an
+		// equal 2000 is 2000 + 800, which is why the game count goes beside it.
+		withRatings();
+		setup([game({ id: 1, groupiD: 10, result: 1 })]);
+
+		await vi.waitFor(() => expect(within(panel()).getByText('2800 (1 parti)')).toBeInTheDocument());
+	});
+
+	it('counts the games while under the tournament minimum', async () => {
+		withRatings();
+		setup([game({ id: 1, groupiD: 10, result: 1 }), game({ id: 2, groupiD: 10, result: 0 })]);
+
+		// 1.5 of 2 is 75%, worth +193 in FIDE's table.
+		await vi.waitFor(() =>
+			expect(within(panel()).getByText('2193 (2 partier)')).toBeInTheDocument()
+		);
+	});
+
+	it('drops the game count from three games on', async () => {
+		withRatings();
+		setup([
+			game({ id: 1, groupiD: 10, result: 1 }),
+			game({ id: 2, groupiD: 10, result: 0 }),
+			game({ id: 3, groupiD: 10, result: -1 })
+		]);
+
+		await vi.waitFor(() => expect(within(panel()).getByText('2000')).toBeInTheDocument());
+	});
+
 	it('has no panel at all when nothing countable was played', () => {
 		setup([game({ id: 1, groupiD: 10, result: -100 })]);
 		expect(screen.queryByText(/av /)).toBeNull();
@@ -204,6 +239,18 @@ describe('the table', () => {
 			'href',
 			'/players/600'
 		);
+	});
+
+	it('shows each game under its date, newest first', () => {
+		// Blixt-KM (February) is newer. As given, the SDK's reversal alone would
+		// put Rilton Cup on top.
+		setup([game({ id: 1, groupiD: 20 }), game({ id: 2, groupiD: 10 })]);
+
+		const rows = screen.getAllByRole('row').slice(1);
+		expect(rows[0]).toHaveTextContent('Blixt-KM');
+		expect(rows[0]).toHaveTextContent('2025-2-3');
+		expect(rows[1]).toHaveTextContent('Rilton Cup');
+		expect(rows[1]).toHaveTextContent('2025-1-15');
 	});
 
 	it('links each game to its group', () => {
