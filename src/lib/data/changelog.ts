@@ -19,6 +19,31 @@ export const changelog: ChangelogEntry[] = [
     "sections": []
   },
   {
+    "version": "2.1.0",
+    "date": "2026-10-17",
+    "sections": [
+      {
+        "type": "Added",
+        "items": [
+          "Head-to-head games now show their date under the tournament name, and are listed newest first",
+          "A performance against a single opponent, from as little as one rated game. Below three games it says how many it rests on, e.g. \"2193 (2 games)\", since one win alone reads as the opponent's rating + 800",
+          "The About page now has the logo, who's behind the site, the technology it's built with, and other projects"
+        ]
+      },
+      {
+        "type": "Changed",
+        "items": [
+          "A player's page in a tournament now shows a performance from one rated game too, with the game count below three. Groups without Elo, such as Schackfyran, still show none. The Individual performance list keeps the official three-game minimum, and now says so above the list",
+          "The Elo calculator, the expected-score example and the Elo changes on results pages now use FIDE's expected-score table, as the federation does, instead of the formula that approximates it. Values move by up to half a percentage point, and expected scores are shown in whole percentages. The \"remove the 400-point cap\" switch still works",
+          "Elo has moved from the top bar into the Guide, as its own section beside Tournament Formats. Old Elo links still work",
+          "Theme and language are now icon buttons in the top bar (a sun or moon, and the flag of the other language), also on phones. The front page no longer repeats them",
+          "Loading many ratings or tournaments now shows how far it has come (\"Loading ratings (12 of 40)\"), and the tables fill in as the data arrives",
+          "The opponent pie charts share one larger legend instead of a small one under each chart"
+        ]
+      }
+    ]
+  },
+  {
     "version": "2.0.0",
     "date": "2026-10-14",
     "sections": [
