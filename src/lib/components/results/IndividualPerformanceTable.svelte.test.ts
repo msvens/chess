@@ -64,6 +64,18 @@ describe('IndividualPerformanceTable', () => {
 		expect(cells(1)[8]).toBe('-');
 	});
 
+	it('says above the list why some rows have no performance', () => {
+		setup([row({})]);
+		expect(
+			screen.getByText('Prestationsrating kräver minst 3 partier mot ratade motståndare.')
+		).toBeInTheDocument();
+	});
+
+	it('has no note when the list is empty', () => {
+		setup([]);
+		expect(screen.queryByText(/Prestationsrating kräver/)).toBeNull();
+	});
+
 	it('links a name to the player’s games in their main group', () => {
 		setup([row({ groupIds: [18962, 18963] })]);
 		expect(screen.getByRole('link', { name: 'Anna Svensson' })).toHaveAttribute(

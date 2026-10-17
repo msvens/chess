@@ -18,7 +18,6 @@
 		formatRatingWithType,
 		gamesToDisplayFormat,
 		getPlayerRatingStrict,
-		MIN_RATED_GAMES_FOR_PERFORMANCE,
 		type GameDisplay
 	} from '$lib/api';
 	import {
@@ -31,7 +30,11 @@
 		summarise
 	} from '$lib/player/headToHead';
 	import { compactDate } from '$lib/player/compactDate';
-	import { formatEloChange, formatPerformance, type RatingType } from '$lib/results/tournamentElo';
+	import {
+		formatEloChange,
+		formatPerformanceWithCount,
+		type RatingType
+	} from '$lib/results/tournamentElo';
 	import { getPlayerProfileState } from '$lib/stores/playerProfile.svelte';
 	import { playerCache } from '$lib/stores/playerCache.svelte';
 	import { tournamentCache } from '$lib/stores/tournamentCache.svelte';
@@ -90,21 +93,15 @@
 		memberId === null ? null : summarise(games, memberId, opponentId, meta, at)
 	);
 
-	/**
-	 * Against one opponent a single rated game is enough for a performance —
-	 * unlike a tournament, which needs `MIN_RATED_GAMES_FOR_PERFORMANCE`. Below
-	 * that it says how few games it rests on, since one win alone reads as the
-	 * opponent's rating + 800.
-	 */
-	let performance = $derived.by(() => {
-		if (!summary) return '-';
-		const value = formatPerformance(summary.performance, 1);
-		const rated = summary.performance.opponentRatings.length;
-		if (rated === 0 || rated >= MIN_RATED_GAMES_FOR_PERFORMANCE) return value;
-		const games =
-			rated === 1 ? pd.performanceOneGame : pd.performanceGames.replace('{count}', String(rated));
-		return `${value} (${games})`;
-	});
+	/** Against one opponent a single rated game is enough for a performance. */
+	let performance = $derived(
+		summary
+			? formatPerformanceWithCount(summary.performance, {
+					oneGame: elo.performanceOneGame,
+					games: elo.performanceGames
+				})
+			: '-'
+	);
 
 	let displayGames = $derived(
 		memberId === null

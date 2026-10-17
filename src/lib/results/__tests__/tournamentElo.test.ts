@@ -6,12 +6,15 @@ import {
 	RoundRatedType,
 	type PlayerInfoDto,
 	type TournamentDto,
+	type TournamentClassGroupDto,
 	type TournamentRoundResultDto
 } from '$lib/api';
 import { playerMatches, type PlayerMatch } from '../playerMatches';
 import {
 	formatEloChange,
 	formatPerformance,
+	formatPerformanceWithCount,
+	isEloGroup,
 	performanceGame,
 	ratedGame,
 	summarise,
@@ -296,6 +299,45 @@ describe('formatPerformance', () => {
 		// Head-to-head shows a performance from a single game.
 		expect(formatPerformance(stats([1600], 1), 1)).toBe('2400');
 		expect(formatPerformance(stats([], 0), 1)).toBe('-');
+	});
+});
+
+describe('formatPerformanceWithCount', () => {
+	const labels = { oneGame: '1 parti', games: '{count} partier' };
+	const stats = (opponentRatings: number[], score: number) => ({ opponentRatings, score });
+
+	it('gives a performance from one rated game, and says it rests on one', () => {
+		expect(formatPerformanceWithCount(stats([1600], 1), labels)).toBe('2400 (1 parti)');
+	});
+
+	it('counts the games while under the tournament minimum', () => {
+		expect(formatPerformanceWithCount(stats([1600, 1600], 1), labels)).toBe('1600 (2 partier)');
+	});
+
+	it('is the number alone from three games on', () => {
+		expect(formatPerformanceWithCount(stats([1600, 1700, 1800], 1.5), labels)).toBe('1700');
+	});
+
+	it('is a dash with no rated games', () => {
+		expect(formatPerformanceWithCount(stats([], 0), labels)).toBe('-');
+	});
+});
+
+describe('isEloGroup', () => {
+	// Real SDK codes: 1 standard Elo, 5 no rating.
+	const group = (rankingAlgorithm: number, pointSystem: number = PointSystem.DEFAULT) =>
+		({ id: 1, name: 'A', rankingAlgorithm, pointSystem }) as unknown as TournamentClassGroupDto;
+
+	it('is true for an Elo-rated group', () => {
+		expect(isEloGroup(group(1))).toBe(true);
+	});
+
+	it('is false for an unrated group', () => {
+		expect(isEloGroup(group(5))).toBe(false);
+	});
+
+	it('is false for Schackfyran scoring, whatever the ranking', () => {
+		expect(isEloGroup(group(1, PointSystem.SCHACK4AN))).toBe(false);
 	});
 });
 

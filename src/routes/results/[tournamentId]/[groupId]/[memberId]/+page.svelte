@@ -30,7 +30,8 @@
 	import { playerMatchLookups, playerMatches, type PlayerMatch } from '$lib/results/playerMatches';
 	import {
 		formatEloChange,
-		formatPerformance,
+		formatPerformanceWithCount,
+		isEloGroup,
 		matchRatings,
 		ratedGame,
 		summarise,
@@ -116,7 +117,20 @@
 				}))
 	);
 
-	let performance = $derived(formatPerformance(summary.performance));
+	/**
+	 * As in head-to-head: a performance from one rated game, marked with how few
+	 * it rests on below the tournament minimum. The Individual performance list
+	 * keeps the minimum and says so. Never in a group without Elo (Schackfyran,
+	 * say), where a performance means nothing.
+	 */
+	let performance = $derived(
+		results.group && isEloGroup(results.group)
+			? formatPerformanceWithCount(summary.performance, {
+					oneGame: elo.performanceOneGame,
+					games: elo.performanceGames
+				})
+			: '-'
+	);
 
 	// --- The games table ---
 
