@@ -10,7 +10,12 @@
 	import Link from '$lib/components/ui/Link.svelte';
 	import Table from '$lib/components/ui/Table/Table.svelte';
 	import type { TableColumn } from '$lib/components/ui/Table/tableTypes';
-	import { formatPlayerName, type IndividualPerformanceRow, type PlayerInfoDto } from '$lib/api';
+	import {
+		MIN_RATED_GAMES_FOR_PERFORMANCE,
+		formatPlayerName,
+		type IndividualPerformanceRow,
+		type PlayerInfoDto
+	} from '$lib/api';
 	import { language } from '$lib/stores/language.svelte';
 	import { getTranslation } from '$lib/translations';
 
@@ -70,6 +75,16 @@
 		{nameOf(row.playerId)}
 	</Link>
 {/snippet}
+
+<!-- Directly under the page heading, before the rows it explains. -->
+{#if rows.length > 0}
+	<p class="mb-3 text-sm text-gray-600 dark:text-gray-400">
+		{tr.individualPerformance.minGamesNote.replace(
+			'{count}',
+			String(MIN_RATED_GAMES_FOR_PERFORMANCE)
+		)}
+	</p>
+{/if}
 
 <Table
 	data={rows}

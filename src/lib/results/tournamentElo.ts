@@ -16,6 +16,7 @@
 import {
 	calculateRatingChange,
 	calculatePerformanceRating,
+	getGroupTimeControl,
 	getKFactorForRating,
 	getPlayerPoints,
 	getPlayerRatingForRound,
@@ -25,7 +26,8 @@ import {
 	PointValues,
 	RoundRatedType,
 	type PlayerInfoDto,
-	type PlayerRating
+	type PlayerRating,
+	type TournamentClassGroupDto
 } from '$lib/api';
 import type { PlayerMatch } from './playerMatches';
 
@@ -274,4 +276,32 @@ export function formatPerformance(
 ): string {
 	if (stats.opponentRatings.length < minGames) return '-';
 	return String(calculatePerformanceRating(stats.opponentRatings, stats.score));
+}
+
+/**
+ * Whether a group's games can give a performance at all: rated, and not
+ * Schackfyran scoring. The SDK's `hasIndividualPerformance` rule, for one group.
+ */
+export function isEloGroup(group: TournamentClassGroupDto): boolean {
+	return (
+		group.pointSystem !== PointSystem.SCHACK4AN && getGroupTimeControl(group).primary !== 'unknown'
+	);
+}
+
+/**
+ * A performance from as few as one rated game, for a view of one player
+ * (head-to-head, their own tournament page). Below
+ * `MIN_RATED_GAMES_FOR_PERFORMANCE` it says how few games it rests on, since
+ * one win alone reads as the opponent's rating + 800. The tournament list keeps
+ * the minimum, as the official one does.
+ */
+export function formatPerformanceWithCount(
+	stats: PerformanceStats,
+	labels: { oneGame: string; games: string }
+): string {
+	const value = formatPerformance(stats, 1);
+	const rated = stats.opponentRatings.length;
+	if (rated === 0 || rated >= MIN_RATED_GAMES_FOR_PERFORMANCE) return value;
+	const games = rated === 1 ? labels.oneGame : labels.games.replace('{count}', String(rated));
+	return `${value} (${games})`;
 }

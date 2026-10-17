@@ -86,6 +86,10 @@ export interface Translations {
 			loadingHistory: string;
 			eloChange: string;
 			performanceRating: string;
+			/** Beside a performance that rests on a single rated game. */
+			performanceOneGame: string;
+			/** Beside a performance that rests on a few rated games; `{count}`. */
+			performanceGames: string;
 			rapidEloChange: string;
 			blitzEloChange: string;
 			/** The player has no rated months in the chosen range. */
@@ -390,10 +394,6 @@ export interface Translations {
 			total: string;
 			noMatchesFound: string;
 			loadingMatches: string;
-			/** Beside a performance that rests on a single game. */
-			performanceOneGame: string;
-			/** Beside a performance that rests on a few games; `{count}`. */
-			performanceGames: string;
 			of: string;
 			/** The member id in the URL is not a number. */
 			invalidMemberId: string;
@@ -582,6 +582,8 @@ export interface Translations {
 				/** Team and Schackfyran-only tournaments have no list. */
 				notAvailable: string;
 				performance: string;
+				/** Under the list: why some rows have no performance; `{count}`. */
+				minGamesNote: string;
 				noResults: string;
 			};
 		};
@@ -879,6 +881,8 @@ const translations: Record<Language, Translations> = {
 				loadingHistory: 'Loading history...',
 				eloChange: 'Elo +/-',
 				performanceRating: 'Performance Rating',
+				performanceOneGame: '1 game',
+				performanceGames: '{count} games',
 				rapidEloChange: 'Rapid Elo +/-',
 				blitzEloChange: 'Blitz Elo +/-',
 				noHistory: 'No rating history available',
@@ -1175,8 +1179,6 @@ const translations: Record<Language, Translations> = {
 				total: 'Total',
 				noMatchesFound: 'No matches found',
 				loadingMatches: 'Loading matches...',
-				performanceOneGame: '1 game',
-				performanceGames: '{count} games',
 				of: 'of',
 				invalidMemberId: 'Invalid player ID'
 			},
@@ -1348,6 +1350,8 @@ const translations: Record<Language, Translations> = {
 					loadingRatings: 'Loading ratings ({done} of {total})...',
 					notAvailable: 'There is no individual performance list for this tournament.',
 					performance: 'Perf',
+					minGamesNote:
+						'A performance rating requires at least {count} games against rated opponents.',
 					noResults: 'No games played yet'
 				}
 			},
@@ -1645,6 +1649,8 @@ const translations: Record<Language, Translations> = {
 				loadingHistory: 'Laddar historik...',
 				eloChange: 'Elo +/-',
 				performanceRating: 'Elo prestation',
+				performanceOneGame: '1 parti',
+				performanceGames: '{count} partier',
 				rapidEloChange: 'Snabb Elo +/-',
 				blitzEloChange: 'Blixt Elo +/-',
 				noHistory: 'Ingen ratinghistorik tillgänglig',
@@ -1942,8 +1948,6 @@ const translations: Record<Language, Translations> = {
 				total: 'Totalt',
 				noMatchesFound: 'Inga partier hittades',
 				loadingMatches: 'Laddar partier...',
-				performanceOneGame: '1 parti',
-				performanceGames: '{count} partier',
 				of: 'av',
 				invalidMemberId: 'Ogiltigt spelar-ID'
 			},
@@ -2116,6 +2120,7 @@ const translations: Record<Language, Translations> = {
 					notAvailable:
 						'Det finns ingen lista över individuell prestation för den här turneringen.',
 					performance: 'Perf',
+					minGamesNote: 'Prestationsrating kräver minst {count} partier mot ratade motståndare.',
 					noResults: 'Inga partier spelade ännu'
 				}
 			},
