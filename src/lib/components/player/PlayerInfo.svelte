@@ -69,7 +69,16 @@
 			     stay literal — the same reasoning as `w.o`. -->
 			<div class="flex justify-between">
 				<span class="text-gray-600 dark:text-gray-400">SSF Id:</span>
-				<span class="font-medium text-gray-900 dark:text-gray-200">{player.id}</span>
+				<span class="font-medium text-gray-900 dark:text-gray-200">
+					<a
+						href="https://resultat.schack.se/ViewPlayerRatingDiagram?memberid={player.id}"
+						target="_blank"
+						rel="noopener noreferrer"
+						class="text-blue-600 hover:underline dark:text-blue-400"
+					>
+						{player.id}
+					</a>
+				</span>
 			</div>
 
 			<div class="flex justify-between">

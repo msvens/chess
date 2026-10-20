@@ -109,3 +109,31 @@ export function defaultDateRange(now = new Date()): { start: string; end: string
 export function toApiDate(dateInput: string): string {
 	return `${dateInput}T00:00:00`;
 }
+
+const GROUP_ID = /^[1-9]\d*$/;
+
+/** Both serve the same result pages, addressed the same way. */
+const SSF_RESULT_HOSTS = new Set(['resultat.schack.se', 'member.schack.se']);
+
+/**
+ * The SSF group id in what someone typed or pasted: a bare id (`19134`) or a
+ * resultat.schack.se or member.schack.se link, whose result pages all name the
+ * group as `id=` (`ShowTournamentServlet?id=19134`). Null for anything else.
+ *
+ * SSF navigates by group, so its links carry no tournament id — that is looked
+ * up separately.
+ */
+export function parseGroupReference(input: string): number | null {
+	const text = input.trim();
+	if (GROUP_ID.test(text)) return Number(text);
+
+	let url: URL;
+	try {
+		url = new URL(/^https?:\/\//i.test(text) ? text : `https://${text}`);
+	} catch {
+		return null;
+	}
+	if (!SSF_RESULT_HOSTS.has(url.hostname)) return null;
+	const id = url.searchParams.get('id');
+	return id !== null && GROUP_ID.test(id) ? Number(id) : null;
+}
