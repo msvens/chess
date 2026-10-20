@@ -30,7 +30,7 @@
 		"prebuild": "pnpm generate:changelog"
 	},
 	"dependencies": {
-		"@msvens/schack-se-sdk": "github:msvens/schack-se-sdk#v0.25.0",
+		"@msvens/schack-se-sdk": "github:msvens/schack-se-sdk#v0.26.0",
 		"leaflet": "^1.9.4",
 		"leaflet.markercluster": "^1.5.3",
 		"svelte-hero-icons": "^5.2.0"

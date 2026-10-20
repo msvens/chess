@@ -156,6 +156,8 @@ export interface Translations {
 			missingText: string;
 			loadFailed: string;
 			searchFailed: string;
+			/** The group search hit its cap, so the list is cut off. */
+			searchTruncated: string;
 			/** The group box got something that is neither an id nor a resultat/member.schack.se link. */
 			invalidGroup: string;
 			/** `{id}`: the group id that does not exist. */
@@ -956,6 +958,8 @@ const translations: Record<Language, Translations> = {
 				missingText: 'Please enter a search term',
 				loadFailed: 'Could not load tournaments',
 				searchFailed: 'Could not search tournaments',
+				searchTruncated:
+					'We hit the maximum number of search results. You need to be more specific if you didn’t find your tournament.',
 				invalidGroup: 'Enter a group id or a link to a schack.se page',
 				groupNotFound: 'No group with id {id}',
 				groupLookupFailed: 'Could not look up the group'
@@ -1731,6 +1735,8 @@ const translations: Record<Language, Translations> = {
 				missingText: 'Ange ett sökord',
 				loadFailed: 'Kunde inte hämta turneringar',
 				searchFailed: 'Kunde inte söka turneringar',
+				searchTruncated:
+					'Sökningen nådde maxantalet träffar. Du behöver vara mer specifik om du inte hittade din turnering.',
 				invalidGroup: 'Ange ett grupp-id eller en länk till en schack.se sida',
 				groupNotFound: 'Ingen grupp med id {id}',
 				groupLookupFailed: 'Kunde inte slå upp gruppen'

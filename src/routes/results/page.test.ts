@@ -6,6 +6,7 @@ import Page from './+page.svelte';
 
 const goto = vi.fn();
 const getTournamentFromGroup = vi.fn();
+const searchGroups = vi.fn();
 
 vi.mock('$app/navigation', () => ({ goto: (...args: unknown[]) => goto(...args) }));
 
@@ -16,7 +17,7 @@ vi.mock('$lib/api', async (importOriginal) => {
 		TournamentService: class {
 			// The page loads a date range on mount; the list itself is beside the point.
 			searchUpdatedTournaments = () => Promise.resolve({ status: 200, data: [] });
-			searchGroups = () => Promise.resolve({ status: 200, data: [] });
+			searchGroups = (...args: unknown[]) => searchGroups(...args);
 			getTournamentFromGroup = (...args: unknown[]) => getTournamentFromGroup(...args);
 		}
 	};
@@ -82,5 +83,56 @@ describe('opening a group by id or link', () => {
 		await open('19134');
 
 		expect(await screen.findByText('Kunde inte slå upp gruppen')).toBeInTheDocument();
+	});
+});
+
+describe('a name search that hits the group cap', () => {
+	const truncatedNote = /Sökningen nådde maxantalet träffar/;
+
+	/** `count` groups, five to a tournament, as a broad word like "Allsvenskan" returns. */
+	const groups = (count: number) =>
+		Array.from({ length: count }, (_, i) => ({
+			id: i + 1,
+			name: `Grupp ${i + 1}`,
+			tournamentid: 1000 + Math.floor(i / 5),
+			tournamentname: `Allsvenskan ${Math.floor(i / 5)}`,
+			latestUpdatedGame: null
+		}));
+
+	async function searchFor(word: string) {
+		const user = userEvent.setup();
+		await user.type(screen.getByPlaceholderText('Ange turneringsnamn eller plats...'), word);
+		// The date row's button comes first; the name search's is the second.
+		await user.click(screen.getAllByRole('button', { name: 'Sök' })[1]);
+	}
+
+	beforeEach(() => searchGroups.mockReset());
+
+	it('says the list is only the oldest matches', async () => {
+		searchGroups.mockResolvedValue({ status: 200, data: groups(100) });
+		renderPage();
+		await searchFor('Allsvenskan');
+
+		expect(await screen.findByText(truncatedNote)).toBeInTheDocument();
+	});
+
+	it('says nothing below the cap', async () => {
+		searchGroups.mockResolvedValue({ status: 200, data: groups(99) });
+		renderPage();
+		await searchFor('Allsvenskan');
+
+		expect(await screen.findByText('Allsvenskan 0')).toBeInTheDocument();
+		expect(screen.queryByText(truncatedNote)).not.toBeInTheDocument();
+	});
+
+	it('drops the note once a date search owns the list', async () => {
+		searchGroups.mockResolvedValue({ status: 200, data: groups(100) });
+		renderPage();
+		await searchFor('Allsvenskan');
+		await screen.findByText(truncatedNote);
+
+		await userEvent.setup().click(screen.getAllByRole('button', { name: 'Sök' })[0]);
+
+		expect(screen.queryByText(truncatedNote)).not.toBeInTheDocument();
 	});
 });
