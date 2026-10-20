@@ -29,7 +29,7 @@
 		sortByUpdated,
 		toApiDate
 	} from '$lib/components/tournaments/tournamentSearch';
-	import { TournamentService, type TournamentDto } from '$lib/api';
+	import { SEARCH_GROUPS_MAX_RESULTS, TournamentService, type TournamentDto } from '$lib/api';
 	import {
 		countByCategory,
 		countByState,
@@ -51,6 +51,8 @@
 	let endDate = $state(initialRange.end);
 	let districtId = $state<number | null>(null);
 	let searchText = $state('');
+	/** The group search hit its cap, so the list is the oldest matches only. */
+	let searchTruncated = $state(false);
 	let groupText = $state('');
 	let groupLoading = $state(false);
 	let groupError = $state('');
@@ -74,6 +76,7 @@
 		const mine = ++token;
 		loading = true;
 		error = '';
+		searchTruncated = false;
 		try {
 			const response = await service.searchUpdatedTournaments(
 				toApiDate(from),
@@ -108,11 +111,13 @@
 		const mine = ++token;
 		loading = true;
 		error = '';
+		searchTruncated = false;
 		try {
 			const response = await service.searchGroups(query);
 			if (mine !== token) return;
 			if (response.data) {
 				tournaments = groupsToTournaments(response.data);
+				searchTruncated = response.data.length >= SEARCH_GROUPS_MAX_RESULTS;
 			} else {
 				error = response.error || messages.searchFailed;
 			}
@@ -198,18 +203,25 @@
 			</Button>
 		</div>
 
-		<div class="flex items-center gap-3">
-			<TextField
-				value={searchText}
-				onChange={(v) => (searchText = v)}
-				onEnter={searchByText}
-				placeholder={t.pages.results.filters.textSearch.placeholder}
-				fullWidth
-				compact
-			/>
-			<Button onclick={searchByText} variant="outlined" disabled={loading} compact>
-				{t.common.actions.search}
-			</Button>
+		<div>
+			<div class="flex items-center gap-3">
+				<TextField
+					value={searchText}
+					onChange={(v) => (searchText = v)}
+					onEnter={searchByText}
+					placeholder={t.pages.results.filters.textSearch.placeholder}
+					fullWidth
+					compact
+				/>
+				<Button onclick={searchByText} variant="outlined" disabled={loading} compact>
+					{t.common.actions.search}
+				</Button>
+			</div>
+			{#if searchTruncated}
+				<p class="mt-1 text-sm text-amber-700 dark:text-amber-400">
+					{messages.searchTruncated}
+				</p>
+			{/if}
 		</div>
 
 		<div>
