@@ -156,6 +156,11 @@ export interface Translations {
 			missingText: string;
 			loadFailed: string;
 			searchFailed: string;
+			/** The group box got something that is neither an id nor a resultat/member.schack.se link. */
+			invalidGroup: string;
+			/** `{id}`: the group id that does not exist. */
+			groupNotFound: string;
+			groupLookupFailed: string;
 		};
 		textDisplay: {
 			/** Accessible name for the show-more control on clamped text. */
@@ -271,6 +276,11 @@ export interface Translations {
 					searchButton: string;
 					clearButton: string;
 					betaNotice: string;
+				};
+				/** Opens one group by its SSF id, or a resultat.schack.se link to it. */
+				groupLookup: {
+					placeholder: string;
+					openButton: string;
 				};
 			};
 			tournamentList: {
@@ -945,7 +955,10 @@ const translations: Record<Language, Translations> = {
 				missingDates: 'Please select both a start and an end date',
 				missingText: 'Please enter a search term',
 				loadFailed: 'Could not load tournaments',
-				searchFailed: 'Could not search tournaments'
+				searchFailed: 'Could not search tournaments',
+				invalidGroup: 'Enter a group id or a link to a schack.se page',
+				groupNotFound: 'No group with id {id}',
+				groupLookupFailed: 'Could not look up the group'
 			},
 			textDisplay: {
 				expand: 'Show more',
@@ -1057,6 +1070,10 @@ const translations: Record<Language, Translations> = {
 						searchButton: 'Search',
 						clearButton: 'Clear',
 						betaNotice: 'Note: Text search is in testing and may not return exact matches.'
+					},
+					groupLookup: {
+						placeholder: 'Group id or link to a schack.se page',
+						openButton: 'Open'
 					}
 				},
 				tournamentList: {
@@ -1713,7 +1730,10 @@ const translations: Record<Language, Translations> = {
 				missingDates: 'Välj både start- och slutdatum',
 				missingText: 'Ange ett sökord',
 				loadFailed: 'Kunde inte hämta turneringar',
-				searchFailed: 'Kunde inte söka turneringar'
+				searchFailed: 'Kunde inte söka turneringar',
+				invalidGroup: 'Ange ett grupp-id eller en länk till en schack.se sida',
+				groupNotFound: 'Ingen grupp med id {id}',
+				groupLookupFailed: 'Kunde inte slå upp gruppen'
 			},
 			textDisplay: {
 				expand: 'Visa mer',
@@ -1826,6 +1846,10 @@ const translations: Record<Language, Translations> = {
 						searchButton: 'Sök',
 						clearButton: 'Rensa',
 						betaNotice: 'Obs: Textsökning är under testning och kan ge inexakta resultat.'
+					},
+					groupLookup: {
+						placeholder: 'Grupp-id eller länk till schack.se sida',
+						openButton: 'Öppna'
 					}
 				},
 				tournamentList: {

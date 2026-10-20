@@ -4,6 +4,7 @@ import {
 	defaultDateRange,
 	deduplicateTournaments,
 	groupsToTournaments,
+	parseGroupReference,
 	sortByUpdated,
 	toApiDate,
 	toDateInput
@@ -133,5 +134,31 @@ describe('toDateInput / toApiDate', () => {
 
 	it('appends the midnight time the SSF endpoints expect', () => {
 		expect(toApiDate('2026-08-21')).toBe('2026-08-21T00:00:00');
+	});
+});
+
+describe('parseGroupReference', () => {
+	it.each([
+		['19134', 19134],
+		['  19134 ', 19134],
+		['https://resultat.schack.se/ShowTournamentServlet?id=19134', 19134],
+		['resultat.schack.se/ShowTournamentServlet?id=19134', 19134],
+		['https://member.schack.se/ShowTournamentServlet?id=18662', 18662],
+		['http://resultat.schack.se/ShowTournamentRoundsServlet?id=19134&round=3', 19134]
+	])('reads %s as group %i', (input, expected) => {
+		expect(parseGroupReference(input)).toBe(expected);
+	});
+
+	it.each([
+		[''],
+		['Allsvenskan 2026'],
+		['0'],
+		['-5'],
+		['19134abc'],
+		['https://resultat.schack.se/ShowTournamentServlet'],
+		['https://resultat.schack.se/ShowTournamentServlet?id=abc'],
+		['https://example.com/ShowTournamentServlet?id=19134']
+	])('rejects %j', (input) => {
+		expect(parseGroupReference(input)).toBeNull();
 	});
 });

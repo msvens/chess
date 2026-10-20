@@ -4,7 +4,8 @@
 	 *
 	 * Two independent searches feed one list: a date range (optionally narrowed to
 	 * a district) and a free-text search over group names. Whichever ran last owns
-	 * the results.
+	 * the results. A third box is not a search: it opens one group by its SSF id
+	 * or a resultat/member.schack.se link, the way SSF itself addresses results.
 	 *
 	 * The three filters below the divider are client-side, chained so each one's
 	 * counts reflect the ones above it: category narrows the set, type counts come
@@ -24,6 +25,7 @@
 		defaultDateRange,
 		deduplicateTournaments,
 		groupsToTournaments,
+		parseGroupReference,
 		sortByUpdated,
 		toApiDate
 	} from '$lib/components/tournaments/tournamentSearch';
@@ -40,6 +42,7 @@
 	import { language } from '$lib/stores/language.svelte';
 	import { getTranslation } from '$lib/translations';
 	import { onMount } from 'svelte';
+	import { goto } from '$app/navigation';
 
 	const service = new TournamentService();
 	const initialRange = defaultDateRange();
@@ -48,6 +51,9 @@
 	let endDate = $state(initialRange.end);
 	let districtId = $state<number | null>(null);
 	let searchText = $state('');
+	let groupText = $state('');
+	let groupLoading = $state(false);
+	let groupError = $state('');
 
 	let category = $state<TournamentCategory>('all');
 	let type = $state<number | null>(null);
@@ -112,6 +118,29 @@
 			}
 		} finally {
 			if (mine === token) loading = false;
+		}
+	}
+
+	/** Straight to the group's results: there is only ever one hit. */
+	async function openGroup() {
+		const groupId = parseGroupReference(groupText);
+		if (groupId === null) {
+			groupError = messages.invalidGroup;
+			return;
+		}
+		groupLoading = true;
+		groupError = '';
+		try {
+			const response = await service.getTournamentFromGroup(groupId);
+			if (response.data) {
+				await goto(`/results/${response.data.id}/${groupId}`);
+			} else if (response.status === 404 || response.status === 204) {
+				groupError = messages.groupNotFound.replace('{id}', String(groupId));
+			} else {
+				groupError = messages.groupLookupFailed;
+			}
+		} finally {
+			groupLoading = false;
 		}
 	}
 
@@ -181,6 +210,25 @@
 			<Button onclick={searchByText} variant="outlined" disabled={loading} compact>
 				{t.common.actions.search}
 			</Button>
+		</div>
+
+		<div>
+			<div class="flex items-center gap-3">
+				<TextField
+					value={groupText}
+					onChange={(v) => (groupText = v)}
+					onEnter={openGroup}
+					placeholder={t.pages.results.filters.groupLookup.placeholder}
+					fullWidth
+					compact
+				/>
+				<Button onclick={openGroup} variant="outlined" disabled={groupLoading} compact>
+					{t.pages.results.filters.groupLookup.openButton}
+				</Button>
+			</div>
+			{#if groupError}
+				<p class="mt-1 text-sm text-red-600 dark:text-red-400">{groupError}</p>
+			{/if}
 		</div>
 	</div>
 
