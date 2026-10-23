@@ -146,6 +146,11 @@
 	</div>
 
 	<p class="pt-4">
+		Ett stort tack till <Link href="https://www.adesigner.se" external>Anna Nilsson</Link> för den vackra
+		logotypen.
+	</p>
+
+	<p class="pt-4">
 		Ett särskilt tack till <strong>Jon Åslund</strong>, vår utmärkta buggjägare, vars skarpa öga har
 		hittat många av de buggar som rättats på sidan.
 	</p>
