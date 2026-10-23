@@ -147,6 +147,11 @@
 	</div>
 
 	<p class="pt-4">
+		A big thank you to <Link href="https://www.adesigner.se" external>Anna Nilsson</Link> for the beautiful
+		logo.
+	</p>
+
+	<p class="pt-4">
 		A special thanks to <strong>Jon Åslund</strong>, our excellent bug hunter, whose sharp eye has
 		caught many of the bugs fixed on this site.
 	</p>
