@@ -116,25 +116,28 @@
 						class="absolute inset-0 z-0 cursor-pointer rounded-md"
 					></button>
 
+					<!-- Taps pass through the row to the button behind it — the row spans
+					     the card, and on mobile it is nearly all of it. Only the link and
+					     the warning's tooltip take the pointer back. -->
 					<span
-						class="relative z-10 flex items-start gap-0.5 text-[11px] leading-tight font-semibold sm:text-xs"
+						class="pointer-events-none relative z-10 flex items-start gap-0.5 text-[11px] leading-tight font-semibold sm:text-xs"
 					>
 						{#if segment.continuesLeft}<span aria-hidden="true" class="shrink-0">◀</span>{/if}
 						{#if suspect}
 							<span
-								class="shrink-0 text-amber-600 dark:text-amber-400"
+								class="pointer-events-auto shrink-0 text-amber-600 dark:text-amber-400"
 								title={cal.reversedDates}
 								aria-label={cal.reversedDates}>⚠</span
 							>
 						{/if}
 						{#if mobile.current}
-							<span class="pointer-events-none truncate">{tournament.name}</span>
+							<span class="truncate">{tournament.name}</span>
 						{:else}
 							<Link
 								href="/results/{tournament.id}"
 								color="blue"
 								underline="always"
-								class="line-clamp-2"
+								class="pointer-events-auto line-clamp-2"
 							>
 								{tournament.name}
 							</Link>
