@@ -71,17 +71,24 @@ export function paginationInfo(
 }
 
 /**
- * Row height follows the amount on screen: a short table gets room to breathe, a
- * long one tightens up. Mobile is always compact.
+ * Mobile and desktop are set separately. Mobile is `micro` unless the table asks
+ * for something else: at 4px/8px cell padding and 12px text a ten-column
+ * standings table is a few dozen pixels too wide for a phone, so names wrap to
+ * two lines and the last column scrolls off; round pairings, with two name
+ * columns, need the 10px text as well.
+ *
+ * On desktop, an explicit density wins; otherwise row height follows the amount
+ * on screen — a short table gets room to breathe, a long one tightens up.
  */
 export function resolveDensity(
 	explicit: TableDensity | undefined,
+	explicitMobile: TableDensity | undefined,
 	isMobile: boolean,
 	visibleRows: number,
 	thresholds: DensityThresholds
 ): TableDensity {
+	if (isMobile) return explicitMobile ?? 'micro';
 	if (explicit) return explicit;
-	if (isMobile) return 'compact';
 	if (visibleRows <= thresholds.comfortable) return 'comfortable';
 	if (visibleRows <= thresholds.normal) return 'normal';
 	return 'compact';

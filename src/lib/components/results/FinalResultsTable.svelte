@@ -72,6 +72,9 @@
 		{
 			id: 'name',
 			header: labels.name,
+			// On a phone, long names wrap (balanced over two lines) to leave room for
+			// the club. A rem cap, not ch, so it holds whatever the table's text size.
+			cellClassName: 'max-w-[6.5rem] sm:max-w-none text-balance',
 			accessor: (row) =>
 				row.playerInfo
 					? formatPlayerName(
@@ -87,10 +90,9 @@
 			id: 'club',
 			header: labels.club,
 			accessor: (row) => row.playerInfo?.club || '-',
-			// Club names are long and the least important column on a phone; clip
-			// rather than let them push the score columns off-screen.
-			cellClassName:
-				'max-w-[9ch] sm:max-w-none overflow-hidden whitespace-nowrap sm:whitespace-normal',
+			// Club names are long and the least important column on a phone; cut them
+			// with an ellipsis rather than let them push the score columns off-screen.
+			cellClassName: 'max-w-[5.5rem] sm:max-w-none truncate sm:whitespace-normal',
 			sortValue: (row) => (row.playerInfo?.club || '').toLowerCase()
 		},
 		{

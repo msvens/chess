@@ -68,6 +68,9 @@
 		{
 			id: 'name',
 			header: labels.name,
+			// On a phone, long names wrap (balanced over two lines) to leave room for
+			// the club. A rem cap, not ch, so it holds whatever the table's text size.
+			cellClassName: 'max-w-[6.5rem] sm:max-w-none text-balance',
 			accessor: (row) =>
 				row.playerInfo
 					? formatPlayerName(
@@ -81,8 +84,7 @@
 			id: 'club',
 			header: labels.club,
 			accessor: (row) => row.playerInfo?.club || '-',
-			cellClassName:
-				'max-w-[9ch] sm:max-w-none overflow-hidden whitespace-nowrap sm:whitespace-normal'
+			cellClassName: 'max-w-[5.5rem] sm:max-w-none truncate sm:whitespace-normal'
 		},
 		{
 			id: 'rating',

@@ -206,30 +206,52 @@
 		return rated.change > 0 ? `+${rated.change}` : String(rated.change);
 	}
 
+	// On a phone the table is laid out `fixed` (see `mobileLayout`): the small
+	// columns get these widths and White and Black split the rest evenly. The
+	// result wraps there, since "1 - 0 w.o" or a postponed label won't fit.
 	let columns = $derived<TableColumn<PlayerMatch>[]>([
-		{ id: 'round', header: tr.roundByRound.round, accessor: (row) => row.round, noWrap: true },
-		{ id: 'white', header: tr.roundByRound.white, cell: whiteCell },
+		{
+			id: 'round',
+			header: tr.roundByRound.round,
+			accessor: (row) => row.round,
+			noWrap: true,
+			headerClassName: 'w-[3.2em] md:w-auto'
+		},
+		{
+			id: 'white',
+			header: tr.roundByRound.white,
+			cell: whiteCell,
+			cellClassName: 'max-md:text-balance'
+		},
 		{
 			id: 'whiteElo',
 			header: tr.roundByRound.elo,
 			accessor: (row) => eloOf(row, 'white'),
 			align: 'center',
-			noWrap: true
+			noWrap: true,
+			headerClassName: 'w-[4em] md:w-auto'
 		},
-		{ id: 'black', header: tr.roundByRound.black, cell: blackCell },
+		{
+			id: 'black',
+			header: tr.roundByRound.black,
+			cell: blackCell,
+			cellClassName: 'max-md:text-balance'
+		},
 		{
 			id: 'blackElo',
 			header: tr.roundByRound.elo,
 			accessor: (row) => eloOf(row, 'black'),
 			align: 'center',
-			noWrap: true
+			noWrap: true,
+			headerClassName: 'w-[4em] md:w-auto'
 		},
 		{
 			id: 'result',
 			header: tr.roundByRound.result,
 			accessor: resultOf,
 			align: 'center',
-			noWrap: true
+			headerClassName: 'w-[4.8em] md:w-auto',
+			cellClassName: 'md:whitespace-nowrap'
 			// The Next app set `cellStyle: { fontWeight: 'medium' }` here, which is
 			// not a valid CSS font-weight and never applied. Left unstyled so this
 			// matches what the live site actually renders.
@@ -239,7 +261,8 @@
 			header: elo.eloChange,
 			accessor: changeOf,
 			align: 'center',
-			noWrap: true
+			noWrap: true,
+			headerClassName: 'w-[4em] md:w-auto'
 		}
 	]);
 
@@ -324,6 +347,7 @@
 				<Table
 					data={matches}
 					{columns}
+					mobileLayout="fixed"
 					getRowKey={(row) => `${row.round}-${row.opponentId}`}
 					emptyMessage={pd.noMatchesFound}
 					loadingMessage={pd.loadingMatches}
