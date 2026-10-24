@@ -347,35 +347,52 @@
 		if (enabled && sortedRounds.length > 0) selectedRound = sortedRounds[0];
 	}
 
+	// On a phone the table is laid out `fixed` (see `mobileLayout`): the small
+	// columns get these widths and White and Black split the rest evenly. The
+	// result wraps there, since "1 - 0 w.o" or a postponed label won't fit.
 	let roundColumns = $derived<TableColumn<TournamentRoundResultDto>[]>([
 		{
 			id: 'table',
 			header: tr.roundByRound.table,
 			accessor: (row) => row.board || '-',
-			noWrap: true
+			noWrap: true,
+			headerClassName: 'w-[3.2em] md:w-auto'
 		},
-		{ id: 'white', header: tr.roundByRound.white, cell: playerCell },
+		{
+			id: 'white',
+			header: tr.roundByRound.white,
+			cell: playerCell,
+			cellClassName: 'max-md:text-balance'
+		},
 		{
 			id: 'whiteElo',
 			header: tr.roundByRound.elo,
 			accessor: (row) => eloAt(row, row.homeId),
 			align: 'center',
-			noWrap: true
+			noWrap: true,
+			headerClassName: 'w-[4em] md:w-auto'
 		},
-		{ id: 'black', header: tr.roundByRound.black, cell: opponentCell },
+		{
+			id: 'black',
+			header: tr.roundByRound.black,
+			cell: opponentCell,
+			cellClassName: 'max-md:text-balance'
+		},
 		{
 			id: 'blackElo',
 			header: tr.roundByRound.elo,
 			accessor: (row) => eloAt(row, row.awayId),
 			align: 'center',
-			noWrap: true
+			noWrap: true,
+			headerClassName: 'w-[4em] md:w-auto'
 		},
 		{
 			id: 'result',
 			header: tr.roundByRound.result,
 			accessor: (row) => formatIndividualRowResult(row, resultLabels),
 			align: 'center',
-			noWrap: true
+			headerClassName: 'w-[4.8em] md:w-auto',
+			cellClassName: 'md:whitespace-nowrap'
 			// The Next app set `cellStyle: { fontWeight: 'medium' }` here, which is
 			// not a valid CSS font-weight and never applied. Left unstyled so this
 			// matches what the live site actually renders.
@@ -824,6 +841,7 @@
 										<Table
 											data={roundRowsShown}
 											columns={roundColumns}
+											mobileLayout="fixed"
 											getRowKey={(row, index) => `${row.homeId}-${row.awayId}-${index}`}
 											emptyMessage={filteredRoundRows
 												? tr.roundByRound.noFilteredResults
