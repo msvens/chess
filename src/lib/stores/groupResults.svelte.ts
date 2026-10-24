@@ -289,7 +289,9 @@ export class GroupResultsState {
 	 *
 	 * A tournament can mix rating types across rounds — a blitz chain inside a
 	 * standard event, say — so a round's `rated` wins over the group algorithm.
-	 * `rated === 0` means unrated, which falls back rather than showing nothing.
+	 * A player without that type, or an unrated round, gets the rating the
+	 * results table shows: the group's ranking chain, as on schack.se. Display
+	 * only — the Elo calculation stays strict.
 	 */
 	getPlayerEloByDateAndRound(playerId: number, date: number, roundNumber?: number): string {
 		const player = playerCache.getByDate(playerId, date) ?? this.playerMap.get(playerId);
@@ -299,7 +301,8 @@ export class GroupResultsState {
 			player?.elo,
 			this.rankingAlgorithm,
 			roundRated,
-			language.current
+			language.current,
+			{ fallback: true }
 		);
 	}
 

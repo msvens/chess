@@ -385,7 +385,8 @@
 	/**
 	 * The player's rating as it stood at the time of this game, of the type the
 	 * round was rated under — a rapid round inside a standard-ranked group shows
-	 * rapid ratings, marked as such, the same as the player's match page.
+	 * rapid ratings, marked as such, the same as the player's match page. A
+	 * player without a rating of that type gets the one the results table shows.
 	 *
 	 * Deliberately unlike resultat.schack.se, which shows the group's ranking
 	 * rating here whatever the round was rated under (groups 17723 and 17014).
