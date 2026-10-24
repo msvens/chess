@@ -131,19 +131,28 @@ describe('paginationInfo', () => {
 describe('resolveDensity', () => {
 	const t = { comfortable: 10, normal: 20 };
 
-	it('honours an explicit density over everything', () => {
-		expect(resolveDensity('comfortable', true, 500, t)).toBe('comfortable');
+	it('is micro on mobile, whatever the row count', () => {
+		expect(resolveDensity(undefined, undefined, true, 3, t)).toBe('micro');
+		expect(resolveDensity(undefined, undefined, true, 500, t)).toBe('micro');
 	});
 
-	it('is always compact on mobile', () => {
-		expect(resolveDensity(undefined, true, 3, t)).toBe('compact');
+	it('lets a table choose its own mobile density', () => {
+		expect(resolveDensity(undefined, 'compact', true, 3, t)).toBe('compact');
+	});
+
+	it('keeps the desktop density off mobile', () => {
+		expect(resolveDensity('compact', undefined, true, 500, t)).toBe('micro');
+	});
+
+	it('honours an explicit desktop density over the row count', () => {
+		expect(resolveDensity('comfortable', 'micro', false, 500, t)).toBe('comfortable');
 	});
 
 	it('picks by row count on desktop', () => {
-		expect(resolveDensity(undefined, false, 10, t)).toBe('comfortable');
-		expect(resolveDensity(undefined, false, 11, t)).toBe('normal');
-		expect(resolveDensity(undefined, false, 20, t)).toBe('normal');
-		expect(resolveDensity(undefined, false, 21, t)).toBe('compact');
+		expect(resolveDensity(undefined, undefined, false, 10, t)).toBe('comfortable');
+		expect(resolveDensity(undefined, undefined, false, 11, t)).toBe('normal');
+		expect(resolveDensity(undefined, undefined, false, 20, t)).toBe('normal');
+		expect(resolveDensity(undefined, undefined, false, 21, t)).toBe('compact');
 	});
 });
 

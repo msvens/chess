@@ -8,7 +8,14 @@
 import type { Snippet } from 'svelte';
 
 export type TableAlign = 'left' | 'center' | 'right';
-export type TableDensity = 'compact' | 'normal' | 'comfortable';
+/**
+ * Row padding and text size, densest first. `micro` and `dense` share the tight
+ * padding; `micro` also drops the text to 10px.
+ */
+export type TableDensity = 'micro' | 'dense' | 'compact' | 'normal' | 'comfortable';
+
+/** Column sizing: the browser's own (`auto`), or equal shares for unsized columns. */
+export type TableLayout = 'auto' | 'fixed';
 
 export interface TableColumn<T> {
 	/** Stable identity for keying and for the sort state. */

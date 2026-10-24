@@ -36,6 +36,7 @@
 		PaginationConfig,
 		TableColumn,
 		TableDensity,
+		TableLayout,
 		TableSort
 	} from './tableTypes';
 
@@ -56,8 +57,18 @@
 		onRowClick?: (row: T, index: number) => void;
 		/** Draws a heavier rule under a row — used to mark cut-offs in standings. */
 		rowDivider?: (row: T, index: number) => boolean;
-		/** Omit to size rows automatically from the row count. */
+		/** Desktop. Omit to size rows automatically from the row count. */
 		density?: TableDensity;
+		/** Mobile, set separately from `density`. Omit for `micro`. */
+		mobileDensity?: TableDensity;
+		/**
+		 * Mobile column sizing. `fixed` gives every column without a width an equal
+		 * share of what the sized columns leave — the only way to stop the first of
+		 * two name columns taking what it needs and squeezing the second. The sized
+		 * columns then need a mobile width (`headerClassName: 'w-[4em] md:w-auto'`),
+		 * in `em` so it follows the table's text size. Desktop is always `auto`.
+		 */
+		mobileLayout?: TableLayout;
 		densityThresholds?: DensityThresholds;
 		pagination?: boolean | PaginationConfig;
 		defaultSort?: TableSort;
@@ -78,6 +89,8 @@
 		onRowClick,
 		rowDivider,
 		density,
+		mobileDensity,
+		mobileLayout = 'auto',
 		densityThresholds = { comfortable: 10, normal: 20 },
 		pagination,
 		defaultSort
@@ -116,19 +129,27 @@
 	);
 
 	let effectiveDensity = $derived(
-		resolveDensity(density, mobile.current, visible.length, densityThresholds)
+		resolveDensity(density, mobileDensity, mobile.current, visible.length, densityThresholds)
 	);
 
 	// Written out so Tailwind's scanner sees every class.
 	const densityClasses: Record<TableDensity, string> = {
+		micro: 'py-0.5 px-1',
+		dense: 'py-0.5 px-1',
 		compact: 'py-1 px-2',
 		normal: 'p-2',
 		comfortable: 'p-3'
 	};
 	const densityText: Record<TableDensity, string> = {
+		micro: 'text-[10px] leading-tight',
+		dense: 'text-xs leading-tight',
 		compact: 'text-xs leading-tight',
 		normal: 'text-sm leading-normal',
 		comfortable: 'text-sm leading-relaxed'
+	};
+	const layoutClasses: Record<TableLayout, string> = {
+		auto: '',
+		fixed: 'table-fixed md:table-auto'
 	};
 	const alignClasses = {
 		left: 'text-left',
@@ -181,7 +202,7 @@
 		{/if}
 
 		<div class="overflow-x-auto">
-			<table class="w-full {densityText[effectiveDensity]}">
+			<table class="w-full {densityText[effectiveDensity]} {layoutClasses[mobileLayout]}">
 				<thead>
 					<tr class={border ? 'border-b border-gray-200 dark:border-gray-700' : ''}>
 						{#each columns as column (column.id)}
