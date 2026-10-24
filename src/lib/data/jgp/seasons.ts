@@ -160,6 +160,24 @@ const OPEN_2026: JgpSeason = {
 				{ groupId: 19048, isBeginner: true, label: 'E' },
 				{ groupId: 19110, isBeginner: true, label: 'F' }
 			]
+		},
+		{
+			label: 'Trojanska Hästen JGP 2026 Höst',
+			shortLabel: 'Troj. Höst',
+			date: '2026-10-24',
+			tournamentId: 7132,
+			// Groups are named by school stage, not letter, with age ranges shifted a
+			// year from the spring edition; A-F label them by age as in spring.
+			groups: [
+				{ groupId: 19203, isBeginner: false, label: 'A', fromYear: 2006, toYear: 2010 },
+				{ groupId: 19204, isBeginner: false, label: 'B', fromYear: 2011, toYear: 2013 },
+				{ groupId: 19205, isBeginner: false, label: 'C', fromYear: 2014, toYear: 2016 },
+				{ groupId: 19206, isBeginner: false, label: 'D', fromYear: 2017, toYear: 2019 },
+				// E "Mellanstadiet Allmän" and F "Lågstadiet Nybörjare" — same
+				// treatment as the spring edition's E/F.
+				{ groupId: 19207, isBeginner: true, label: 'E' },
+				{ groupId: 19208, isBeginner: true, label: 'F' }
+			]
 		}
 	],
 	// Filled in during verification, age group by age group (cross-checked
@@ -358,6 +376,21 @@ const GIRLS_2026: JgpSeason = {
 				// Two beginner groups, both "Nybörjare" => both "z", merged into one pool.
 				{ groupId: 19048, isBeginner: true, klass: 'z', rounds: 7, label: 'E' },
 				{ groupId: 19110, isBeginner: true, klass: 'z', rounds: 7, label: 'F' }
+			]
+		},
+		{
+			label: 'Trojanska Hästen JGP 2026 Höst',
+			shortLabel: 'Troj. Höst',
+			date: '2026-10-24',
+			tournamentId: 7132,
+			groups: [
+				{ groupId: 19203, isBeginner: false, klass: 'a', rounds: 7, label: 'A' },
+				{ groupId: 19204, isBeginner: false, klass: 'b', rounds: 7, label: 'B' },
+				{ groupId: 19205, isBeginner: false, klass: 'c', rounds: 8, label: 'C' },
+				{ groupId: 19206, isBeginner: false, klass: 'd', rounds: 7, label: 'D' },
+				// "Mellanstadiet Allmän" → öppen/allmän => klass "y".
+				{ groupId: 19207, isBeginner: false, klass: 'y', rounds: 6, label: 'E' },
+				{ groupId: 19208, isBeginner: true, klass: 'z', rounds: 5, label: 'F' }
 			]
 		}
 	],
