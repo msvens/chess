@@ -284,13 +284,63 @@ describe('per-round rating type', () => {
 		const date = Date.now();
 
 		expect(s.getPlayerEloByDateAndRound(42, date, 2)).toBe('1500 B');
-		// No blitz rating: nothing to show, not the standard one in its place.
-		expect(s.getPlayerEloByDateAndRound(43, date, 2)).toBe('-');
+		// No blitz rating: the standard one the results table shows, not "-".
+		expect(s.getPlayerEloByDateAndRound(43, date, 2)).toBe('1700');
 		// The round's own standard type, an unrated round, an unknown round and no
 		// round at all all show the group's standard rating.
 		for (const round of [1, 3, 99, undefined]) {
 			expect(s.getPlayerEloByDateAndRound(42, date, round)).toBe('1638');
 		}
+	});
+
+	it("falls back through the group's ranking chain like the results table", async () => {
+		// The shape of group 19205: ranks rapid → standard → blitz (algorithm 10),
+		// and every round is rapid-rated.
+		getTournament.mockResolvedValue(
+			ok(
+				tournament(INDIVIDUAL, {
+					rootClasses: [
+						{
+							id: 1,
+							name: 'Class',
+							groups: [
+								{
+									id: 16642,
+									name: 'Group A',
+									start: '2026-10-24',
+									end: '2026-10-24',
+									rankingAlgorithm: 10,
+									tournamentRounds: [{ roundNumber: 1, rated: 2 }]
+								}
+							]
+						}
+					]
+				} as unknown as Partial<TournamentDto>)
+			)
+		);
+		getTournamentResults.mockResolvedValue(
+			ok([
+				{ playerInfo: { id: 1, firstName: 'A', lastName: 'A', elo: { rapidRating: 1505 } } },
+				{
+					playerInfo: {
+						id: 2,
+						firstName: 'B',
+						lastName: 'B',
+						elo: { rating: 1447, rapidRating: 0, blitzRating: 1430 }
+					}
+				},
+				{ playerInfo: { id: 3, firstName: 'C', lastName: 'C', elo: { blitzRating: 1523 } } },
+				{ playerInfo: { id: 4, firstName: 'D', lastName: 'D', elo: {} } }
+			])
+		);
+		const s = make();
+		await s.load(5835, 16642);
+		const date = Date.now();
+
+		expect(s.getPlayerEloByDateAndRound(1, date, 1)).toBe('1505 S');
+		expect(s.getPlayerEloByDateAndRound(2, date, 1)).toBe('1447');
+		expect(s.getPlayerEloByDateAndRound(3, date, 1)).toBe('1523 B');
+		expect(s.getPlayerEloByDateAndRound(4, date, 1)).toBe('-');
 	});
 });
 

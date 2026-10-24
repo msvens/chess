@@ -45,7 +45,7 @@
 	import { findClassForGroup, firstGroupOf, flattenClasses } from '$lib/results/classTree';
 	import { formatTeamId } from '$lib/results/teamId';
 	import { teamNameOrId } from '$lib/results/teamNames';
-	import { hasGroupEnded, isSingleDayToday } from '$lib/results/groupDates';
+	import { hasGroupEnded } from '$lib/results/groupDates';
 	import { formatIndividualRowResult, getResultLabels } from '$lib/results/formatResult';
 	import {
 		PRIZE_TYPE_TITLE_KEY,
@@ -296,11 +296,6 @@
 
 	let externalUrl = $derived(`https://resultat.schack.se/ShowTournamentServlet?id=${groupId}`);
 
-	/** Same-day events get a link to the official live view while they are on. */
-	let isRunningToday = $derived(
-		isSingleDayToday(results.groupStartDate, results.groupEndDate, new Date())
-	);
-
 	/** A started group with nothing to show: cancelled, or simply not in yet. */
 	let missingResultsMessage = $derived.by(() => {
 		if (isNotStarted || results.loading || results.error || !results.groupStartDate) return null;
@@ -390,7 +385,8 @@
 	/**
 	 * The player's rating as it stood at the time of this game, of the type the
 	 * round was rated under — a rapid round inside a standard-ranked group shows
-	 * rapid ratings, marked as such, the same as the player's match page.
+	 * rapid ratings, marked as such, the same as the player's match page. A
+	 * player without a rating of that type gets the one the results table shows.
 	 *
 	 * Deliberately unlike resultat.schack.se, which shows the group's ranking
 	 * rating here whatever the round was rated under (groups 17723 and 17014).
@@ -639,19 +635,6 @@
 									</div>
 								{/if}
 							</div>
-
-							{#if isRunningToday}
-								<p class="mb-4 text-sm text-gray-600 dark:text-gray-400">
-									<a
-										href={externalUrl}
-										target="_blank"
-										rel="noopener noreferrer"
-										class="underline hover:text-gray-900 dark:hover:text-gray-200"
-									>
-										{tr.tournamentStatus.liveResultsLink} &rarr;
-									</a>
-								</p>
-							{/if}
 
 							{#if !isTeam && !showSeedList && prizeTypes.length > 0}
 								<!-- One dropdown per prize type the group actually offers;
