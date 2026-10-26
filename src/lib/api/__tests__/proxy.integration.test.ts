@@ -104,11 +104,9 @@ describe('app routes vs /api', () => {
 	// prod-only fallback cannot be observed from here — it is verified against the
 	// built output behind nginx.
 	//
-	// So this test does not mean deep links are broken. It pins the dev contract, and
-	// as routes get ported it will start failing for the right reason: the route now
-	// exists, and the expectation should be updated to a 200.
-	it('404s an unported route in dev (prod serves the fallback instead)', async () => {
-		const res = await fetch(`${DEV_ORIGIN}/results/16642/12345/team/7`);
+	// Every page is ported now, so this uses a path that will never exist.
+	it('404s an unknown route in dev (prod serves the fallback instead)', async () => {
+		const res = await fetch(`${DEV_ORIGIN}/no-such-page`);
 		expect(res.status).toBe(404);
 	});
 });

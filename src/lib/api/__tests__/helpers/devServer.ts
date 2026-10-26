@@ -8,16 +8,29 @@
  */
 import { createServer, type ViteDevServer } from 'vite';
 
-/** Where the suite addresses the app. Must match `server.port` in vite.config.ts. */
-export const DEV_ORIGIN = 'http://localhost:3001';
+/**
+ * The suite's own port, not dev's 3001, so it runs alongside `pnpm dev`. The
+ * rest of the server, proxy included, is vite.config.ts as dev uses it.
+ */
+const TEST_PORT = 3901;
+
+/** Where the suite addresses the app. */
+export const DEV_ORIGIN = `http://localhost:${TEST_PORT}`;
 
 let server: ViteDevServer | undefined;
 
 export async function setup(): Promise<void> {
-	// `strictPort` is on in vite.config.ts, so this throws rather than silently
-	// picking another port if 3001 is taken — which is what we want: a suite that
-	// quietly tested nothing would be worse than one that fails to start.
-	server = await createServer({ mode: 'test' });
+	// `strictPort` throws rather than silently picking another port if this one
+	// is taken — which is what we want: a suite that quietly tested nothing would
+	// be worse than one that fails to start.
+	// Its own dependency cache too: sharing `node_modules/.vite` with a running
+	// `pnpm dev` lets this server re-optimise deps underneath it, and dev then
+	// serves a mix of old and new chunks (two Svelte runtimes, a blank page).
+	server = await createServer({
+		mode: 'test',
+		cacheDir: 'node_modules/.vite-integration',
+		server: { port: TEST_PORT, strictPort: true }
+	});
 	await server.listen();
 }
 

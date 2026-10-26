@@ -15,7 +15,7 @@ export default defineConfig({
 		environment: 'node',
 		include: ['src/**/*.integration.test.ts'],
 		globalSetup: ['src/lib/api/__tests__/helpers/devServer.ts'],
-		// Live third-party calls; ChessTools in particular is slow and often 503s.
+		// Live third-party calls, which can be slow.
 		testTimeout: 20_000,
 		// Booting SvelteKit's dev server takes noticeably longer than vitest's default.
 		hookTimeout: 60_000
