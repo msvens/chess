@@ -73,11 +73,16 @@ every request (including bodyless GETs), which forces one. Calling SSF directly 
 cannot work. Dev: the Vite proxy in `vite.config.ts`. Prod: nginx.
 
 **Never normalise trailing slashes in either proxy.** The SSF API is inconsistent: GET endpoints
-404 _with_ a trailing slash, its one POST (`/player/list/`) 404s _without_. ChessTools is the
-same (`/fide/top_active/` requires the slash). The SDK emits the correct form per endpoint, so a
+404 _with_ a trailing slash, its one POST (`/player/list/`) 404s _without_. The SDK emits the correct form per endpoint, so a
 "helpful" proxy rewrite is the only way to break it. `src/lib/api/__tests__/upstream.integration.test.ts`
 guards the GET side on a daily schedule; the POST's slash is covered by the SDK's live
 `getPlayerList` test (`__tests__/players.test.ts`).
+
+**FIDE data is mfide under `/api/fide`.** mfide needs an API key, which production nginx adds;
+the key must never reach the browser or this repo. `fide.ts` constructs `MfideService('/api/fide')`
+without one, and the Vite proxy forwards `/api/fide` unchanged to https://chess.msvens.com
+(override with `FIDE_PROXY_TARGET`), so dev needs no local mfide. Only the endpoints the app uses
+are allowed through (health, player, search, history, top); anything else 404s.
 
 # `static/data/`
 

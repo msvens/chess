@@ -96,7 +96,8 @@
 
 		<p class="mt-4">
 			The data comes from the Swedish Chess Federation's API at schack.se, and FIDE ratings from
-			<Link href="https://chesstools.org" external>ChessTools</Link>.
+			FIDE's official rating lists via
+			<Link href="https://github.com/msvens/mfide" external>mfide</Link>.
 		</p>
 	</div>
 

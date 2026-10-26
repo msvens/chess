@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { FidePlayer } from '$lib/api';
+import type { MfidePlayer } from '$lib/api';
 import FidePlayerSearchInput from './FidePlayerSearchInput.svelte';
 
 const searchPlayers = vi.fn();
@@ -14,10 +14,18 @@ vi.mock('$lib/api', async (importOriginal) => {
 	};
 });
 
-const hit = (over: Partial<FidePlayer>): FidePlayer =>
-	({ fideid: '1', name: 'Carlsen, Magnus', country: 'NOR', rating: 2830, ...over }) as FidePlayer;
+const hit = (over: Partial<MfidePlayer>): MfidePlayer =>
+	({
+		fideId: 1,
+		name: 'Carlsen, Magnus',
+		country: 'NOR',
+		title: '',
+		womenTitle: '',
+		standard: { rating: 2830, games: 0, k: 10, active: true },
+		...over
+	}) as MfidePlayer;
 
-const ok = (data: FidePlayer[]) => ({ status: 200, data });
+const ok = (data: MfidePlayer[]) => ({ status: 200, data });
 
 function setup(over: Record<string, unknown> = {}) {
 	const onSelect = vi.fn();
@@ -67,8 +75,8 @@ describe('FidePlayerSearchInput', () => {
 	it('lists the hits with title, country and rating', async () => {
 		searchPlayers.mockResolvedValue(
 			ok([
-				hit({ fideid: '1', title: 'GM' }),
-				hit({ fideid: '2', name: 'Carlsen, Anna', w_title: 'WIM', rating: 0 })
+				hit({ fideId: 1, title: 'GM' }),
+				hit({ fideId: 2, name: 'Carlsen, Anna', womenTitle: 'WIM', standard: null })
 			])
 		);
 		const { user } = setup();
@@ -89,7 +97,7 @@ describe('FidePlayerSearchInput', () => {
 		await clickSearch(user);
 		await user.click(await screen.findByRole('button', { name: /Carlsen, Magnus/ }));
 
-		expect(onSelect).toHaveBeenCalledWith(expect.objectContaining({ fideid: '1' }));
+		expect(onSelect).toHaveBeenCalledWith(expect.objectContaining({ fideId: 1 }));
 		expect(screen.getByRole('textbox')).toHaveValue('GM Carlsen, Magnus');
 		expect(screen.queryByRole('button', { name: /Carlsen, Magnus/ })).toBeNull();
 	});

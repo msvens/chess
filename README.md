@@ -19,9 +19,13 @@ pnpm dev          # http://localhost:3001
 
 Port 3001 matches the Next app, so the dev URL and the nginx upstream are unchanged.
 
-The dev server proxies `/api/chess/v1` to the SSF API and `/api/chesstools` to ChessTools —
-in production nginx does the same. The proxy is required: SSF rejects CORS preflights, and the
-SDK forces one on every request.
+The dev server proxies `/api/chess/v1` to the SSF API — in production nginx does the same. The
+proxy is required: SSF rejects CORS preflights, and the SDK forces one on every request.
+
+FIDE data comes from [mfide](https://github.com/msvens/mfide), which needs an API key. Production
+nginx serves it under `/api/fide` and adds the key, so the dev server forwards `/api/fide` to
+https://chess.msvens.com and no key or local mfide is needed. To use a local stack instead, set
+`FIDE_PROXY_TARGET` (e.g. `FIDE_PROXY_TARGET=http://localhost:8061 pnpm dev`).
 
 Club and district data is static JSON in `static/data/`, untracked and fetched separately.
 

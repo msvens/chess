@@ -7,24 +7,23 @@
 import {
 	formatPlayerName,
 	getKFactorForRating,
-	type FideActivePlayer,
-	type FidePlayer,
-	type FidePlayerInfo,
-	type FideRatingPeriod,
 	type MemberFIDERatingDTO,
+	type ApiResponse,
+	type MfidePlayer,
+	type MfideTopEntry,
+	type MfideTopParams,
 	type PlayerInfoDto
 } from '$lib/api';
-import {
-	formatFideActivePlayerName,
-	formatFidePlayerInfoName,
-	formatFideSearchHitName
-} from '$lib/fideNames';
+import { formatFidePlayerName } from '$lib/fideNames';
 
 export type EloType = 'standard' | 'rapid' | 'blitz';
 export type GameResult = 'win' | 'draw' | 'loss';
 export type InputMode = 'manual' | 'ssfId' | 'ssfSearch' | 'fideId' | 'fideSearch' | 'topPlayer';
 
 export const ELO_TYPES: readonly EloType[] = ['standard', 'rapid', 'blitz'];
+/** FIDE's top lists; juniors and girls are born within the last 20 years. */
+export type TopList = NonNullable<MfideTopParams['list']>;
+export const TOP_LISTS: readonly TopList[] = ['open', 'women', 'juniors', 'girls'];
 export const GAME_RESULTS: readonly GameResult[] = ['win', 'draw', 'loss'];
 export const INPUT_MODES: readonly InputMode[] = [
 	'manual',
@@ -51,9 +50,9 @@ export type PlayerKFactors = Record<EloType, number | null>;
 export interface LookedUpPlayer {
 	name: string;
 	ratings: PlayerRatings;
-	/** SSF profiles carry a K per time control; FIDE data does not. */
+	/** A K per time control, from the SSF or FIDE profile. */
 	kFactors: PlayerKFactors | null;
-	/** FIDE data carries a birth year for the junior rule; SSF data carries K instead. */
+	/** FIDE data carries a birth year for the junior rule; SSF data does not. */
 	birthYear: number | null;
 }
 
@@ -129,45 +128,49 @@ function kFactorsOf(elo: MemberFIDERatingDTO | null | undefined): PlayerKFactors
 	return { standard: elo?.k || null, rapid: elo?.rapidk || null, blitz: elo?.blitzK || null };
 }
 
-/** A FIDE profile with history: all three ratings from the latest period. */
-export function fromFidePlayerInfo(info: FidePlayerInfo): LookedUpPlayer {
-	const latest = info.history?.[0];
+/**
+ * A FIDE player: mfide returns the same shape from lookup, search and the top
+ * lists, with all three ratings and FIDE's own K for each. An unrated type is
+ * `null`, read as 0 so the calculator falls back to the default rating.
+ */
+export function fromFidePlayer(player: MfidePlayer): LookedUpPlayer {
 	return {
-		name: formatFidePlayerInfoName(info),
-		ratings: latest ? ratingsOfPeriod(latest) : { standard: 0, rapid: 0, blitz: 0 },
-		kFactors: null,
-		birthYear: info.birth_year ?? null
-	};
-}
-
-function ratingsOfPeriod(period: FideRatingPeriod): PlayerRatings {
-	return {
-		standard: period.classical_rating ?? 0,
-		rapid: period.rapid_rating ?? 0,
-		blitz: period.blitz_rating ?? 0
+		name: formatFidePlayerName(player),
+		ratings: {
+			standard: player.standard?.rating ?? 0,
+			rapid: player.rapid?.rating ?? 0,
+			blitz: player.blitz?.rating ?? 0
+		},
+		kFactors: {
+			standard: player.standard?.k ?? null,
+			rapid: player.rapid?.k ?? null,
+			blitz: player.blitz?.k ?? null
+		},
+		birthYear: player.birthYear
 	};
 }
 
 /**
- * A name-search hit knows only the classical rating, so this is what shows
- * until the full profile arrives.
+ * Fetches a top list once per list and rating type, so both inputs share one
+ * request and switching back is instant. A failure yields an empty list and
+ * isn't kept, so the next visit tries again.
  */
-export function fromFideSearchHit(player: FidePlayer): LookedUpPlayer {
-	return {
-		name: formatFideSearchHitName(player),
-		ratings: { standard: player.rating || 0, rapid: 0, blitz: 0 },
-		kFactors: null,
-		birthYear: null
-	};
-}
-
-/** Likewise for a row of the top-active list. */
-export function fromFideActivePlayer(player: FideActivePlayer): LookedUpPlayer {
-	return {
-		name: formatFideActivePlayerName(player),
-		ratings: { standard: parseInt(player.rating, 10) || 0, rapid: 0, blitz: 0 },
-		kFactors: null,
-		birthYear: null
+export function topListLoader(
+	fetchTop: (list: TopList, type: EloType) => Promise<ApiResponse<MfideTopEntry[]>>
+): (list: TopList, type: EloType) => Promise<MfideTopEntry[]> {
+	const lists = new Map<string, Promise<MfideTopEntry[]>>();
+	return (list, type) => {
+		const key = `${list}:${type}`;
+		let pending = lists.get(key);
+		if (!pending) {
+			pending = fetchTop(list, type).then((response) => {
+				if (response.status === 200 && response.data) return response.data;
+				lists.delete(key);
+				return [];
+			});
+			lists.set(key, pending);
+		}
+		return pending;
 	};
 }
 

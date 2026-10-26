@@ -1,63 +1,45 @@
 import { describe, expect, it } from 'vitest';
-import type { FideActivePlayer, FidePlayer, FidePlayerInfo } from '$lib/api';
-import {
-	formatFideActivePlayerName,
-	formatFidePlayerInfoName,
-	formatFideSearchHitName,
-	shortenFederation
-} from './fideNames';
+import type { MfidePlayer } from '$lib/api';
+import { formatFidePlayerName, formatFideTitledName } from './fideNames';
 
-describe('formatFidePlayerInfoName', () => {
-	const info = (over: Partial<FidePlayerInfo>) =>
-		({
-			name: 'Carlsen, Magnus',
-			federation: 'Norway',
-			fide_title: 'Grandmaster',
-			...over
-		}) as FidePlayerInfo;
+const player = (over: Partial<MfidePlayer>) =>
+	({
+		name: 'Carlsen, Magnus',
+		country: 'NOR',
+		title: 'GM',
+		womenTitle: '',
+		otherTitles: [],
+		foaTitle: '',
+		...over
+	}) as MfidePlayer;
 
-	it('abbreviates the title and federation the profile endpoint spells out', () => {
-		expect(formatFidePlayerInfoName(info({}))).toBe('GM Carlsen, Magnus (NOR)');
+describe('formatFidePlayerName', () => {
+	it('puts the title first and the federation last', () => {
+		expect(formatFidePlayerName(player({}))).toBe('GM Carlsen, Magnus (NOR)');
 	});
 
-	it('drops the "None" title', () => {
-		expect(formatFidePlayerInfoName(info({ fide_title: 'None' }))).toBe('Carlsen, Magnus (NOR)');
+	it('falls back to the women’s title', () => {
+		expect(
+			formatFidePlayerName(
+				player({ name: 'Hou, Yifan', country: 'CHN', title: '', womenTitle: 'WGM' })
+			)
+		).toBe('WGM Hou, Yifan (CHN)');
 	});
 
-	it('leaves an unknown title and federation as sent', () => {
-		expect(formatFidePlayerInfoName(info({ fide_title: 'Honorary', federation: 'Atlantis' }))).toBe(
-			'Honorary Carlsen, Magnus (Atlantis)'
+	it('leaves arbiter and other titles out', () => {
+		expect(formatFidePlayerName(player({ title: '', otherTitles: ['IA'], foaTitle: 'AGM' }))).toBe(
+			'Carlsen, Magnus (NOR)'
 		);
 	});
 
 	it('omits an empty federation', () => {
-		expect(formatFidePlayerInfoName(info({ federation: '' }))).toBe('GM Carlsen, Magnus');
+		expect(formatFidePlayerName(player({ country: '' }))).toBe('GM Carlsen, Magnus');
 	});
 });
 
-describe('formatFideSearchHitName', () => {
-	it('takes the first title the hit carries, in the list order', () => {
-		const hit = { name: 'Hou, Yifan', title: '', w_title: 'WGM', o_title: 'IA' } as FidePlayer;
-		expect(formatFideSearchHitName(hit)).toBe('WGM Hou, Yifan');
-	});
-
-	it('is just the name without any', () => {
-		expect(formatFideSearchHitName({ name: 'Nobody' } as FidePlayer)).toBe('Nobody');
-	});
-});
-
-describe('formatFideActivePlayerName', () => {
-	it('appends the country code when there is one', () => {
-		expect(formatFideActivePlayerName({ name: 'A', country: 'SWE' } as FideActivePlayer)).toBe(
-			'A (SWE)'
-		);
-		expect(formatFideActivePlayerName({ name: 'A', country: '' } as FideActivePlayer)).toBe('A');
-	});
-});
-
-describe('shortenFederation', () => {
-	it('knows both spellings FIDE uses for the same country', () => {
-		expect(shortenFederation('United States of America')).toBe('USA');
-		expect(shortenFederation('United States')).toBe('USA');
+describe('formatFideTitledName', () => {
+	it('is the titled name without the federation', () => {
+		expect(formatFideTitledName(player({}))).toBe('GM Carlsen, Magnus');
+		expect(formatFideTitledName(player({ title: '' }))).toBe('Carlsen, Magnus');
 	});
 });

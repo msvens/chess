@@ -12,7 +12,7 @@
  * Used with `describe.skipIf(...)` so an upstream outage yellows the run (skipped)
  * rather than reding it (failed).
  */
-import { FideService, OrganizationService } from '@msvens/schack-se-sdk';
+import { MfideService, OrganizationService } from '@msvens/schack-se-sdk';
 
 const PROBE_TIMEOUT_MS = 2500;
 
@@ -23,7 +23,11 @@ const PROBE_TIMEOUT_MS = 2500;
  * upstream contract our proxy configuration depends on.
  */
 export const SSF_BASE = 'https://member.schack.se/public/api/v1';
-export const CHESSTOOLS_BASE = 'https://api.chesstools.org';
+/**
+ * FIDE data is mfide behind production's nginx, which adds the API key, so a
+ * keyless test run reaches it the same way the app does.
+ */
+export const FIDE_BASE = 'https://chess.msvens.com/api/fide';
 
 async function probe(
 	host: string,
@@ -49,10 +53,10 @@ export function ssfUnreachable(): Promise<boolean> {
 	);
 }
 
-/** True when api.chesstools.org (FIDE) can't be reached. */
+/** True when mfide (FIDE), via chess.msvens.com/api/fide, can't be reached. */
 export function fideUnreachable(): Promise<boolean> {
 	return probe(
-		'api.chesstools.org (FIDE)',
-		new FideService(CHESSTOOLS_BASE, PROBE_TIMEOUT_MS).getTopByRating(1)
+		'chess.msvens.com/api/fide (mfide)',
+		new MfideService(FIDE_BASE, undefined, PROBE_TIMEOUT_MS).getHealth()
 	);
 }

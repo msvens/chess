@@ -14,7 +14,11 @@ import { fileURLToPath } from 'node:url';
 // GETs), which forces one. Direct browser calls therefore cannot work.
 const SSF_API = 'https://member.schack.se';
 const SSF_API_PREFIX = '/public/api/v1';
-const CHESSTOOLS_API = 'https://api.chesstools.org';
+// FIDE data comes from mfide, which needs an API key. Production nginx adds it
+// under /api/fide, so dev forwards there too: a fresh clone runs without a
+// local mfide and the key never enters this repo. To test against a local
+// stack instead, set FIDE_PROXY_TARGET (e.g. http://localhost:8061).
+const FIDE_PROXY_TARGET = process.env.FIDE_PROXY_TARGET ?? 'https://chess.msvens.com';
 
 export default defineConfig({
 	plugins: [
@@ -55,10 +59,10 @@ export default defineConfig({
 				changeOrigin: true,
 				rewrite: (path) => path.replace(/^\/api\/chess\/v1/, SSF_API_PREFIX)
 			},
-			'/api/chesstools': {
-				target: CHESSTOOLS_API,
-				changeOrigin: true,
-				rewrite: (path) => path.replace(/^\/api\/chesstools/, '')
+			// No rewrite: the target's nginx owns /api/fide and maps it onto mfide.
+			'/api/fide': {
+				target: FIDE_PROXY_TARGET,
+				changeOrigin: true
 			}
 		}
 	},

@@ -1,13 +1,14 @@
 name: Integration (live APIs)
 
-# Live contract tests against the SSF and ChessTools APIs. Kept out of the PR
+# Live contract tests against the SSF API and the FIDE path (mfide). Kept out of the PR
 # gate (ci.yml) so a flaky upstream can't block merges; run here on a schedule +
 # on demand instead. The suite self-skips when a host is unreachable (see
 # src/lib/api/__tests__/helpers/liveProbe.ts), so a down host shows as
 # passed-with-skips, and only genuine upstream drift fails the run.
 #
 # What it guards: the trailing-slash behaviour and the CORS-preflight rejection
-# that the nginx/Vite proxy configuration is built around. Those are assumptions
+# that the nginx/Vite proxy configuration is built around, and that the FIDE
+# path answers without a key and exposes only the endpoints the app uses. Those are assumptions
 # about someone else's server, so they need watching, not just documenting.
 on:
   schedule:

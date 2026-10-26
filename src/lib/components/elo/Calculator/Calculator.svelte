@@ -8,7 +8,6 @@
 	 * re-derived it in a render-time "previous Elo type" comparison; deriving it
 	 * makes that hack, and the state it guarded, unnecessary.
 	 */
-	import { onMount } from 'svelte';
 	import TextField from '$lib/components/ui/TextField.svelte';
 	import Toggle from '$lib/components/ui/Toggle.svelte';
 	import PlayerInput from './PlayerInput.svelte';
@@ -17,8 +16,7 @@
 		calculateExpectedScore,
 		calculatePerformanceRating,
 		calculateRatingChange,
-		fideService,
-		type FideActivePlayer
+		fideService
 	} from '$lib/api';
 	import { language } from '$lib/stores/language.svelte';
 	import { getTranslation } from '$lib/translations';
@@ -29,6 +27,7 @@
 		resolveKFactor,
 		scoreOf,
 		selectedRating,
+		topListLoader,
 		type EloType,
 		type GameResult,
 		type PlayerSelection
@@ -44,19 +43,13 @@
 	let manualK1 = $state('20');
 	let manualK2 = $state('20');
 	let removeCap = $state(false);
-	let topPlayers = $state<FideActivePlayer[]>([]);
-	let topPlayersLoading = $state(false);
 
 	let t = $derived(getTranslation(language.current));
 	let calc = $derived(t.pages.elo.calculator);
 
-	// Fetched once for both inputs. A failure just leaves the dropdown empty.
-	onMount(async () => {
-		topPlayersLoading = true;
-		const response = await fideService.getTopActive(TOP_PLAYER_COUNT);
-		if (response.status === 200 && response.data) topPlayers = response.data;
-		topPlayersLoading = false;
-	});
+	const loadTopList = topListLoader((list, type) =>
+		fideService.getTop({ list, type, limit: TOP_PLAYER_COUNT })
+	);
 
 	let eloTypeLabels = $derived<Record<EloType, string>>({
 		standard: calc.standard,
@@ -154,16 +147,14 @@
 		selection={player1}
 		onChange={(selection) => (player1 = selection)}
 		{eloType}
-		{topPlayers}
-		{topPlayersLoading}
+		{loadTopList}
 	/>
 	<PlayerInput
 		label={calc.player2}
 		selection={player2}
 		onChange={(selection) => (player2 = selection)}
 		{eloType}
-		{topPlayers}
-		{topPlayersLoading}
+		{loadTopList}
 	/>
 </div>
 
