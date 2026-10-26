@@ -3,7 +3,7 @@
 	 * Search FIDE's rating list by name, and pick one of the hits.
 	 * Ports `components/FidePlayerSearchInput.tsx`.
 	 *
-	 * The twin of `PlayerSearchInput`: same shape, different upstream (ChessTools
+	 * The twin of `PlayerSearchInput`: same shape, different upstream (mfide
 	 * takes one free-text query rather than SSF's first/last name pair) and a
 	 * different row (country and rating beside the name, not the club). Kept as
 	 * two components rather than one with a strategy prop — a third search would
@@ -13,11 +13,11 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import { clickOutside } from '$lib/attachments/clickOutside';
 	import { escapeKey } from '$lib/attachments/escapeKey';
-	import { fideService, type FidePlayer } from '$lib/api';
-	import { formatFideSearchHitName } from '$lib/fideNames';
+	import { fideService, type MfidePlayer } from '$lib/api';
+	import { formatFideTitledName } from '$lib/fideNames';
 
 	interface FidePlayerSearchInputProps {
-		onSelect: (player: FidePlayer) => void;
+		onSelect: (player: MfidePlayer) => void;
 		placeholder: string;
 		searchLabel: string;
 		/** Shown when the search returns nobody, and when it fails. */
@@ -41,7 +41,7 @@
 	}: FidePlayerSearchInputProps = $props();
 
 	let query = $state('');
-	let results = $state<FidePlayer[]>([]);
+	let results = $state<MfidePlayer[]>([]);
 	let searching = $state(false);
 	let showDropdown = $state(false);
 	let message = $state('');
@@ -66,8 +66,8 @@
 		searching = false;
 	}
 
-	function choose(player: FidePlayer) {
-		query = formatFideSearchHitName(player);
+	function choose(player: MfidePlayer) {
+		query = formatFideTitledName(player);
 		showDropdown = false;
 		message = '';
 		onSelect(player);
@@ -109,16 +109,16 @@
 					? '320px'
 					: 'auto'}"
 			>
-				{#each results as player, index (player.fideid)}
+				{#each results as player, index (player.fideId)}
 					<button
 						type="button"
 						onclick={() => choose(player)}
 						class="relative block w-full px-3 py-2 text-left text-sm whitespace-nowrap text-gray-900 transition-colors hover:bg-white/10 focus:outline-none dark:text-gray-200 dark:hover:bg-white/10"
 					>
 						<div>
-							{formatFideSearchHitName(player)}
+							{formatFideTitledName(player)}
 							<span class="ml-2 text-gray-500 dark:text-gray-400">
-								({player.country}{player.rating ? ` • ${player.rating}` : ''})
+								({player.country}{player.standard ? ` • ${player.standard.rating}` : ''})
 							</span>
 						</div>
 						{#if index < results.length - 1}

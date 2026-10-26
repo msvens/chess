@@ -2,7 +2,7 @@
 /**
  * Tests OUR proxy — the one part of the request path this repo actually owns.
  *
- * The app only ever calls same-origin `/api/chess/v1/…` and `/api/chesstools/…`;
+ * The app only ever calls same-origin `/api/chess/v1/…` and `/api/fide/…`;
  * something has to map those onto the real hosts. In dev that is `server.proxy` in
  * vite.config.ts, in production the equivalent nginx `location` blocks. This suite
  * drives the dev half through a real dev server.
@@ -61,28 +61,22 @@ describe.skipIf(ssfDown)('SSF proxy (/api/chess/v1 -> member.schack.se/public/ap
 	});
 });
 
-describe.skipIf(fideDown)('ChessTools proxy (/api/chesstools -> api.chesstools.org)', () => {
-	it('maps the prefix onto the upstream root', async () => {
-		const res = await fetch(`${DEV_ORIGIN}/api/chesstools/fide/1503014`);
+// Dev forwards /api/fide unchanged to production's nginx (or FIDE_PROXY_TARGET),
+// which maps it onto mfide and adds the key — so a 200 here also proves the key
+// was added somewhere other than the browser.
+describe.skipIf(fideDown)('FIDE proxy (/api/fide -> nginx -> mfide)', () => {
+	it('passes the path through', async () => {
+		const res = await fetch(`${DEV_ORIGIN}/api/fide/v1/players/1503014`);
 		expect(res.status).toBe(200);
-		expect(res.headers.get('content-type')).toContain('json');
+		const body = await res.json();
+		expect(body.data.name).toBe('Carlsen, Magnus');
 	});
 
 	it('preserves the query string', async () => {
-		const res = await fetch(`${DEV_ORIGIN}/api/chesstools/fide/top_by_rating?limit=3`);
+		const res = await fetch(`${DEV_ORIGIN}/api/fide/v1/top?limit=3`);
 		expect(res.status).toBe(200);
 		const body = await res.json();
-		expect(Array.isArray(body)).toBe(true);
-		expect(body).toHaveLength(3); // the limit actually made it through
-	});
-
-	// ChessTools is slash-sensitive in the opposite direction from SSF: this
-	// endpoint REQUIRES the trailing slash. Same lesson, mirrored.
-	it('passes a required trailing slash through', async () => {
-		const res = await fetch(`${DEV_ORIGIN}/api/chesstools/fide/top_active/?limit=1`);
-		// Upstream is frequently 503 here; what matters is that we did not turn the
-		// path into the 404-producing slashless form on the way.
-		expect(res.status).not.toBe(404);
+		expect(body.data).toHaveLength(3); // the limit actually made it through
 	});
 });
 
@@ -110,11 +104,9 @@ describe('app routes vs /api', () => {
 	// prod-only fallback cannot be observed from here — it is verified against the
 	// built output behind nginx.
 	//
-	// So this test does not mean deep links are broken. It pins the dev contract, and
-	// as routes get ported it will start failing for the right reason: the route now
-	// exists, and the expectation should be updated to a 200.
-	it('404s an unported route in dev (prod serves the fallback instead)', async () => {
-		const res = await fetch(`${DEV_ORIGIN}/results/16642/12345/team/7`);
+	// Every page is ported now, so this uses a path that will never exist.
+	it('404s an unknown route in dev (prod serves the fallback instead)', async () => {
+		const res = await fetch(`${DEV_ORIGIN}/no-such-page`);
 		expect(res.status).toBe(404);
 	});
 });

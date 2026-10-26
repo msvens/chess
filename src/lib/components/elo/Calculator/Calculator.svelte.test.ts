@@ -5,7 +5,7 @@ import type { PlayerInfoDto } from '$lib/api';
 import Calculator from './Calculator.svelte';
 
 const getPlayerInfo = vi.fn();
-const getTopActive = vi.fn();
+const getTop = vi.fn();
 
 vi.mock('$lib/api', async (importOriginal) => {
 	const actual = await importOriginal<typeof import('$lib/api')>();
@@ -16,8 +16,8 @@ vi.mock('$lib/api', async (importOriginal) => {
 			searchPlayer = () => Promise.resolve({ status: 200, data: [] });
 		},
 		fideService: {
-			getTopActive: (...args: unknown[]) => getTopActive(...args),
-			getPlayerInfo: () => Promise.resolve({ status: 0 }),
+			getTop: (...args: unknown[]) => getTop(...args),
+			getPlayer: () => Promise.resolve({ status: 0 }),
 			searchPlayers: () => Promise.resolve({ status: 200, data: [] })
 		}
 	};
@@ -59,14 +59,45 @@ const card = (name: RegExp) => {
 describe('Calculator', () => {
 	beforeEach(() => {
 		getPlayerInfo.mockReset();
-		getTopActive.mockReset();
-		getTopActive.mockResolvedValue({ status: 200, data: [] });
+		getTop.mockReset();
+		getTop.mockResolvedValue({ status: 200, data: [] });
 	});
 
-	it('fetches the top players once for both inputs', () => {
+	const openTopLists = async (user: ReturnType<typeof userEvent.setup>) => {
+		for (const modes of screen.getAllByRole('group', { name: 'Inmatningsläge' })) {
+			await user.click(within(modes).getByRole('button', { name: 'Toppspelare' }));
+		}
+	};
+
+	it('fetches no top list until one is opened', () => {
 		setup();
-		expect(getTopActive).toHaveBeenCalledTimes(1);
-		expect(getTopActive).toHaveBeenCalledWith(10);
+		expect(getTop).not.toHaveBeenCalled();
+	});
+
+	it('shares one fetch per list and Elo type between both inputs', async () => {
+		const user = setup();
+		await openTopLists(user);
+		expect(getTop).toHaveBeenCalledTimes(1);
+		expect(getTop).toHaveBeenCalledWith({ list: 'open', type: 'standard', limit: 10 });
+
+		await user.click(group('Elo-typ').getByRole('button', { name: 'Blixt' }));
+		expect(getTop).toHaveBeenCalledTimes(2);
+		expect(getTop).toHaveBeenLastCalledWith({ list: 'open', type: 'blitz', limit: 10 });
+
+		// Back to standard: already fetched.
+		await user.click(group('Elo-typ').getByRole('button', { name: 'Standard' }));
+		expect(getTop).toHaveBeenCalledTimes(2);
+	});
+
+	it('tries a failed list again next time', async () => {
+		getTop.mockResolvedValueOnce({ status: 0 });
+		const user = setup();
+		const [first] = screen.getAllByRole('group', { name: 'Inmatningsläge' });
+		await user.click(within(first).getByRole('button', { name: 'Toppspelare' }));
+		await vi.waitFor(() => expect(screen.queryByText('Laddar toppspelare...')).toBeNull());
+		await user.click(within(first).getByRole('button', { name: 'Manuell' }));
+		await user.click(within(first).getByRole('button', { name: 'Toppspelare' }));
+		expect(getTop).toHaveBeenCalledTimes(2);
 	});
 
 	it('shows nothing until both sides have a rating', async () => {
@@ -115,7 +146,7 @@ describe('Calculator', () => {
 		const user = setup();
 		await enterRatings(user, '1500', '1600');
 		await user.click(group('K-faktor').getByRole('button', { name: 'Manuell' }));
-		expect(screen.queryByText(/Använder SSF-spelarens K-faktor/)).toBeNull();
+		expect(screen.queryByText(/Använder spelarens K-faktor/)).toBeNull();
 
 		const k1 = screen.getByLabelText('K1');
 		await user.clear(k1);

@@ -12,21 +12,21 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import PlayerSearchInput from '$lib/components/player/PlayerSearchInput.svelte';
 	import FidePlayerSearchInput from '$lib/components/player/FidePlayerSearchInput.svelte';
-	import { PlayerService, fideService, type FideActivePlayer } from '$lib/api';
-	import { formatFideActivePlayerName } from '$lib/fideNames';
+	import { PlayerService, fideService, type MfideTopEntry } from '$lib/api';
+	import { formatFidePlayerName } from '$lib/fideNames';
 	import { language } from '$lib/stores/language.svelte';
 	import { getTranslation } from '$lib/translations';
 	import {
 		INPUT_MODES,
-		fromFideActivePlayer,
-		fromFidePlayerInfo,
-		fromFideSearchHit,
+		TOP_LISTS,
+		fromFidePlayer,
 		fromSsfPlayer,
 		selectedRating,
 		type EloType,
 		type InputMode,
 		type LookedUpPlayer,
-		type PlayerSelection
+		type PlayerSelection,
+		type TopList
 	} from './calculator';
 
 	interface PlayerInputProps {
@@ -34,12 +34,11 @@
 		eloType: EloType;
 		selection: PlayerSelection;
 		onChange: (selection: PlayerSelection) => void;
-		topPlayers: FideActivePlayer[];
-		topPlayersLoading: boolean;
+		/** A FIDE top list for one rating type; the parent shares and caches them. */
+		loadTopList: (list: TopList, type: EloType) => Promise<MfideTopEntry[]>;
 	}
 
-	let { label, eloType, selection, onChange, topPlayers, topPlayersLoading }: PlayerInputProps =
-		$props();
+	let { label, eloType, selection, onChange, loadTopList }: PlayerInputProps = $props();
 
 	const players = new PlayerService();
 
@@ -47,6 +46,9 @@
 	let memberIdInput = $state('');
 	let fideIdInput = $state('');
 	let topPlayerId = $state('');
+	let topList = $state<TopList>('open');
+	let topPlayers = $state<MfideTopEntry[]>([]);
+	let topPlayersLoading = $state(false);
 	let searching = $state(false);
 	let lookupError = $state('');
 
@@ -55,6 +57,8 @@
 	// applied it — its enrich step closed over stale state and overwrote whatever
 	// had happened since.
 	let generation = 0;
+	// The same for the top list: only the latest list/type request may land.
+	let topRequest = 0;
 
 	let t = $derived(getTranslation(language.current));
 	let calc = $derived(t.pages.elo.calculator);
@@ -67,6 +71,29 @@
 		fideId: calc.fideId,
 		fideSearch: calc.fideSearch,
 		topPlayer: calc.topPlayers
+	});
+
+	let topListLabels = $derived<Record<TopList, string>>({
+		open: calc.topListOpen,
+		women: calc.topListWomen,
+		juniors: calc.topListJuniors,
+		girls: calc.topListGirls
+	});
+
+	// The top list follows the Elo type, so it is refetched when the list, the
+	// type or the mode changes. A player already chosen keeps all three ratings.
+	$effect(() => {
+		if (inputMode !== 'topPlayer') return;
+		const list = topList;
+		const type = eloType;
+		const mine = ++topRequest;
+		topPlayersLoading = true;
+		topPlayerId = '';
+		loadTopList(list, type).then((players) => {
+			if (mine !== topRequest) return;
+			topPlayers = players;
+			topPlayersLoading = false;
+		});
 	});
 
 	const tabClasses = {
@@ -115,29 +142,13 @@
 
 	const lookupFideId = () =>
 		lookup(fideIdInput, async () => {
-			const response = await fideService.getPlayerInfo(parseInt(fideIdInput.trim(), 10), true);
-			return response.status === 200 && response.data ? fromFidePlayerInfo(response.data) : null;
+			const response = await fideService.getPlayer(parseInt(fideIdInput.trim(), 10));
+			return response.status === 200 && response.data ? fromFidePlayer(response.data) : null;
 		});
 
-	/**
-	 * A list row knows the name and the classical rating; show that at once,
-	 * then fill in rapid, blitz and the birth year from the profile. If the
-	 * profile fails the row's data stands, with no error.
-	 */
-	async function enrich(fallback: LookedUpPlayer, fideId: number) {
-		setLookedUp(fallback);
-		if (Number.isNaN(fideId)) return;
-		const mine = ++generation;
-		searching = true;
-		const response = await fideService.getPlayerInfo(fideId, true);
-		if (mine !== generation) return;
-		searching = false;
-		if (response.status === 200 && response.data) setLookedUp(fromFidePlayerInfo(response.data));
-	}
-
 	function chooseTopPlayer() {
-		const player = topPlayers.find((p) => p.fide_id === topPlayerId);
-		if (player) enrich(fromFideActivePlayer(player), parseInt(player.fide_id, 10));
+		const player = topPlayers.find((p) => String(p.fideId) === topPlayerId);
+		if (player) setLookedUp(fromFidePlayer(player));
 	}
 </script>
 
@@ -241,7 +252,7 @@
 	{:else if inputMode === 'fideSearch'}
 		<div class="space-y-2">
 			<FidePlayerSearchInput
-				onSelect={(player) => enrich(fromFideSearchHit(player), parseInt(player.fideid, 10))}
+				onSelect={(player) => setLookedUp(fromFidePlayer(player))}
 				placeholder={t.pages.players.search.namePlaceholder}
 				noResultsMessage={t.pages.players.search.nameSearchHint}
 				searchLabel={calc.search}
@@ -251,6 +262,20 @@
 		</div>
 	{:else if inputMode === 'topPlayer'}
 		<div class="space-y-2">
+			<div class="flex flex-wrap gap-1" role="group" aria-label={calc.topList}>
+				{#each TOP_LISTS as list (list)}
+					<button
+						type="button"
+						onclick={() => (topList = list)}
+						aria-pressed={topList === list}
+						class="rounded px-2.5 py-1 text-xs transition-colors {topList === list
+							? tabClasses.selected
+							: tabClasses.idle}"
+					>
+						{topListLabels[list]}
+					</button>
+				{/each}
+			</div>
 			{#if topPlayersLoading}
 				<p class="text-sm text-gray-500 dark:text-gray-400">{calc.loadingTopPlayers}</p>
 			{:else}
@@ -261,18 +286,14 @@
 					class="w-full rounded border border-gray-300 bg-transparent px-3 py-1.5 text-sm text-gray-900 hover:border-gray-900 focus:border-blue-500 focus:outline-none dark:border-gray-600 dark:text-gray-200 dark:hover:border-white"
 				>
 					<option value="">{calc.selectTopPlayer}</option>
-					{#each topPlayers as player (player.fide_id)}
-						<option value={player.fide_id}>
-							{formatFideActivePlayerName(player)} — {player.rating}
+					{#each topPlayers as player (player.fideId)}
+						<option value={String(player.fideId)}>
+							{formatFidePlayerName(player)} — {player[eloType]?.rating}
 						</option>
 					{/each}
 				</select>
 			{/if}
-			{#if searching}
-				<p class="text-xs text-gray-500 dark:text-gray-400">{calc.lookingUp}</p>
-			{:else}
-				{@render ratingLine()}
-			{/if}
+			{@render ratingLine()}
 		</div>
 	{/if}
 

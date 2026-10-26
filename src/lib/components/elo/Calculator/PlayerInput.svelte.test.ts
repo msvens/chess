@@ -1,12 +1,13 @@
 import { render, screen, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { FideActivePlayer, FidePlayerInfo, PlayerInfoDto } from '$lib/api';
+import type { MfidePlayer, MfideTopEntry, PlayerInfoDto } from '$lib/api';
 import PlayerInput from './PlayerInput.svelte';
 import type { LookedUpPlayer, PlayerSelection } from './calculator';
 
 const getPlayerInfo = vi.fn();
-const fideGetPlayerInfo = vi.fn();
+const fideGetPlayer = vi.fn();
+const loadTopList = vi.fn();
 const searchPlayers = vi.fn();
 
 vi.mock('$lib/api', async (importOriginal) => {
@@ -18,7 +19,7 @@ vi.mock('$lib/api', async (importOriginal) => {
 			searchPlayer = () => Promise.resolve({ status: 200, data: [] });
 		},
 		fideService: {
-			getPlayerInfo: (...args: unknown[]) => fideGetPlayerInfo(...args),
+			getPlayer: (...args: unknown[]) => fideGetPlayer(...args),
 			searchPlayers: (...args: unknown[]) => searchPlayers(...args)
 		}
 	};
@@ -31,20 +32,26 @@ const ssfPlayer = {
 	elo: { rating: 2000, rapidRating: 1900, blitzRating: 0, k: 20, rapidk: 40, blitzK: 0 }
 } as PlayerInfoDto;
 
-const fideInfo = {
-	name: 'Carlsen, Magnus',
-	federation: 'Norway',
-	fide_title: 'Grandmaster',
-	birth_year: 1990,
-	history: [{ classical_rating: 2830, rapid_rating: 2820, blitz_rating: 2880 }]
-} as FidePlayerInfo;
-
-const topPlayer = {
-	fide_id: '1503014',
+const carlsen = {
+	fideId: 1503014,
 	name: 'Carlsen, Magnus',
 	country: 'NOR',
-	rating: '2830'
-} as FideActivePlayer;
+	title: 'GM',
+	womenTitle: '',
+	birthYear: 1990,
+	standard: { rating: 2830, games: 0, k: 10, active: true },
+	rapid: { rating: 2820, games: 9, k: 10, active: true },
+	blitz: { rating: 2880, games: 21, k: 10, active: true }
+} as MfidePlayer;
+
+const carlsenLookedUp: LookedUpPlayer = {
+	name: 'GM Carlsen, Magnus (NOR)',
+	ratings: { standard: 2830, rapid: 2820, blitz: 2880 },
+	kFactors: { standard: 10, rapid: 10, blitz: 10 },
+	birthYear: 1990
+};
+
+const topPlayer: MfideTopEntry = { ...carlsen, rank: 1 };
 
 const lookedUp: LookedUpPlayer = {
 	name: 'Anna Svensson',
@@ -61,8 +68,7 @@ function setup(over: Partial<PlayerSelection> = {}, props: Record<string, unknow
 			eloType: 'standard',
 			selection: { manualRating: '', lookedUp: null, ...over },
 			onChange,
-			topPlayers: [topPlayer],
-			topPlayersLoading: false,
+			loadTopList,
 			...props
 		}
 	});
@@ -82,8 +88,10 @@ function deferred<T>() {
 describe('PlayerInput', () => {
 	beforeEach(() => {
 		getPlayerInfo.mockReset();
-		fideGetPlayerInfo.mockReset();
+		fideGetPlayer.mockReset();
 		searchPlayers.mockReset();
+		loadTopList.mockReset();
+		loadTopList.mockResolvedValue([topPlayer]);
 	});
 
 	it('starts in manual mode and reports what is typed as a manual rating', async () => {
@@ -112,21 +120,13 @@ describe('PlayerInput', () => {
 	});
 
 	it('looks up a FIDE id, with the birth year the junior rule needs', async () => {
-		fideGetPlayerInfo.mockResolvedValue({ status: 200, data: fideInfo });
+		fideGetPlayer.mockResolvedValue({ status: 200, data: carlsen });
 		const { onChange, user } = setup();
 		await user.click(modeTab('FIDE-Id'));
 		await user.type(screen.getByRole('spinbutton'), '1503014{Enter}');
 
-		expect(fideGetPlayerInfo).toHaveBeenCalledWith(1503014, true);
-		expect(onChange).toHaveBeenLastCalledWith({
-			manualRating: '',
-			lookedUp: {
-				name: 'GM Carlsen, Magnus (NOR)',
-				ratings: { standard: 2830, rapid: 2820, blitz: 2880 },
-				kFactors: null,
-				birthYear: 1990
-			}
-		});
+		expect(fideGetPlayer).toHaveBeenCalledWith(1503014);
+		expect(onChange).toHaveBeenLastCalledWith({ manualRating: '', lookedUp: carlsenLookedUp });
 	});
 
 	it('shows the looked-up name and the rating for the chosen Elo type with its K', () => {
@@ -164,58 +164,72 @@ describe('PlayerInput', () => {
 		expect(onChange).toHaveBeenLastCalledWith({ manualRating: '1850', lookedUp: null });
 	});
 
-	it('picking a top player shows the row at once, then the full profile', async () => {
-		fideGetPlayerInfo.mockResolvedValue({ status: 200, data: fideInfo });
+	it('picking a FIDE search hit reports the player in full, with no second request', async () => {
+		searchPlayers.mockResolvedValue({ status: 200, data: [carlsen] });
+		const { onChange, user } = setup();
+		await user.click(modeTab('FIDE-sök'));
+		await user.type(screen.getByRole('textbox'), 'Carlsen{Enter}');
+		await user.click(await screen.findByRole('button', { name: /Carlsen, Magnus/ }));
+
+		expect(onChange).toHaveBeenLastCalledWith({ manualRating: '', lookedUp: carlsenLookedUp });
+		expect(fideGetPlayer).not.toHaveBeenCalled();
+	});
+
+	it('opens the open top list for the Elo type, and picks a player in full', async () => {
 		const { onChange, user } = setup();
 		await user.click(modeTab('Toppspelare'));
-		await user.selectOptions(screen.getByRole('combobox'), '1503014');
+		expect(loadTopList).toHaveBeenCalledWith('open', 'standard');
 
-		expect(onChange).toHaveBeenNthCalledWith(2, {
-			manualRating: '',
-			lookedUp: {
-				name: 'Carlsen, Magnus (NOR)',
-				ratings: { standard: 2830, rapid: 0, blitz: 0 },
-				kFactors: null,
-				birthYear: null
-			}
-		});
-		expect(fideGetPlayerInfo).toHaveBeenCalledWith(1503014, true);
-		await vi.waitFor(() =>
-			expect(onChange).toHaveBeenLastCalledWith({
-				manualRating: '',
-				lookedUp: expect.objectContaining({ name: 'GM Carlsen, Magnus (NOR)', birthYear: 1990 })
+		await user.selectOptions(await screen.findByRole('combobox'), '1503014');
+		expect(onChange).toHaveBeenLastCalledWith({ manualRating: '', lookedUp: carlsenLookedUp });
+		expect(fideGetPlayer).not.toHaveBeenCalled();
+	});
+
+	it('lists the rating of the Elo type on show', async () => {
+		const { user } = setup({}, { eloType: 'blitz' });
+		await user.click(modeTab('Toppspelare'));
+		expect(loadTopList).toHaveBeenCalledWith('open', 'blitz');
+		expect(
+			await screen.findByRole('option', { name: 'GM Carlsen, Magnus (NOR) — 2880' })
+		).toBeInTheDocument();
+	});
+
+	it('switches between the four lists', async () => {
+		const { user } = setup();
+		await user.click(modeTab('Toppspelare'));
+		const lists = within(screen.getByRole('group', { name: 'Topplista' }));
+		expect(lists.getAllByRole('button').map((b) => b.textContent?.trim())).toEqual([
+			'Öppen',
+			'Damer',
+			'Juniorer',
+			'Flickor'
+		]);
+
+		await user.click(lists.getByRole('button', { name: 'Flickor' }));
+		expect(loadTopList).toHaveBeenLastCalledWith('girls', 'standard');
+	});
+
+	it('drops a list that arrives after another was asked for', async () => {
+		const slow = deferred<MfideTopEntry[]>();
+		loadTopList.mockReturnValueOnce(slow.promise).mockResolvedValueOnce([]);
+		const { user } = setup();
+		await user.click(modeTab('Toppspelare'));
+		await user.click(
+			within(screen.getByRole('group', { name: 'Topplista' })).getByRole('button', {
+				name: 'Damer'
 			})
 		);
-	});
+		await vi.waitFor(() => expect(screen.getByRole('combobox')).toBeInTheDocument());
 
-	it('drops a profile that arrives after the user has moved on', async () => {
-		const profile = deferred<{ status: number; data: FidePlayerInfo }>();
-		fideGetPlayerInfo.mockReturnValue(profile.promise);
-		const { onChange, user } = setup();
-		await user.click(modeTab('Toppspelare'));
-		await user.selectOptions(screen.getByRole('combobox'), '1503014');
-		await user.click(modeTab('Manuell'));
-		const callsBefore = onChange.mock.calls.length;
-
-		profile.resolve({ status: 200, data: fideInfo });
-		await profile.promise;
+		slow.resolve([topPlayer]);
+		await slow.promise;
 		await new Promise((r) => setTimeout(r, 0));
-		expect(onChange.mock.calls.length).toBe(callsBefore);
-	});
-
-	it('keeps the row data, without an error, when the profile fails', async () => {
-		fideGetPlayerInfo.mockResolvedValue({ status: 0 });
-		const { onChange, user } = setup();
-		await user.click(modeTab('Toppspelare'));
-		await user.selectOptions(screen.getByRole('combobox'), '1503014');
-		await vi.waitFor(() => expect(screen.queryByText('Söker...')).toBeNull());
-
-		expect(onChange).toHaveBeenCalledTimes(2);
-		expect(screen.queryByText('Spelare hittades inte')).toBeNull();
+		expect(screen.queryByRole('option', { name: /Carlsen/ })).toBeNull();
 	});
 
 	it('says the top list is loading', async () => {
-		const { user } = setup({}, { topPlayersLoading: true });
+		loadTopList.mockReturnValue(new Promise(() => {}));
+		const { user } = setup();
 		await user.click(modeTab('Toppspelare'));
 		expect(screen.getByText('Laddar toppspelare...')).toBeInTheDocument();
 		expect(screen.queryByRole('combobox')).toBeNull();

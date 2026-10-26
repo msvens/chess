@@ -652,13 +652,19 @@ export interface Translations {
 				playerNotFound: string;
 				selectTopPlayer: string;
 				loadingTopPlayers: string;
+				/** Label of the top-list selector, and its four FIDE lists. */
+				topList: string;
+				topListOpen: string;
+				topListWomen: string;
+				topListJuniors: string;
+				topListGirls: string;
 				noOfficialRating: string;
 				removeCap: string;
 				/** Shown over the results when the cap is off and would have applied; `{difference}`. */
 				uncappedNote: string;
 				performanceRating: string;
 				autoHint: string;
-				/** Suffix on the K line when the K came from an SSF profile. */
+				/** Suffix on the K line when the K came from an SSF or FIDE profile. */
 				fromProfile: string;
 			};
 		};
@@ -1428,12 +1434,17 @@ const translations: Record<Language, Translations> = {
 					playerNotFound: 'Player not found',
 					selectTopPlayer: 'Select a top player',
 					loadingTopPlayers: 'Loading top players...',
+					topList: 'Top list',
+					topListOpen: 'Open',
+					topListWomen: 'Women',
+					topListJuniors: 'Juniors',
+					topListGirls: 'Girls',
 					noOfficialRating: 'No official Elo \u2014 using default rating of 1400',
 					removeCap: 'Remove 400-point cap',
 					uncappedNote: 'Uncapped \u2014 rating difference {difference} (normally capped at 400)',
 					performanceRating: 'Performance',
 					autoHint:
-						"Uses the SSF player's K-factor when available, otherwise estimates from rating",
+						"Uses the player's K-factor from SSF or FIDE when available, otherwise estimates from rating",
 					fromProfile: 'profile'
 				}
 			},
@@ -2203,13 +2214,18 @@ const translations: Record<Language, Translations> = {
 					playerNotFound: 'Spelare hittades inte',
 					selectTopPlayer: 'Välj en toppspelare',
 					loadingTopPlayers: 'Laddar toppspelare...',
+					topList: 'Topplista',
+					topListOpen: 'Öppen',
+					topListWomen: 'Damer',
+					topListJuniors: 'Juniorer',
+					topListGirls: 'Flickor',
 					noOfficialRating: 'Ingen officiell Elo \u2014 använder standardrating 1400',
 					removeCap: 'Ta bort 400-poängsgräns',
 					uncappedNote:
 						'Utan gräns \u2014 ratingskillnad {difference} (normalt begränsad till 400)',
 					performanceRating: 'Prestation',
 					autoHint:
-						'Använder SSF-spelarens K-faktor om tillgänglig, annars uppskattas den utifrån rating',
+						'Använder spelarens K-faktor från SSF eller FIDE om tillgänglig, annars uppskattas den utifrån rating',
 					fromProfile: 'profil'
 				}
 			},

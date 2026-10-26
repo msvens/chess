@@ -1,14 +1,13 @@
-import { describe, expect, it } from 'vitest';
-import type { FideActivePlayer, FidePlayer, FidePlayerInfo, PlayerInfoDto } from '$lib/api';
+import { describe, expect, it, vi } from 'vitest';
+import type { MfidePlayer, MfideTopEntry, PlayerInfoDto } from '$lib/api';
 import {
 	DEFAULT_RATING,
 	activeRating,
-	fromFideActivePlayer,
-	fromFidePlayerInfo,
-	fromFideSearchHit,
+	fromFidePlayer,
 	fromSsfPlayer,
 	resolveKFactor,
 	selectedRating,
+	topListLoader,
 	type LookedUpPlayer,
 	type PlayerSelection
 } from './calculator';
@@ -123,47 +122,71 @@ describe('mapping lookups', () => {
 		});
 	});
 
-	it('reads a FIDE profile from its latest history period', () => {
-		const info = {
+	it('reads a FIDE player with every rating, FIDE’s K for each, and the birth year', () => {
+		const player = {
 			name: 'Carlsen, Magnus',
-			federation: 'Norway',
-			fide_title: 'Grandmaster',
-			birth_year: 1990,
-			history: [
-				{ classical_rating: 2830, rapid_rating: 2820, blitz_rating: 2880 },
-				{ classical_rating: 2840, rapid_rating: 2830, blitz_rating: 2890 }
-			]
-		} as FidePlayerInfo;
-		expect(fromFidePlayerInfo(info)).toEqual({
+			country: 'NOR',
+			title: 'GM',
+			womenTitle: '',
+			birthYear: 1990,
+			standard: { rating: 2830, games: 0, k: 10, active: true },
+			rapid: { rating: 2820, games: 9, k: 10, active: true },
+			blitz: { rating: 2880, games: 21, k: 10, active: true }
+		} as MfidePlayer;
+		expect(fromFidePlayer(player)).toEqual({
 			name: 'GM Carlsen, Magnus (NOR)',
 			ratings: { standard: 2830, rapid: 2820, blitz: 2880 },
-			kFactors: null,
+			kFactors: { standard: 10, rapid: 10, blitz: 10 },
 			birthYear: 1990
 		});
 	});
 
-	it('reads a FIDE profile without history as unrated', () => {
-		const info = { name: 'Nobody', federation: '', fide_title: 'None' } as FidePlayerInfo;
-		expect(fromFidePlayerInfo(info)).toMatchObject({
+	it('reads an unrated type as 0, so the default rating and estimated K apply', () => {
+		const player = {
 			name: 'Nobody',
-			ratings: { standard: 0, rapid: 0, blitz: 0 },
-			birthYear: null
+			country: '',
+			title: '',
+			womenTitle: '',
+			birthYear: null,
+			standard: { rating: 1600, games: 5, k: 40, active: true },
+			rapid: null,
+			blitz: null
+		} as MfidePlayer;
+		const looked = fromFidePlayer(player);
+		expect(looked.ratings).toEqual({ standard: 1600, rapid: 0, blitz: 0 });
+		expect(activeRating(looked, 'blitz')).toMatchObject({
+			rating: DEFAULT_RATING,
+			usingDefault: true,
+			profileKFactor: null
 		});
 	});
+});
 
-	it('reads a search hit as classical-only, with whichever title it carries', () => {
-		const hit = { name: 'Hou, Yifan', w_title: 'WGM', rating: 2600 } as FidePlayer;
-		expect(fromFideSearchHit(hit)).toMatchObject({
-			name: 'WGM Hou, Yifan',
-			ratings: { standard: 2600, rapid: 0, blitz: 0 }
-		});
+describe('topListLoader', () => {
+	const row = { fideId: 1, rank: 1 } as MfideTopEntry;
+
+	it('fetches each list and type once', async () => {
+		const fetchTop = vi.fn().mockResolvedValue({ status: 200, data: [row] });
+		const load = topListLoader(fetchTop);
+		await Promise.all([load('open', 'standard'), load('open', 'standard')]);
+		expect(await load('open', 'standard')).toEqual([row]);
+		await load('women', 'standard');
+		await load('open', 'blitz');
+		expect(fetchTop.mock.calls).toEqual([
+			['open', 'standard'],
+			['women', 'standard'],
+			['open', 'blitz']
+		]);
 	});
 
-	it('reads a top-list row, whose rating is a string', () => {
-		const row = { name: 'Carlsen, Magnus', country: 'NOR', rating: '2830' } as FideActivePlayer;
-		expect(fromFideActivePlayer(row)).toMatchObject({
-			name: 'Carlsen, Magnus (NOR)',
-			ratings: { standard: 2830, rapid: 0, blitz: 0 }
-		});
+	it('yields an empty list on failure, and fetches again next time', async () => {
+		const fetchTop = vi
+			.fn()
+			.mockResolvedValueOnce({ status: 0 })
+			.mockResolvedValueOnce({ status: 200, data: [row] });
+		const load = topListLoader(fetchTop);
+		expect(await load('girls', 'rapid')).toEqual([]);
+		expect(await load('girls', 'rapid')).toEqual([row]);
+		expect(fetchTop).toHaveBeenCalledTimes(2);
 	});
 });

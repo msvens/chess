@@ -1,6 +1,6 @@
 // @vitest-environment node
 /**
- * Live contract tests against the SSF and ChessTools APIs.
+ * Live contract tests against the SSF API and the FIDE path (mfide behind nginx).
  *
  * Scope is deliberately narrow: only the upstream behaviours that exist as
  * assumptions in OUR proxy configuration (`vite.config.ts` in dev, nginx in prod).
@@ -8,9 +8,8 @@
  * the "everything 404s" direction — and a scheduled run tells us before a user does.
  *
  * Endpoint coverage and DTO shapes are NOT tested here. @msvens/schack-se-sdk owns
- * that and does it thoroughly (fide.integration.test.ts plus eight SSF suites);
- * duplicating it would just mean maintaining the same assertions twice and
- * inheriting ChessTools' flakiness in two repos.
+ * that and does it thoroughly (mfide.integration.test.ts plus eight SSF suites);
+ * duplicating it would just mean maintaining the same assertions twice.
  *
  * What remains is what the SDK has no reason to check: that a trailing slash still
  * changes the outcome (it only matters because we rewrite paths), and that the CORS
@@ -20,7 +19,7 @@
  * .github/workflows/integration.yml), so a flaky upstream cannot block a merge.
  */
 import { describe, expect, it } from 'vitest';
-import { CHESSTOOLS_BASE, SSF_BASE, fideUnreachable, ssfUnreachable } from './helpers/liveProbe';
+import { FIDE_BASE, SSF_BASE, fideUnreachable, ssfUnreachable } from './helpers/liveProbe';
 
 describe.skipIf(await ssfUnreachable())('SSF upstream contract', () => {
 	// The rule the entire proxy design rests on. Both proxies use prefix
@@ -60,11 +59,19 @@ describe.skipIf(await ssfUnreachable())('SSF upstream contract', () => {
 	});
 });
 
-describe.skipIf(await fideUnreachable())('ChessTools upstream contract', () => {
-	// ChessTools is trailing-slash sensitive too, in the opposite direction from
-	// most SSF endpoints: this one REQUIRES the slash. Same lesson for the proxy.
-	it('requires the trailing slash on /fide/top_active/', async () => {
-		const withoutSlash = await fetch(`${CHESSTOOLS_BASE}/fide/top_active?limit=1`);
-		expect(withoutSlash.status).toBe(404);
+describe.skipIf(await fideUnreachable())('FIDE (mfide via chess.msvens.com) contract', () => {
+	// nginx adds the API key, so the endpoints the app calls answer without one.
+	it.each(['/v1/players/1503014', '/v1/players/search?q=carlsen', '/v1/top?limit=1'])(
+		'GET %s answers without a key',
+		async (path) => {
+			const res = await fetch(`${FIDE_BASE}${path}`);
+			expect(res.status).toBe(200);
+		}
+	);
+
+	// Only the endpoints the app uses pass; the rest of mfide stays behind a key.
+	it('does not expose the rest of mfide', async () => {
+		const res = await fetch(`${FIDE_BASE}/v1/key`);
+		expect(res.status).toBe(404);
 	});
 });

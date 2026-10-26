@@ -97,8 +97,9 @@
 		</ul>
 
 		<p class="mt-4">
-			Data kommer från Svenska Schackförbundets API på schack.se, och FIDE-ratingen från
-			<Link href="https://chesstools.org" external>ChessTools</Link>.
+			Data kommer från Svenska Schackförbundets API på schack.se, och FIDE-ratingen från FIDE:s
+			officiella ratinglistor via
+			<Link href="https://github.com/msvens/mfide" external>mfide</Link>.
 		</p>
 	</div>
 
