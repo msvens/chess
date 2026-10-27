@@ -26,7 +26,10 @@
 		error?: string;
 		onRowClick?: (result: TournamentEndResultDto) => void;
 		density?: TableDensity;
+		mobileDensity?: TableDensity;
 		densityThresholds?: DensityThresholds;
+		/** Off in a group that isn't Elo-rated, where a rating means nothing. */
+		showRating?: boolean;
 		/**
 		 * Contender id -> 1-based rank within the currently-shown subset. When the
 		 * results have been filtered (e.g. to women only), the placement column
@@ -44,7 +47,9 @@
 		error,
 		onRowClick,
 		density,
+		mobileDensity,
 		densityThresholds,
+		showRating = true,
 		subsetRank
 	}: FinalResultsTableProps = $props();
 
@@ -54,7 +59,7 @@
 	const idOf = (row: TournamentEndResultDto) => row.playerInfo?.id ?? row.contenderId;
 	const rankOf = (row: TournamentEndResultDto) => subsetRank?.get(idOf(row));
 
-	let columns = $derived<TableColumn<TournamentEndResultDto>[]>([
+	let allColumns = $derived<TableColumn<TournamentEndResultDto>[]>([
 		{
 			id: 'pos',
 			header: labels.pos,
@@ -163,6 +168,9 @@
 			sortValue: (row) => Number(row.secPoints) || 0
 		}
 	]);
+	let columns = $derived(
+		showRating ? allColumns : allColumns.filter((column) => column.id !== 'ranking')
+	);
 </script>
 
 <Table
@@ -175,5 +183,6 @@
 	{onRowClick}
 	getRowKey={(row, index) => idOf(row) ?? index}
 	{density}
+	{mobileDensity}
 	{densityThresholds}
 />

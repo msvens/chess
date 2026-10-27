@@ -500,6 +500,11 @@ export interface Translations {
 				/** Toggle label; the group's number of women is appended in the UI. */
 				toggleLabel: string;
 			};
+			/** Badge on a group whose games aren't rated, where Elo is left out. */
+			unratedGroup: {
+				badge: string;
+				tooltip: string;
+			};
 			/** Side prizes attached to a group (rating bands, age classes, women). */
 			prizeCategories: {
 				ratingPrizes: string;
@@ -1292,6 +1297,10 @@ const translations: Record<Language, Translations> = {
 				womenFilter: {
 					toggleLabel: 'Women'
 				},
+				unratedGroup: {
+					badge: 'Not rated',
+					tooltip: 'Games in this group are not rated, so Elo is not shown.'
+				},
 				prizeCategories: {
 					ratingPrizes: 'Rating prizes',
 					agePrizes: 'Age prizes',
@@ -2071,6 +2080,10 @@ const translations: Record<Language, Translations> = {
 				},
 				womenFilter: {
 					toggleLabel: 'Damer'
+				},
+				unratedGroup: {
+					badge: 'Ej ratingberäknad',
+					tooltip: 'Partierna i den här gruppen ratingberäknas inte, så Elo visas inte.'
 				},
 				prizeCategories: {
 					ratingPrizes: 'Rankingpriser',

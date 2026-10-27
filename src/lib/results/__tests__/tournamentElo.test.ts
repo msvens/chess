@@ -339,6 +339,22 @@ describe('isEloGroup', () => {
 	it('is false for Schackfyran scoring, whatever the ranking', () => {
 		expect(isEloGroup(group(1, PointSystem.SCHACK4AN))).toBe(false);
 	});
+
+	// Rounds as SSF marks them; Skollags-SM 2026 (6649) ranks by rapid Elo (6)
+	// with every round unrated.
+	const withRounds = (rankingAlgorithm: number, rated: number[]) =>
+		({
+			...group(rankingAlgorithm),
+			tournamentRounds: rated.map((r, i) => ({ roundNumber: i + 1, rated: r }))
+		}) as unknown as TournamentClassGroupDto;
+
+	it('is false when every round is unrated, whatever the ranking algorithm', () => {
+		expect(isEloGroup(withRounds(6, [0, 0, 0]))).toBe(false);
+	});
+
+	it('is true when any round is rated', () => {
+		expect(isEloGroup(withRounds(5, [0, RoundRatedType.RAPID, 0]))).toBe(true);
+	});
 });
 
 describe('agreeing with the SDK’s performance list', () => {
