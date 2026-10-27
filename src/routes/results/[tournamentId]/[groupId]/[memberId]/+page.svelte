@@ -22,7 +22,8 @@
 	import PageLayout from '$lib/components/layout/PageLayout.svelte';
 	import Link from '$lib/components/ui/Link.svelte';
 	import Table from '$lib/components/ui/Table/Table.svelte';
-	import type { TableColumn } from '$lib/components/ui/Table/tableTypes';
+	import Badge from '$lib/components/ui/Badge.svelte';
+	import type { TableColumn, TableDensity } from '$lib/components/ui/Table/tableTypes';
 	import PlayerInfo from '$lib/components/player/PlayerInfo.svelte';
 	import EloRatingChart from '$lib/components/player/EloRatingChart/EloRatingChart.svelte';
 	import { formatPlayerName, formatRatingWithType, type PlayerInfoDto } from '$lib/api';
@@ -118,13 +119,21 @@
 	);
 
 	/**
+	 * A group whose games aren't rated (beginners' classes, school championships,
+	 * Schackfyran) shows no Elo at all — no ratings, Elo change or performance —
+	 * and gives the freed width to the larger mobile text. Assumed rated until
+	 * the group has loaded.
+	 */
+	let eloGroup = $derived(!results.group || isEloGroup(results.group));
+	let unratedDensity = $derived<TableDensity | undefined>(eloGroup ? undefined : 'dense');
+
+	/**
 	 * As in head-to-head: a performance from one rated game, marked with how few
 	 * it rests on below the tournament minimum. The Individual performance list
-	 * keeps the minimum and says so. Never in a group without Elo (Schackfyran,
-	 * say), where a performance means nothing.
+	 * keeps the minimum and says so.
 	 */
 	let performance = $derived(
-		results.group && isEloGroup(results.group)
+		results.group && eloGroup
 			? formatPerformanceWithCount(summary.performance, {
 					oneGame: elo.performanceOneGame,
 					games: elo.performanceGames
@@ -209,7 +218,7 @@
 	// On a phone the table is laid out `fixed` (see `mobileLayout`): the small
 	// columns get these widths and White and Black split the rest evenly. The
 	// result wraps there, since "1 - 0 w.o" or a postponed label won't fit.
-	let columns = $derived<TableColumn<PlayerMatch>[]>([
+	let allColumns = $derived<TableColumn<PlayerMatch>[]>([
 		{
 			id: 'round',
 			header: tr.roundByRound.round,
@@ -265,6 +274,10 @@
 			headerClassName: 'w-[4em] md:w-auto'
 		}
 	]);
+	const ELO_COLUMNS = new Set(['whiteElo', 'blackElo', 'eloChange']);
+	let columns = $derived(
+		eloGroup ? allColumns : allColumns.filter((column) => !ELO_COLUMNS.has(column.id))
+	);
 
 	// --- Side effects ---
 
@@ -342,12 +355,16 @@
 			<div class="mb-8">
 				<h2 class="mb-4 text-xl font-semibold text-gray-900 dark:text-gray-200">
 					{player ? formatPlayerName(player.firstName, player.lastName, player.elo?.title) : ''} - {pd.matches}
+					{#if !eloGroup}
+						<Badge tooltip={tr.unratedGroup.tooltip} class="ml-2">{tr.unratedGroup.badge}</Badge>
+					{/if}
 				</h2>
 
 				<Table
 					data={matches}
 					{columns}
 					mobileLayout="fixed"
+					mobileDensity={unratedDensity}
 					getRowKey={(row) => `${row.round}-${row.opponentId}`}
 					emptyMessage={pd.noMatchesFound}
 					loadingMessage={pd.loadingMatches}
@@ -364,28 +381,30 @@
 							</div>
 						</div>
 
-						<div class="space-y-2">
-							{#each summaryRows as row, index (row.key)}
-								<div class="grid grid-cols-2 gap-3">
-									<div>
-										<div class="text-xs text-gray-600 dark:text-gray-400">{row.changeLabel}</div>
-										<div class="text-sm font-medium text-gray-900 dark:text-gray-200">
-											{row.change}
-										</div>
-									</div>
-									{#if index === 0}
+						{#if eloGroup}
+							<div class="space-y-2">
+								{#each summaryRows as row, index (row.key)}
+									<div class="grid grid-cols-2 gap-3">
 										<div>
-											<div class="text-xs text-gray-600 dark:text-gray-400">
-												{elo.performanceRating}
-											</div>
+											<div class="text-xs text-gray-600 dark:text-gray-400">{row.changeLabel}</div>
 											<div class="text-sm font-medium text-gray-900 dark:text-gray-200">
-												{performance}
+												{row.change}
 											</div>
 										</div>
-									{/if}
-								</div>
-							{/each}
-						</div>
+										{#if index === 0}
+											<div>
+												<div class="text-xs text-gray-600 dark:text-gray-400">
+													{elo.performanceRating}
+												</div>
+												<div class="text-sm font-medium text-gray-900 dark:text-gray-200">
+													{performance}
+												</div>
+											</div>
+										{/if}
+									</div>
+								{/each}
+							</div>
+						{/if}
 					</div>
 				{/if}
 			</div>

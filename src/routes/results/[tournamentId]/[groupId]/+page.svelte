@@ -21,7 +21,7 @@
 	import SelectableList from '$lib/components/ui/SelectableList.svelte';
 	import Table from '$lib/components/ui/Table/Table.svelte';
 	import Toggle from '$lib/components/ui/Toggle.svelte';
-	import type { TableColumn } from '$lib/components/ui/Table/tableTypes';
+	import type { TableColumn, TableDensity } from '$lib/components/ui/Table/tableTypes';
 	import type { SelectableListItem } from '$lib/components/ui/listItems';
 	import ExternalResultsNotice from '$lib/components/results/ExternalResultsNotice.svelte';
 	import FinalResultsTable from '$lib/components/results/FinalResultsTable.svelte';
@@ -47,6 +47,7 @@
 	import { teamNameOrId } from '$lib/results/teamNames';
 	import { hasGroupEnded } from '$lib/results/groupDates';
 	import { formatIndividualRowResult, getResultLabels } from '$lib/results/formatResult';
+	import { isEloGroup } from '$lib/results/tournamentElo';
 	import {
 		PRIZE_TYPE_TITLE_KEY,
 		availablePrizeTypes,
@@ -347,10 +348,18 @@
 		if (enabled && sortedRounds.length > 0) selectedRound = sortedRounds[0];
 	}
 
+	/**
+	 * A group whose games aren't rated (beginners' classes, school championships)
+	 * shows no Elo at all: the figures mean nothing there and the columns cost a
+	 * phone most of its width. The space goes to the larger mobile text instead.
+	 */
+	let eloGroup = $derived(!results.group || isEloGroup(results.group));
+	let unratedDensity = $derived<TableDensity | undefined>(eloGroup ? undefined : 'dense');
+
 	// On a phone the table is laid out `fixed` (see `mobileLayout`): the small
 	// columns get these widths and White and Black split the rest evenly. The
 	// result wraps there, since "1 - 0 w.o" or a postponed label won't fit.
-	let roundColumns = $derived<TableColumn<TournamentRoundResultDto>[]>([
+	let allRoundColumns = $derived<TableColumn<TournamentRoundResultDto>[]>([
 		{
 			id: 'table',
 			header: tr.roundByRound.table,
@@ -398,6 +407,11 @@
 			// matches what the live site actually renders.
 		}
 	]);
+	let roundColumns = $derived(
+		eloGroup
+			? allRoundColumns
+			: allRoundColumns.filter((column) => column.id !== 'whiteElo' && column.id !== 'blackElo')
+	);
 
 	/**
 	 * The player's rating as it stood at the time of this game, of the type the
@@ -594,6 +608,11 @@
 												class="ml-2">{playbackStatus.label}</Badge
 											>
 										{/if}
+										{#if !eloGroup}
+											<Badge tooltip={tr.unratedGroup.tooltip} class="ml-2">
+												{tr.unratedGroup.badge}
+											</Badge>
+										{/if}
 										{#if selectedPrize && prizeIds}
 											<!-- Name the prize, so a shortened table is never read as
 											     the full standings. -->
@@ -723,6 +742,8 @@
 											rows={displayedSnapshotRows ?? activeSnapshot?.rows ?? []}
 											playerMap={results.playerMap}
 											rankingAlgorithm={results.rankingAlgorithm}
+											showRating={eloGroup}
+											mobileDensity={unratedDensity}
 											onRowClick={(row) =>
 												goto(`/results/${tournamentId}/${groupId}/${row.contenderId}`)}
 											subsetRank={displayedSnapshotRank}
@@ -750,6 +771,8 @@
 									<RegistrationTable
 										results={results.individualResults}
 										rankingAlgorithm={results.rankingAlgorithm}
+										showRating={eloGroup}
+										mobileDensity={unratedDensity}
 										onRowClick={(row) =>
 											row.playerInfo?.id &&
 											goto(`/results/${tournamentId}/${groupId}/${row.playerInfo.id}`)}
@@ -758,6 +781,8 @@
 									<FinalResultsTable
 										results={displayedResults}
 										rankingAlgorithm={results.rankingAlgorithm}
+										showRating={eloGroup}
+										mobileDensity={unratedDensity}
 										onRowClick={(row) =>
 											row.playerInfo?.id &&
 											goto(`/results/${tournamentId}/${groupId}/${row.playerInfo.id}`)}
@@ -842,6 +867,7 @@
 											data={roundRowsShown}
 											columns={roundColumns}
 											mobileLayout="fixed"
+											mobileDensity={unratedDensity}
 											getRowKey={(row, index) => `${row.homeId}-${row.awayId}-${index}`}
 											emptyMessage={filteredRoundRows
 												? tr.roundByRound.noFilteredResults

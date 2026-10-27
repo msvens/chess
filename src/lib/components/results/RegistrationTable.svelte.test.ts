@@ -60,4 +60,16 @@ describe('RegistrationTable', () => {
 		});
 		expect(screen.queryByText('1000')).not.toBeInTheDocument();
 	});
+
+	it('leaves the rating column out of a group that isn’t Elo-rated', () => {
+		render(RegistrationTable, {
+			props: {
+				results: [entry(1, 'Someone', 1500)],
+				rankingAlgorithm: RatingAlgorithm.STANDARD_ELO,
+				showRating: false
+			}
+		});
+		expect(screen.queryByRole('columnheader', { name: 'Rating' })).toBeNull();
+		expect(screen.getByRole('columnheader', { name: 'Namn' })).toBeInTheDocument();
+	});
 });

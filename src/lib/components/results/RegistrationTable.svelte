@@ -33,7 +33,10 @@
 		error?: string;
 		onRowClick?: (result: TournamentEndResultDto) => void;
 		density?: TableDensity;
+		mobileDensity?: TableDensity;
 		densityThresholds?: DensityThresholds;
+		/** Off in a group that isn't Elo-rated, where a rating means nothing. */
+		showRating?: boolean;
 	}
 
 	let {
@@ -43,7 +46,9 @@
 		error,
 		onRowClick,
 		density,
-		densityThresholds
+		mobileDensity,
+		densityThresholds,
+		showRating = true
 	}: RegistrationTableProps = $props();
 
 	let t = $derived(getTranslation(language.current).pages.tournamentResults);
@@ -58,7 +63,7 @@
 	// which also keeps `onRowClick` handing back the untouched DTO.
 	let order = $derived(new Map(seeded.map((row, i) => [idOf(row), i + 1])));
 
-	let columns = $derived<TableColumn<TournamentEndResultDto>[]>([
+	let allColumns = $derived<TableColumn<TournamentEndResultDto>[]>([
 		{
 			id: 'pos',
 			header: labels.pos,
@@ -99,6 +104,9 @@
 			noWrap: true
 		}
 	]);
+	let columns = $derived(
+		showRating ? allColumns : allColumns.filter((column) => column.id !== 'rating')
+	);
 </script>
 
 <Table
@@ -111,5 +119,6 @@
 	{onRowClick}
 	getRowKey={(row, index) => idOf(row) ?? index}
 	{density}
+	{mobileDensity}
 	{densityThresholds}
 />

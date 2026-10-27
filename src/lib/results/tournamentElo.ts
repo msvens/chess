@@ -279,13 +279,20 @@ export function formatPerformance(
 }
 
 /**
- * Whether a group's games can give a performance at all: rated, and not
- * Schackfyran scoring. The SDK's `hasIndividualPerformance` rule, for one group.
+ * Whether a group is Elo-rated at all: decides whether its pages show ratings,
+ * Elo changes and a performance. Not Schackfyran scoring, and rated by its rounds
+ * or, without round data, by its ranking algorithm — the SDK's
+ * `hasIndividualPerformance` rule, for one group, with one exception: rounds that
+ * are all unrated win over the algorithm. Skollags-SM ranks by rapid Elo but
+ * rates nothing, and beginners' classes are marked the same way.
  */
 export function isEloGroup(group: TournamentClassGroupDto): boolean {
-	return (
-		group.pointSystem !== PointSystem.SCHACK4AN && getGroupTimeControl(group).primary !== 'unknown'
-	);
+	if (group.pointSystem === PointSystem.SCHACK4AN) return false;
+	const rounds = group.tournamentRounds ?? [];
+	if (rounds.length > 0 && rounds.every((round) => round.rated === RoundRatedType.UNRATED)) {
+		return false;
+	}
+	return getGroupTimeControl(group).primary !== 'unknown';
 }
 
 /**

@@ -31,7 +31,10 @@
 		rankingAlgorithm?: number | null;
 		onRowClick?: (row: RoundStandingRow) => void;
 		density?: TableDensity;
+		mobileDensity?: TableDensity;
 		densityThresholds?: DensityThresholds;
+		/** Off in a group that isn't Elo-rated, where a rating means nothing. */
+		showRating?: boolean;
 		/**
 		 * Contender id -> rank within the shown subset, rendered "1 (6)". Snapshot
 		 * ranks legitimately tie, so the supplied map uses standard competition
@@ -46,7 +49,9 @@
 		rankingAlgorithm,
 		onRowClick,
 		density,
+		mobileDensity,
 		densityThresholds,
+		showRating = true,
 		subsetRank
 	}: RoundStandingsTableProps = $props();
 
@@ -57,7 +62,7 @@
 	const ratingOf = (row: RoundStandingRow) =>
 		getPlayerRatingByAlgorithm(playerOf(row)?.elo, rankingAlgorithm);
 
-	let columns = $derived<TableColumn<RoundStandingRow>[]>([
+	let allColumns = $derived<TableColumn<RoundStandingRow>[]>([
 		{
 			id: 'pos',
 			header: labels.pos,
@@ -146,6 +151,9 @@
 			sortValue: (row) => row.qualityPoints ?? 0
 		}
 	]);
+	let columns = $derived(
+		showRating ? allColumns : allColumns.filter((column) => column.id !== 'ranking')
+	);
 </script>
 
 <Table
@@ -156,5 +164,6 @@
 	{onRowClick}
 	getRowKey={(row, index) => row.contenderId ?? index}
 	{density}
+	{mobileDensity}
 	{densityThresholds}
 />
