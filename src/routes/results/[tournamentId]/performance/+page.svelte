@@ -6,6 +6,7 @@
 	 * ratings.
 	 */
 	import { page } from '$app/state';
+	import NotFound from '$lib/components/layout/NotFound.svelte';
 	import PageLayout from '$lib/components/layout/PageLayout.svelte';
 	import Link from '$lib/components/ui/Link.svelte';
 	import IndividualPerformanceTable from '$lib/components/results/IndividualPerformanceTable.svelte';
@@ -15,7 +16,8 @@
 
 	const list = new IndividualPerformanceState();
 
-	let tr = $derived(getTranslation(language.current).pages.tournamentResults);
+	let t = $derived(getTranslation(language.current));
+	let tr = $derived(t.pages.tournamentResults);
 	let ip = $derived(tr.individualPerformance);
 
 	let tournamentId = $derived(Number.parseInt(page.params.tournamentId ?? '', 10));
@@ -27,8 +29,8 @@
 </script>
 
 <PageLayout fullScreen maxWidth="5xl">
-	{#if !validId}
-		<div class="text-center text-lg text-gray-600 dark:text-gray-400">{tr.errors.invalidIds}</div>
+	{#if !validId || list.notFound}
+		<NotFound title={t.notFound.tournament} />
 	{:else if list.failed}
 		<div class="text-center text-lg text-gray-600 dark:text-gray-400">
 			{tr.errors.tournamentFetchFailed}

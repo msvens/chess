@@ -18,7 +18,7 @@ import {
 	type PlayerInfoDto,
 	type TournamentDto
 } from '$lib/api';
-import { loadPrintData } from '$lib/print/printData';
+import { loadPrintData, TournamentNotFoundError } from '$lib/print/printData';
 import {
 	namesToFetch,
 	performanceInputs,
@@ -32,6 +32,8 @@ export class IndividualPerformanceState {
 	loading = $state(true);
 	/** Set when the tournament itself could not be loaded. */
 	failed = $state(false);
+	/** Set instead of `failed` when the tournament doesn't exist. */
+	notFound = $state(false);
 	tournament = $state.raw<TournamentDto | null>(null);
 	/** Historical ratings fetched so far, and how many are needed. */
 	fetched = $state(0);
@@ -84,6 +86,7 @@ export class IndividualPerformanceState {
 		const mine = ++this.#token;
 		this.loading = true;
 		this.failed = false;
+		this.notFound = false;
 		this.fetched = 0;
 		this.total = 0;
 
@@ -109,9 +112,10 @@ export class IndividualPerformanceState {
 					this.total = total;
 				}
 			);
-		} catch {
+		} catch (error) {
 			if (mine !== this.#token) return;
-			this.failed = true;
+			if (error instanceof TournamentNotFoundError) this.notFound = true;
+			else this.failed = true;
 		} finally {
 			if (mine === this.#token) this.loading = false;
 		}

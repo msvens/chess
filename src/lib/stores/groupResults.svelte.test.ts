@@ -87,11 +87,21 @@ beforeEach(() => {
 });
 
 describe('load', () => {
-	it('rejects non-numeric ids without calling the API', async () => {
+	it('reads non-numeric ids as not found, without calling the API', async () => {
 		const state = make();
 		await state.load(Number.NaN, 16642);
 		expect(getTournament).not.toHaveBeenCalled();
-		expect(state.error).toBeTruthy();
+		expect(state.notFound).toBe(true);
+		expect(state.error).toBeNull();
+		expect(state.loading).toBe(false);
+	});
+
+	it('reads SSF’s 404 as a tournament that doesn’t exist', async () => {
+		getTournament.mockResolvedValue({ status: 404, data: undefined });
+		const state = make();
+		await state.load(99999999, 1);
+		expect(state.notFound).toBe(true);
+		expect(state.error).toBeNull();
 		expect(state.loading).toBe(false);
 	});
 
@@ -113,6 +123,7 @@ describe('load', () => {
 		const state = make();
 		await state.load(5835, 16642);
 		expect(state.error).toBeTruthy();
+		expect(state.notFound).toBe(false);
 		expect(state.loading).toBe(false);
 	});
 });

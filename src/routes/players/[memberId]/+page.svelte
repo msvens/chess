@@ -12,6 +12,7 @@
 	 */
 	import { untrack } from 'svelte';
 	import { page } from '$app/state';
+	import NotFound from '$lib/components/layout/NotFound.svelte';
 	import PageLayout from '$lib/components/layout/PageLayout.svelte';
 	import PlayerInfo from '$lib/components/player/PlayerInfo.svelte';
 	import EloRatingChart from '$lib/components/player/EloRatingChart/EloRatingChart.svelte';
@@ -55,17 +56,13 @@
 
 <PageLayout maxWidth="4xl">
 	{#if profile.invalidId}
-		<div class="text-center">
-			<div class="text-lg text-gray-600 dark:text-gray-400">{pd.invalidMemberId}</div>
-		</div>
+		<NotFound title={pd.notFound} href="/players" linkLabel={t.notFound.toPlayers} />
 	{:else if profile.playerLoading}
 		<div class="text-center">
 			<div class="text-lg text-gray-600 dark:text-gray-400">{pd.loading}</div>
 		</div>
 	{:else if !profile.player}
-		<div class="text-center">
-			<div class="text-lg text-gray-600 dark:text-gray-400">{pd.notFound}</div>
-		</div>
+		<NotFound title={pd.notFound} href="/players" linkLabel={t.notFound.toPlayers} />
 	{:else}
 		<div class="mb-6">
 			<PlayerInfo player={profile.player} />

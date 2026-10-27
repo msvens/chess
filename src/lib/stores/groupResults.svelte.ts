@@ -51,6 +51,12 @@ export class GroupResultsState {
 	roundsMap = $state<SvelteMap<number, RoundDto>>(new SvelteMap());
 	loading = $state(true);
 	error = $state<string | null>(null);
+	/**
+	 * The tournament doesn't exist: SSF answered 404, or the ids in the URL aren't
+	 * numbers. Kept apart from `error`, which is a failure to load something that
+	 * may well exist.
+	 */
+	notFound = $state(false);
 	/** Epoch ms of the last successful results fetch; the UI formats it. */
 	lastUpdated = $state<number | null>(null);
 
@@ -123,7 +129,8 @@ export class GroupResultsState {
 	async load(tournamentId: number, groupId: number): Promise<void> {
 		const t = getTranslation(language.current).pages.tournamentResults;
 		if (!Number.isFinite(tournamentId) || !Number.isFinite(groupId)) {
-			this.error = t.errors.invalidIds;
+			this.notFound = true;
+			this.error = null;
 			this.loading = false;
 			return;
 		}
@@ -131,11 +138,16 @@ export class GroupResultsState {
 		const mine = ++this.#token;
 		this.loading = true;
 		this.error = null;
+		this.notFound = false;
 
 		try {
 			const response = await this.#tournaments.getTournament(tournamentId);
 			if (mine !== this.#token) return;
 
+			if (response.status === 404) {
+				this.notFound = true;
+				return;
+			}
 			if (response.status !== 200 || !response.data) {
 				this.error = t.errors.tournamentFetchFailed;
 				return;

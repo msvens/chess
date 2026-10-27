@@ -1,6 +1,7 @@
 <script lang="ts">
 	/** District detail: contact info, a district switcher, and its rating list. */
 	import { page } from '$app/state';
+	import NotFound from '$lib/components/layout/NotFound.svelte';
 	import PageTitle from '$lib/components/layout/PageTitle.svelte';
 	import DistrictSelector from '$lib/components/organizations/DistrictSelector.svelte';
 	import ClubRatingSection from '$lib/components/organizations/ClubRatingSection.svelte';
@@ -25,8 +26,12 @@
 
 {#if organizations.loading}
 	<div class="text-center text-gray-600 dark:text-gray-400">{org.loading}</div>
-{:else if Number.isNaN(districtId)}
-	<div class="text-center text-gray-600 dark:text-gray-400">{org.districts.selectDistrict}</div>
+{:else if !district}
+	<NotFound
+		title={org.districtNotFound}
+		href="/organizations"
+		linkLabel={t.notFound.toOrganizations}
+	/>
 {:else}
 	<div class="space-y-6">
 		<PageTitle title={district?.name ?? org.districts.title} subtitle={org.districts.subtitle} />

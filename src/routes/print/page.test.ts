@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { TournamentDto } from '$lib/api';
-import type { PrintData } from '$lib/print/printData';
+import { TournamentNotFoundError, type PrintData } from '$lib/print/printData';
 import { ORGANIZATIONS_STATE_KEY, OrganizationsState } from '$lib/stores/organizations.svelte';
 import { load } from './[tournamentId]/+page';
 import GroupPrintPage from './[tournamentId]/[groupId]/+page.svelte';
@@ -194,6 +194,22 @@ describe('/print/[tournamentId]/[groupId]', () => {
 		params = { tournamentId: 'abc', groupId: '100' };
 		renderPage();
 		expect(loadPrintData).not.toHaveBeenCalled();
-		expect(await screen.findByText('Fel vid laddning av turnering')).toBeInTheDocument();
+		expect(await screen.findByText('Turneringen hittades inte')).toBeInTheDocument();
+	});
+
+	it('says the tournament doesn’t exist, rather than that loading failed', async () => {
+		loadPrintData.mockRejectedValue(new TournamentNotFoundError(5835));
+		renderPage();
+		expect(await screen.findByText('Turneringen hittades inte')).toBeInTheDocument();
+	});
+
+	it('says the group isn’t in the tournament instead of a blank page', async () => {
+		params = { tournamentId: '5835', groupId: '99999' };
+		renderPage();
+		expect(await screen.findByText('Gruppen finns inte i den här turneringen')).toBeInTheDocument();
+		expect(screen.getByRole('link', { name: 'Till turneringen' })).toHaveAttribute(
+			'href',
+			'/results/5835'
+		);
 	});
 });

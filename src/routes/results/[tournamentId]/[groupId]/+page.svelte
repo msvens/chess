@@ -15,6 +15,7 @@
 	import { untrack } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
+	import NotFound from '$lib/components/layout/NotFound.svelte';
 	import PageLayout from '$lib/components/layout/PageLayout.svelte';
 	import Badge, { type BadgeColor } from '$lib/components/ui/Badge.svelte';
 	import Link from '$lib/components/ui/Link.svelte';
@@ -86,6 +87,7 @@
 
 	let t = $derived(getTranslation(language.current));
 	let tr = $derived(t.pages.tournamentResults);
+	let nf = $derived(t.notFound);
 	let resultLabels = $derived(getResultLabels(t));
 	let locale = $derived(localeOf(language.current));
 
@@ -456,7 +458,9 @@
 {/snippet}
 
 <PageLayout fullScreen maxWidth="5xl">
-	{#if results.error}
+	{#if results.notFound}
+		<NotFound title={nf.tournament} />
+	{:else if results.error}
 		<div class="text-center">
 			<div
 				class="rounded-lg border border-gray-200 bg-white p-8 dark:border-gray-700 dark:bg-dark-bg"
@@ -565,11 +569,13 @@
 				</div>
 
 				{#if !results.group}
-					<div
-						class="rounded-lg border border-gray-200 bg-white p-6 text-center dark:border-gray-700 dark:bg-dark-bg"
-					>
-						<p class="text-gray-600 dark:text-gray-400">{tr.selectGroup}</p>
-					</div>
+					<!-- The URL names a group this tournament doesn't have; the
+					     picker above still lists the real ones. -->
+					<NotFound
+						title={nf.group}
+						href={`/results/${tournamentId}`}
+						linkLabel={nf.toTournament}
+					/>
 				{:else if results.isIndividuallyPairedTeam}
 					<!-- Schackfyran and friends: upstream has no team-standings endpoint
 					     for this format, so nothing was fetched and the notice is the

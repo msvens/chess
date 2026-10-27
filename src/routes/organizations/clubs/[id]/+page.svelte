@@ -1,6 +1,7 @@
 <script lang="ts">
 	/** Club detail: contact info, parent district, and the club's rating list. */
 	import { page } from '$app/state';
+	import NotFound from '$lib/components/layout/NotFound.svelte';
 	import PageLayout from '$lib/components/layout/PageLayout.svelte';
 	import Link from '$lib/components/ui/Link.svelte';
 	import TextDisplay from '$lib/components/ui/TextDisplay.svelte';
@@ -34,7 +35,11 @@
 	{#if organizations.loading}
 		<div class="text-center text-gray-600 dark:text-gray-400">{org.loading}</div>
 	{:else if !club}
-		<div class="text-center text-gray-600 dark:text-gray-400">{org.clubNotFound}</div>
+		<NotFound
+			title={org.clubNotFound}
+			href="/organizations"
+			linkLabel={t.notFound.toOrganizations}
+		/>
 	{:else}
 		<div class="space-y-6">
 			<div>

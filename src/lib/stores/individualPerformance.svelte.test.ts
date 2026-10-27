@@ -8,7 +8,7 @@ import {
 	type TournamentDto,
 	type TournamentRoundResultDto
 } from '$lib/api';
-import type { PrintData, PrintGroupData } from '$lib/print/printData';
+import { TournamentNotFoundError, type PrintData, type PrintGroupData } from '$lib/print/printData';
 import { IndividualPerformanceState } from './individualPerformance.svelte';
 import { playerCache } from './playerCache.svelte';
 import { batchOver } from '../../test-utils/batch';
@@ -222,6 +222,16 @@ describe('IndividualPerformanceState', () => {
 
 		expect(state.failed).toBe(true);
 		expect(state.loading).toBe(false);
+	});
+
+	it('marks a tournament that doesn’t exist as not found, not failed', async () => {
+		loadPrintData.mockRejectedValue(new TournamentNotFoundError(1));
+
+		const state = new IndividualPerformanceState();
+		await state.load(1);
+
+		expect(state.notFound).toBe(true);
+		expect(state.failed).toBe(false);
 	});
 
 	it('lets a newer load win over one still in flight', async () => {
