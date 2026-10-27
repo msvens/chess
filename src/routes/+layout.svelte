@@ -13,9 +13,13 @@
 	// The layout owns the side effects; the stores themselves stay effect-free.
 	const organizations = setOrganizationsState();
 
+	// Before any page renders, not on mount: a child page's mount code runs before
+	// this layout's `onMount`, so a page that translated while loading got the
+	// default language instead of the visitor's saved one.
+	initLanguage();
+
 	onMount(() => {
 		initTheme();
-		initLanguage();
 		organizations.load();
 	});
 
