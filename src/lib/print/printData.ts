@@ -154,15 +154,24 @@ function targetsFor(tournament: TournamentDto, groupId?: number): Target[] {
 	);
 }
 
+/** SSF has no tournament with this id (a 404), as opposed to failing to load one. */
+export class TournamentNotFoundError extends Error {
+	constructor(tournamentId: number) {
+		super(`No tournament ${tournamentId}`);
+		this.name = 'TournamentNotFoundError';
+	}
+}
+
 /**
  * Fetch and shape everything the sheets need. Omit `groupId` for every group.
  *
- * Throws only when the tournament itself cannot be loaded — a group whose
- * results fail degrades to empty rows, so one bad group does not lose the rest
- * of a print run.
+ * Throws only when the tournament itself cannot be loaded — a
+ * `TournamentNotFoundError` when it doesn't exist. A group whose results fail
+ * degrades to empty rows, so one bad group does not lose the rest of a print run.
  */
 export async function loadPrintData(tournamentId: number, groupId?: number): Promise<PrintData> {
 	const response = await new TournamentService().getTournament(tournamentId);
+	if (response.status === 404) throw new TournamentNotFoundError(tournamentId);
 	if (response.status !== 200 || !response.data) throw new Error('Failed to load tournament');
 	const tournament = response.data;
 

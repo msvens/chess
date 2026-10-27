@@ -180,6 +180,21 @@ export interface Translations {
 			resultCount: string;
 		};
 	};
+	/** A page or an ID that doesn't exist, and the error page. */
+	notFound: {
+		title: string;
+		message: string;
+		home: string;
+		/** The error page for anything but a 404. */
+		errorTitle: string;
+		errorMessage: string;
+		tournament: string;
+		group: string;
+		playerInGroup: string;
+		toTournament: string;
+		toOrganizations: string;
+		toPlayers: string;
+	};
 	pages: {
 		contact: {
 			title: string;
@@ -408,7 +423,6 @@ export interface Translations {
 			loadingMatches: string;
 			of: string;
 			/** The member id in the URL is not a number. */
-			invalidMemberId: string;
 		};
 		tournamentResults: {
 			loading: string;
@@ -431,7 +445,6 @@ export interface Translations {
 			/** The tournament resolved, but has no groups to show results for. */
 			noGroups: string;
 			errors: {
-				invalidIds: string;
 				tournamentFetchFailed: string;
 				resultsLoadFailed: string;
 			};
@@ -546,7 +559,6 @@ export interface Translations {
 				elo: string;
 				result: string;
 			};
-			selectGroup: string;
 			tournamentStatus: {
 				hasNotStarted: string;
 				groupStarts: string;
@@ -571,7 +583,6 @@ export interface Translations {
 			teamDetailPage: {
 				backToStandings: string;
 				/** The `{contenderId}-{teamNumber}` route segment could not be read. */
-				invalidTeamId: string;
 				/** The segment parsed, but no team in this group matches it. */
 				teamNotFound: string;
 				matchesPlayed: string;
@@ -984,6 +995,19 @@ const translations: Record<Language, Translations> = {
 				resultCount: '{shown} of {total}'
 			}
 		},
+		notFound: {
+			title: "We couldn't find the page",
+			message: "The page you're looking for doesn't exist or may have moved.",
+			home: 'Go to the home page',
+			errorTitle: 'Something went wrong',
+			errorMessage: 'Something went wrong showing this page. Try again, or go to the home page.',
+			tournament: 'Tournament not found',
+			group: 'This tournament has no such group',
+			playerInGroup: "This player isn't in this group",
+			toTournament: 'Go to the tournament',
+			toOrganizations: 'Go to organizations',
+			toPlayers: 'Search for players'
+		},
 		pages: {
 			contact: {
 				title: 'Feedback',
@@ -1209,8 +1233,7 @@ const translations: Record<Language, Translations> = {
 				total: 'Total',
 				noMatchesFound: 'No matches found',
 				loadingMatches: 'Loading matches...',
-				of: 'of',
-				invalidMemberId: 'Invalid player ID'
+				of: 'of'
 			},
 			tournamentResults: {
 				loading: 'Loading tournament results...',
@@ -1228,7 +1251,6 @@ const translations: Record<Language, Translations> = {
 				unknownPlayer: 'Unknown player',
 				noGroups: 'No groups found for this tournament',
 				errors: {
-					invalidIds: 'Invalid tournament or group',
 					tournamentFetchFailed: 'Could not load the tournament',
 					resultsLoadFailed: 'Could not load the results'
 				},
@@ -1339,7 +1361,6 @@ const translations: Record<Language, Translations> = {
 					elo: 'Elo',
 					result: 'Result'
 				},
-				selectGroup: 'Please select a group to view results',
 				tournamentStatus: {
 					hasNotStarted: 'Tournament has not started yet',
 					groupStarts: 'Group starts:',
@@ -1363,7 +1384,6 @@ const translations: Record<Language, Translations> = {
 				},
 				teamDetailPage: {
 					backToStandings: 'Back to standings',
-					invalidTeamId: 'Invalid team ID format',
 					teamNotFound: 'Team not found',
 					matchesPlayed: 'MP',
 					winDrawLoss: 'W-D-L',
@@ -1767,6 +1787,19 @@ const translations: Record<Language, Translations> = {
 				resultCount: '{shown} av {total}'
 			}
 		},
+		notFound: {
+			title: 'Vi kunde inte hitta sidan',
+			message: 'Sidan du letar efter finns inte, eller har flyttats.',
+			home: 'Till startsidan',
+			errorTitle: 'Något gick fel',
+			errorMessage: 'Något gick fel när sidan skulle visas. Försök igen, eller gå till startsidan.',
+			tournament: 'Turneringen hittades inte',
+			group: 'Gruppen finns inte i den här turneringen',
+			playerInGroup: 'Spelaren finns inte i den här gruppen',
+			toTournament: 'Till turneringen',
+			toOrganizations: 'Till organisationer',
+			toPlayers: 'Sök spelare'
+		},
 		pages: {
 			contact: {
 				title: 'Feedback',
@@ -1993,8 +2026,7 @@ const translations: Record<Language, Translations> = {
 				total: 'Totalt',
 				noMatchesFound: 'Inga partier hittades',
 				loadingMatches: 'Laddar partier...',
-				of: 'av',
-				invalidMemberId: 'Ogiltigt spelar-ID'
+				of: 'av'
 			},
 			tournamentResults: {
 				loading: 'Laddar turneringsresultat...',
@@ -2012,7 +2044,6 @@ const translations: Record<Language, Translations> = {
 				unknownPlayer: 'Okänd spelare',
 				noGroups: 'Inga grupper hittades för denna turnering',
 				errors: {
-					invalidIds: 'Ogiltig turnering eller grupp',
 					tournamentFetchFailed: 'Kunde inte hämta turneringen',
 					resultsLoadFailed: 'Kunde inte hämta resultaten'
 				},
@@ -2123,7 +2154,6 @@ const translations: Record<Language, Translations> = {
 					elo: 'Elo',
 					result: 'Resultat'
 				},
-				selectGroup: 'Vänligen välj en grupp för att se resultat',
 				tournamentStatus: {
 					hasNotStarted: 'Turneringen har inte startat än',
 					groupStarts: 'Grupp börjar:',
@@ -2147,7 +2177,6 @@ const translations: Record<Language, Translations> = {
 				},
 				teamDetailPage: {
 					backToStandings: 'Tillbaka till ställning',
-					invalidTeamId: 'Ogiltigt lag-ID',
 					teamNotFound: 'Laget hittades inte',
 					matchesPlayed: 'MP',
 					winDrawLoss: 'V-R-F',

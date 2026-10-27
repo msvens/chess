@@ -1,6 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { TournamentDto } from '$lib/api';
-import { buildGroupNav, firstGroupId, groupKindOf, loadPrintData } from './printData';
+import {
+	buildGroupNav,
+	firstGroupId,
+	groupKindOf,
+	loadPrintData,
+	TournamentNotFoundError
+} from './printData';
 
 const getTournament = vi.fn();
 const getTournamentResults = vi.fn();
@@ -142,8 +148,13 @@ describe('loadPrintData', () => {
 	});
 
 	it('throws when the tournament itself cannot be loaded', async () => {
-		getTournament.mockResolvedValue({ status: 404 });
+		getTournament.mockResolvedValue({ status: 500 });
 		await expect(loadPrintData(5835, 100)).rejects.toThrow();
+	});
+
+	it('says so when the tournament doesn’t exist', async () => {
+		getTournament.mockResolvedValue({ status: 404 });
+		await expect(loadPrintData(5835, 100)).rejects.toBeInstanceOf(TournamentNotFoundError);
 	});
 
 	it('fetches just the group asked for', async () => {

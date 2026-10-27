@@ -10,32 +10,39 @@
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
+	import NotFound from '$lib/components/layout/NotFound.svelte';
 	import PageLayout from '$lib/components/layout/PageLayout.svelte';
 	import { TournamentService } from '$lib/api';
 	import { tournamentCache } from '$lib/stores/tournamentCache.svelte';
 	import { language } from '$lib/stores/language.svelte';
 	import { getTranslation } from '$lib/translations';
 
-	let error = $state<string | null>(null);
+	// Which failure, translated when shown, so it follows the visitor's language.
+	let failure = $state<'notFound' | 'fetchFailed' | 'noGroups' | null>(null);
 
-	let t = $derived(getTranslation(language.current).pages.tournamentResults);
+	let tAll = $derived(getTranslation(language.current));
+	let t = $derived(tAll.pages.tournamentResults);
 
 	onMount(async () => {
 		const tournamentId = Number.parseInt(page.params.tournamentId ?? '', 10);
 		if (!Number.isFinite(tournamentId)) {
-			error = t.errors.invalidIds;
+			failure = 'notFound';
 			return;
 		}
 
 		const response = await new TournamentService().getTournament(tournamentId);
+		if (response.status === 404) {
+			failure = 'notFound';
+			return;
+		}
 		if (response.status !== 200 || !response.data) {
-			error = t.errors.tournamentFetchFailed;
+			failure = 'fetchFailed';
 			return;
 		}
 
 		const firstGroup = response.data.rootClasses?.[0]?.groups?.[0];
 		if (!firstGroup) {
-			error = t.noGroups;
+			failure = 'noGroups';
 			return;
 		}
 
@@ -46,13 +53,17 @@
 </script>
 
 <PageLayout fullScreen>
-	{#if error}
+	{#if failure === 'notFound'}
+		<NotFound title={tAll.notFound.tournament} />
+	{:else if failure}
 		<div class="text-center">
 			<div
 				class="rounded-lg border border-gray-200 bg-white p-8 dark:border-gray-700 dark:bg-dark-bg"
 			>
 				<h1 class="mb-4 text-2xl font-semibold text-gray-900 dark:text-gray-200">{t.error}</h1>
-				<p class="mb-6 text-lg text-gray-600 dark:text-gray-400">{error}</p>
+				<p class="mb-6 text-lg text-gray-600 dark:text-gray-400">
+					{failure === 'noGroups' ? t.noGroups : t.errors.tournamentFetchFailed}
+				</p>
 			</div>
 		</div>
 	{:else}

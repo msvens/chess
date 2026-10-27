@@ -19,6 +19,7 @@
 	 */
 	import { untrack } from 'svelte';
 	import { page } from '$app/state';
+	import NotFound from '$lib/components/layout/NotFound.svelte';
 	import PageLayout from '$lib/components/layout/PageLayout.svelte';
 	import Link from '$lib/components/ui/Link.svelte';
 	import Table from '$lib/components/ui/Table/Table.svelte';
@@ -59,6 +60,7 @@
 	let hasMemberId = $derived(Number.isFinite(memberId));
 
 	let standingsUrl = $derived(`/results/${tournamentId}/${groupId}`);
+	let nf = $derived(t.notFound);
 
 	/** The player as they are now, for the name and the info card. */
 	let player = $derived(hasMemberId ? playerCache.get(memberId) : undefined);
@@ -73,6 +75,17 @@
 					ratedTypeOfRound: (round) => results.getRoundRatedType(round)
 				})
 			: []
+	);
+
+	/**
+	 * The id names nobody in this group: no games, and not in its standings or
+	 * entry list. Only once loaded. Team events have no individual standings, so
+	 * there the games alone decide.
+	 */
+	let playerMissing = $derived(
+		!results.loading &&
+			matches.length === 0 &&
+			(results.isTeamTournament || !results.playerMap.has(memberId))
 	);
 
 	let summary = $derived(
@@ -324,14 +337,22 @@
 {/snippet}
 
 <PageLayout maxWidth="3xl">
-	{#if !hasMemberId || results.error}
+	{#if results.notFound}
+		<NotFound title={nf.tournament} />
+	{:else if !hasMemberId || (results.tournament && playerMissing)}
+		<NotFound
+			title={nf.playerInGroup}
+			href={standingsUrl}
+			linkLabel={tr.teamDetailPage.backToStandings}
+		/>
+	{:else if results.error}
 		<div class="text-center">
 			<div
 				class="rounded-lg border border-gray-200 bg-white p-8 dark:border-gray-700 dark:bg-dark-bg"
 			>
 				<h1 class="mb-4 text-2xl font-semibold text-gray-900 dark:text-gray-200">{pd.error}</h1>
 				<p class="mb-6 text-lg text-gray-600 dark:text-gray-400">
-					{hasMemberId ? results.error : pd.invalidMemberId}
+					{results.error}
 				</p>
 				<Link href={standingsUrl}>{tr.teamDetailPage.backToStandings}</Link>
 			</div>

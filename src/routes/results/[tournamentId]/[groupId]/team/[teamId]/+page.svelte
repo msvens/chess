@@ -11,6 +11,7 @@
 	 */
 	import { untrack } from 'svelte';
 	import { page } from '$app/state';
+	import NotFound from '$lib/components/layout/NotFound.svelte';
 	import PageLayout from '$lib/components/layout/PageLayout.svelte';
 	import Link from '$lib/components/ui/Link.svelte';
 	import TeamDetailMatches from '$lib/components/results/TeamDetailMatches.svelte';
@@ -147,7 +148,9 @@
 </script>
 
 <PageLayout fullScreen maxWidth="5xl">
-	{#if results.error}
+	{#if results.notFound}
+		<NotFound title={t.notFound.tournament} />
+	{:else if results.error}
 		<div class="text-center">
 			<div
 				class="rounded-lg border border-gray-200 bg-white p-8 dark:border-gray-700 dark:bg-dark-bg"
@@ -158,19 +161,7 @@
 			</div>
 		</div>
 	{:else if !team || (!results.loading && !teamInfo)}
-		<div class="text-center">
-			<div
-				class="rounded-lg border border-gray-200 bg-white p-8 dark:border-gray-700 dark:bg-dark-bg"
-			>
-				<h1 class="mb-4 text-2xl font-semibold text-gray-900 dark:text-gray-200">
-					{tr.notFound}
-				</h1>
-				<p class="mb-6 text-lg text-gray-600 dark:text-gray-400">
-					{team ? labels.teamNotFound : labels.invalidTeamId}
-				</p>
-				<Link href={standingsUrl}>{labels.backToStandings}</Link>
-			</div>
-		</div>
+		<NotFound title={labels.teamNotFound} href={standingsUrl} linkLabel={labels.backToStandings} />
 	{:else if teamInfo}
 		<div class="mb-4">
 			<div class="mb-1 text-sm text-gray-500 dark:text-gray-400">
