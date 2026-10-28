@@ -454,6 +454,7 @@ export interface Translations {
 			adjudicated: string;
 			externalNotice: {
 				individuallyPairedTeam: { prefix: string; linkLabel: string; suffix: string };
+				series: { prefix: string; linkLabel: string; suffix: string };
 			};
 			finalResultsTable: {
 				pos: string;
@@ -1262,6 +1263,12 @@ const translations: Record<Language, Translations> = {
 							"This is a team tournament with individual pairings. The team standings aren't available from the data source for this format — see the official results at",
 						linkLabel: 'resultat.schack.se',
 						suffix: '.'
+					},
+					series: {
+						prefix:
+							'This is a Grand Prix series. The series standings and the results of each stage are only available at',
+						linkLabel: 'resultat.schack.se',
+						suffix: '. Each stage is played as a tournament of its own.'
 					}
 				},
 				finalResultsTable: {
@@ -2055,6 +2062,12 @@ const translations: Record<Language, Translations> = {
 							'Detta är en lagturnering med individuell lottning. Lagtabellen är inte tillgänglig från datakällan för detta format — se de officiella resultaten på',
 						linkLabel: 'resultat.schack.se',
 						suffix: '.'
+					},
+					series: {
+						prefix:
+							'Detta är en Grand Prix-serie. Seriens ställning och resultaten från deltävlingarna finns bara på',
+						linkLabel: 'resultat.schack.se',
+						suffix: '. Varje deltävling spelas som en egen turnering.'
 					}
 				},
 				finalResultsTable: {

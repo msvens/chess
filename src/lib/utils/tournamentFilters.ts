@@ -131,6 +131,35 @@ export function filterByType(tournaments: TournamentDto[], type: number | null):
 }
 
 /**
+ * Leave Grand Prix series out unless they are the type asked for.
+ *
+ * A series (type 7) is the season-long umbrella over stages that are each
+ * played, and listed, as a tournament of their own. Shown beside them it reads
+ * as one more event to go to, and it leads to a page with no results.
+ */
+export function hideSeriesUnlessChosen(
+	tournaments: TournamentDto[],
+	type: number | null
+): TournamentDto[] {
+	if (type === TournamentType.GRAND_PRIX) {
+		return tournaments;
+	}
+
+	return tournaments.filter((t) => t.type !== TournamentType.GRAND_PRIX);
+}
+
+/**
+ * `countByType` for a list that hides series unless chosen: every type keeps
+ * its count, so Grand Prix can still be picked, while `all` counts only what
+ * "all types" shows.
+ */
+export function countByTypeHidingSeries(tournaments: TournamentDto[]): TypeCounts {
+	const counts = countByType(tournaments);
+	counts.all -= counts[TournamentType.GRAND_PRIX] ?? 0;
+	return counts;
+}
+
+/**
  * Filter tournaments by derived status. The `state` argument keeps the existing
  * filter-UI contract (the TournamentState enum values), but matching is done on
  * the date-derived status: REGISTRATION→upcoming, STARTED→ongoing,

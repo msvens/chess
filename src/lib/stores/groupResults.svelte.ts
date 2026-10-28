@@ -23,6 +23,7 @@ import {
 	getPlayerRatingStrict,
 	isTeamPairing,
 	isTeamTournament,
+	TournamentType,
 	type PlayerInfoDto,
 	type RoundDto,
 	type TeamTournamentEndResultDto,
@@ -84,6 +85,15 @@ export class GroupResultsState {
 	get isIndividuallyPairedTeam(): boolean {
 		const type = this.tournament?.type;
 		return type != null && isTeamTournament(type) && !isTeamPairing(type);
+	}
+
+	/**
+	 * True for a Grand Prix series: a "TOTALT" group plus one group per stage.
+	 * Upstream builds the series standings and the stage results on its own server
+	 * and serves neither through the API, so the page points there instead.
+	 */
+	get isSeries(): boolean {
+		return this.tournament?.type === TournamentType.GRAND_PRIX;
 	}
 
 	get thinkingTime(): string | null {
@@ -187,8 +197,12 @@ export class GroupResultsState {
 		isInitialLoad: boolean,
 		token: number
 	): Promise<void> {
-		// Schackfyran: nothing to fetch, and asking would 404.
-		if (isTeamTournament(tournamentType) && !isTeamPairing(tournamentType)) {
+		// Schackfyran: nothing to fetch, and asking would 404. A series: the API
+		// answers, but with nothing in it.
+		if (
+			(isTeamTournament(tournamentType) && !isTeamPairing(tournamentType)) ||
+			tournamentType === TournamentType.GRAND_PRIX
+		) {
 			this.#clearResults();
 			this.lastUpdated = Date.now();
 			return;

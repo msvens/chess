@@ -9,6 +9,7 @@ import { language } from './language.svelte';
 const INDIVIDUAL = 3;
 const ALLSVENSKAN = 2;
 const SCHACKFYRAN = 9;
+const GRAND_PRIX = 7;
 
 const getTournament = vi.fn();
 const getTournamentResults = vi.fn();
@@ -159,6 +160,19 @@ describe('which endpoints get called', () => {
 		expect(state.isTeamTournament).toBe(true);
 		expect(state.individualResults).toEqual([]);
 		expect(state.teamResults).toEqual([]);
+	});
+
+	// A Grand Prix series: upstream serves its standings on its own site only, and
+	// the API's results for its groups are empty.
+	it('fetches no results for a series', async () => {
+		getTournament.mockResolvedValue(ok(tournament(GRAND_PRIX)));
+		const state = make();
+		await state.load(5835, 16642);
+
+		expect(getTeamTournamentResults).not.toHaveBeenCalled();
+		expect(getTournamentResults).not.toHaveBeenCalled();
+		expect(state.isSeries).toBe(true);
+		expect(state.isIndividuallyPairedTeam).toBe(false);
 	});
 });
 

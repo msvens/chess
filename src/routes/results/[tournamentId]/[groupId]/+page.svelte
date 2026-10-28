@@ -484,24 +484,27 @@
 				<span>{results.tournament.start} - {results.tournament.end}</span>
 				{#if results.tournament.city}<span>{results.tournament.city}</span>{/if}
 			</div>
-			<div class="mt-3 flex flex-wrap gap-4 text-sm">
-				<a
-					href="/print/{tournamentId}/{groupId}"
-					target="_blank"
-					rel="noopener noreferrer"
-					class="text-blue-600 hover:underline dark:text-blue-400"
-				>
-					{tr.print.printThisGroup}
-				</a>
-				{#if showPerformanceLink}
+			<!-- A series has nothing here to print or rank. -->
+			{#if !results.isSeries}
+				<div class="mt-3 flex flex-wrap gap-4 text-sm">
 					<a
-						href="/results/{tournamentId}/performance"
+						href="/print/{tournamentId}/{groupId}"
+						target="_blank"
+						rel="noopener noreferrer"
 						class="text-blue-600 hover:underline dark:text-blue-400"
 					>
-						{tr.individualPerformance.link}
+						{tr.print.printThisGroup}
 					</a>
-				{/if}
-			</div>
+					{#if showPerformanceLink}
+						<a
+							href="/results/{tournamentId}/performance"
+							class="text-blue-600 hover:underline dark:text-blue-400"
+						>
+							{tr.individualPerformance.link}
+						</a>
+					{/if}
+				</div>
+			{/if}
 		</div>
 
 		<div class="flex flex-col gap-4 lg:flex-row lg:gap-6">
@@ -575,6 +578,15 @@
 						title={nf.group}
 						href={`/results/${tournamentId}`}
 						linkLabel={nf.toTournament}
+					/>
+				{:else if results.isSeries}
+					<!-- A Grand Prix series: the API has neither the series standings
+					     nor a link from a stage to the tournament it was played as. -->
+					<ExternalResultsNotice
+						prefix={tr.externalNotice.series.prefix}
+						linkLabel={tr.externalNotice.series.linkLabel}
+						suffix={tr.externalNotice.series.suffix}
+						url={externalUrl}
 					/>
 				{:else if results.isIndividuallyPairedTeam}
 					<!-- Schackfyran and friends: upstream has no team-standings endpoint
