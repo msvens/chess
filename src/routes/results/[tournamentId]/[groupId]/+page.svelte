@@ -59,6 +59,7 @@
 	import { createLiveUpdates } from '$lib/results/liveUpdates.svelte';
 	import { createRoundStandingsPlayback } from '$lib/results/roundStandingsPlayback.svelte';
 	import {
+		currentRound,
 		formatRoundDate,
 		groupByRound,
 		parseDateToTimestamp,
@@ -103,7 +104,9 @@
 	);
 	let sortedRounds = $derived(roundNumbers(roundRows));
 
-	let activeRound = $derived(resolveActiveRound(selectedRound, sortedRounds));
+	let activeRound = $derived(
+		resolveActiveRound(selectedRound, sortedRounds, currentRound(roundRows))
+	);
 
 	let status = $derived(
 		results.group
