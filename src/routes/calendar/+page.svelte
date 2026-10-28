@@ -23,10 +23,11 @@
 	import {
 		countByCategory,
 		countByState,
-		countByType,
+		countByTypeHidingSeries,
 		filterByCategory,
 		filterByState,
 		filterByType,
+		hideSeriesUnlessChosen,
 		type TournamentCategory
 	} from '$lib/utils/tournamentFilters';
 	import {
@@ -107,17 +108,27 @@
 		)
 	);
 
-	let byDistrict = $derived(filterByDistrict(tournaments, districtOf, districtId));
+	// Grand Prix series stay out unless that type is picked; see `hideSeriesUnlessChosen`.
+	let listed = $derived(hideSeriesUnlessChosen(tournaments, type));
+
+	let byDistrict = $derived(filterByDistrict(listed, districtOf, districtId));
 
 	// Chained, so each filter's counts reflect the ones above it.
 	let categoryCounts = $derived(countByCategory(byDistrict));
 	let byCategory = $derived(filterByCategory(byDistrict, category));
-	let typeCounts = $derived(countByType(byCategory));
 	let byType = $derived(filterByType(byCategory, type));
 	let stateCounts = $derived(countByState(byType));
 	let visible = $derived(filterByState(byType, tournamentState));
 
-	let districtCounts = $derived(countByDistrict(tournaments, districtOf));
+	// Counted over every tournament, series included, so the Grand Prix option
+	// shows how many there are before it is picked.
+	let typeCounts = $derived(
+		countByTypeHidingSeries(
+			filterByCategory(filterByDistrict(tournaments, districtOf, districtId), category)
+		)
+	);
+
+	let districtCounts = $derived(countByDistrict(listed, districtOf));
 </script>
 
 <svelte:head><title>{cal.title} — msvens chess</title></svelte:head>
@@ -133,7 +144,7 @@
 			density="compact"
 			transparent
 			{districtCounts}
-			totalCount={tournaments.length}
+			totalCount={listed.length}
 		/>
 		<TournamentCategoryFilter
 			selected={category}

@@ -3,12 +3,14 @@ import { TournamentType, TournamentState } from '@msvens/schack-se-sdk';
 import {
 	countByCategory,
 	countByType,
+	countByTypeHidingSeries,
 	countByState,
 	filterByCategory,
 	filterByType,
 	filterByState,
 	getAllTournamentTypes,
-	getTournamentTypeKey
+	getTournamentTypeKey,
+	hideSeriesUnlessChosen
 } from '$lib/utils/tournamentFilters';
 import type { TournamentDto } from '@msvens/schack-se-sdk';
 
@@ -166,6 +168,35 @@ describe('filterByType', () => {
 		const result = filterByType(tournaments, TournamentType.INDIVIDUAL);
 		expect(result).toHaveLength(1);
 		expect(result[0].id).toBe(1);
+	});
+});
+
+// ---------------------------------------------------------------------------
+// Grand Prix series
+// ---------------------------------------------------------------------------
+describe('hiding Grand Prix series', () => {
+	const tournaments = [
+		makeTournament({ id: 1, type: TournamentType.INDIVIDUAL }),
+		makeTournament({ id: 2, type: TournamentType.GRAND_PRIX }),
+		makeTournament({ id: 3, type: TournamentType.ALLSVENSKAN })
+	];
+
+	it('leaves series out when no type is chosen, and when another one is', () => {
+		expect(hideSeriesUnlessChosen(tournaments, null).map((t) => t.id)).toEqual([1, 3]);
+		expect(hideSeriesUnlessChosen(tournaments, TournamentType.INDIVIDUAL).map((t) => t.id)).toEqual(
+			[1, 3]
+		);
+	});
+
+	it('keeps them when Grand Prix is the type chosen', () => {
+		expect(hideSeriesUnlessChosen(tournaments, TournamentType.GRAND_PRIX)).toHaveLength(3);
+	});
+
+	it('still counts series by type, but not under all', () => {
+		const counts = countByTypeHidingSeries(tournaments);
+		expect(counts.all).toBe(2);
+		expect(counts[TournamentType.GRAND_PRIX]).toBe(1);
+		expect(counts[TournamentType.INDIVIDUAL]).toBe(1);
 	});
 });
 
