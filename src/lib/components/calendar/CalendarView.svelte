@@ -9,7 +9,7 @@
 	import CalendarNav from './CalendarNav.svelte';
 	import MonthView from './MonthView.svelte';
 	import WeekView from './WeekView.svelte';
-	import { initialAnchor, initialView, saveAnchor, saveView } from './calendarPrefs';
+	import { initialView, saveView } from './calendarPrefs';
 	import type { CalendarViewMode } from './calendarPrefs';
 	import type { TournamentDto } from '$lib/api';
 	import {
@@ -37,9 +37,10 @@
 	let locale = $derived(localeOf(language.current));
 
 	// Read at initialisation rather than restored in a mount effect, so the
-	// remembered view and month do not flash past the defaults.
+	// remembered view does not flash past the default. The period always starts
+	// at today; it isn't remembered.
 	let view = $state<CalendarViewMode>(initialView());
-	let anchor = $state<Date>(initialAnchor());
+	let anchor = $state<Date>(new Date());
 
 	function changeView(next: CalendarViewMode) {
 		view = next;
@@ -48,7 +49,6 @@
 
 	function moveTo(next: Date) {
 		anchor = next;
-		saveAnchor(next);
 	}
 
 	/** Today is fixed for the life of the component; the grid marks one cell. */

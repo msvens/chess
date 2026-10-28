@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { DistrictDTO, TournamentDto } from '$lib/api';
 import { ORGANIZATIONS_STATE_KEY, OrganizationsState } from '$lib/stores/organizations.svelte';
 import CalendarView from './CalendarView.svelte';
@@ -46,40 +46,43 @@ function setup(tournaments: TournamentDto[], props: Record<string, unknown> = {}
 const title = () => screen.getByRole('heading').textContent?.trim();
 const button = (name: string) => screen.getByRole('button', { name });
 
-beforeEach(() => localStorage.clear());
+// "Today" is mid-March 2026 for every test; only Date is faked, so user-event's
+// timers still run.
+beforeEach(() => {
+	localStorage.clear();
+	vi.useFakeTimers({ toFake: ['Date'] });
+	vi.setSystemTime(new Date(2026, 2, 15, 12));
+});
+afterEach(() => vi.useRealTimers());
 
 describe('which period is shown', () => {
-	it('opens on the month remembered, not on today', () => {
-		// Read at initialisation, so the remembered month does not flash past.
-		localStorage.setItem('calendar-anchor', '2026-03-15');
+	it('opens on today, not on a month looked at before', () => {
+		// What the calendar used to remember; it is ignored now.
+		localStorage.setItem('calendar-anchor', '2026-01-15');
 		setup([event()]);
 		expect(title()).toBe('mars 2026');
 	});
 
 	it('names a week by its range when the week view is remembered', () => {
-		localStorage.setItem('calendar-anchor', '2026-03-10');
 		localStorage.setItem('calendar-view-mode', 'week');
 		setup([event()]);
 		expect(title()).toBe('9 mars – 15 mars 2026');
 	});
 
 	it('remembers a change of view', async () => {
-		localStorage.setItem('calendar-anchor', '2026-03-15');
 		const user = setup([event()]);
 		await user.selectOptions(screen.getByRole('combobox'), 'week');
 		expect(localStorage.getItem('calendar-view-mode')).toBe('week');
 	});
 
-	it('remembers where you navigated to', async () => {
-		localStorage.setItem('calendar-anchor', '2026-03-15');
+	it('does not remember where you navigated to', async () => {
 		const user = setup([
 			event({ id: 1, start: '2026-01-05', end: '2026-01-06' }),
 			event({ id: 2, start: '2026-05-05', end: '2026-05-06' })
 		]);
 		await user.click(button('Nästa'));
-		// `addMonths` anchors to the 1st — a month is identified by its month, and
-		// stepping from the 31st would otherwise skip a month with fewer days.
-		expect(localStorage.getItem('calendar-anchor')).toBe('2026-04-01');
+		expect(title()).toBe('april 2026');
+		expect(localStorage.getItem('calendar-anchor')).toBeNull();
 	});
 });
 
@@ -87,14 +90,12 @@ describe('how far you can navigate', () => {
 	it('will not page past the last event', () => {
 		// The endpoint only returns upcoming events, so paging beyond them shows
 		// empty months forever.
-		localStorage.setItem('calendar-anchor', '2026-03-15');
 		setup([event({ start: '2026-03-10', end: '2026-03-12' })]);
 		expect(button('Nästa')).toBeDisabled();
 		expect(button('Föregående')).toBeDisabled();
 	});
 
 	it('opens up once there is somewhere to go', () => {
-		localStorage.setItem('calendar-anchor', '2026-03-15');
 		setup([
 			event({ id: 1, start: '2026-01-05', end: '2026-01-06' }),
 			event({ id: 2, start: '2026-05-05', end: '2026-05-06' })
@@ -104,7 +105,6 @@ describe('how far you can navigate', () => {
 	});
 
 	it('jumps to the first and last event', async () => {
-		localStorage.setItem('calendar-anchor', '2026-03-15');
 		const user = setup([
 			event({ id: 1, start: '2026-01-05', end: '2026-01-06' }),
 			event({ id: 2, start: '2026-05-05', end: '2026-05-06' })
@@ -126,7 +126,6 @@ describe('how far you can navigate', () => {
 
 describe('the colour key', () => {
 	it('lists only the types on screen', async () => {
-		localStorage.setItem('calendar-anchor', '2026-03-15');
 		const user = setup([event({ id: 1, type: INDIVIDUAL }), event({ id: 2, type: GRAND_PRIX })]);
 		await user.click(button('Färger'));
 
