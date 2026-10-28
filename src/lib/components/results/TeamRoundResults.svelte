@@ -19,6 +19,7 @@
 		getResultLabels
 	} from '$lib/results/formatResult';
 	import {
+		currentRound,
 		formatRoundDate,
 		parseDateToTimestamp,
 		resolveActiveRound
@@ -71,7 +72,9 @@
 
 	let matchesByRound = $derived(groupMatchesByRound(roundResults));
 	let sortedRounds = $derived([...matchesByRound.keys()].sort((a, b) => a - b));
-	let activeRound = $derived(resolveActiveRound(selectedRound, sortedRounds));
+	let activeRound = $derived(
+		resolveActiveRound(selectedRound, sortedRounds, currentRound(roundResults))
+	);
 	let matches = $derived(activeRound == null ? [] : (matchesByRound.get(activeRound) ?? []));
 
 	/** Byes and walkovers occupy a team slot but have no team to name. */

@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { normalizeEloLookupDate, type TournamentRoundResultDto } from '$lib/api';
 import {
+	currentRound,
 	formatMatchDate,
 	formatRoundDate,
 	groupByRound,
@@ -160,28 +161,87 @@ describe('playerDateLookups', () => {
 	});
 });
 
-describe('resolveActiveRound', () => {
-	it('honours an explicit choice that is still on offer', () => {
-		expect(resolveActiveRound(2, [1, 2, 3])).toBe(2);
+/** A round's games, `done` of them finalized and the rest pending. */
+const round = (roundNr: number, games: number, done: number): TournamentRoundResultDto[] =>
+	Array.from(
+		{ length: games },
+		(_, i) => ({ roundNr, homeId: 1, awayId: 2, finalized: i < done }) as TournamentRoundResultDto
+	);
+
+describe('currentRound', () => {
+	it('moves on to the next round once one is done, with every round paired in advance', () => {
+		// 7126/19194: a team round robin paired in full, rounds 1–2 played.
+		expect(
+			currentRound([
+				...round(1, 3, 3),
+				...round(2, 3, 3),
+				...round(3, 3, 0),
+				...round(4, 3, 0),
+				...round(5, 3, 0)
+			])
+		).toBe(3);
 	});
 
-	it('shows the latest round until the visitor picks one', () => {
-		expect(resolveActiveRound(null, [1, 2, 3])).toBe(3);
+	it('stays on a round that is still being played', () => {
+		expect(currentRound([...round(1, 5, 5), ...round(2, 5, 2), ...round(3, 5, 0)])).toBe(2);
+	});
+
+	it('is not held back by a postponed game in an earlier round', () => {
+		// 7018/19284: one game of round 2 still pending while round 5 is under way.
+		expect(
+			currentRound([
+				...round(1, 5, 5),
+				...round(2, 5, 4),
+				...round(3, 5, 5),
+				...round(4, 5, 1),
+				...round(5, 5, 0)
+			])
+		).toBe(4);
+	});
+
+	it('shows the next round of a Swiss once it is paired', () => {
+		expect(currentRound([...round(1, 4, 4), ...round(2, 4, 0)])).toBe(2);
+	});
+
+	it('stays on the last round of a finished event', () => {
+		expect(currentRound([...round(1, 4, 4), ...round(2, 4, 4)])).toBe(2);
+	});
+
+	it('is the first round before any result is in', () => {
+		expect(currentRound([...round(1, 4, 0), ...round(2, 4, 0)])).toBe(1);
+	});
+
+	it('is null with no rounds at all', () => {
+		expect(currentRound([])).toBeNull();
+	});
+});
+
+describe('resolveActiveRound', () => {
+	it('honours an explicit choice that is still on offer', () => {
+		expect(resolveActiveRound(2, [1, 2, 3], 3)).toBe(2);
+	});
+
+	it('shows the current round until the visitor picks one', () => {
+		expect(resolveActiveRound(null, [1, 2, 3], 2)).toBe(2);
 	});
 
 	it('falls back when the chosen round is not in this group', () => {
 		// The page stays mounted across group changes, so round 7 of a long event
 		// arrives in a three-round group. The React version kept it and rendered an
 		// empty table.
-		expect(resolveActiveRound(7, [1, 2, 3])).toBe(3);
+		expect(resolveActiveRound(7, [1, 2, 3], 2)).toBe(2);
 	});
 
 	it('falls back when a live refresh drops the round being viewed', () => {
-		expect(resolveActiveRound(3, [1, 2])).toBe(2);
+		expect(resolveActiveRound(3, [1, 2], 2)).toBe(2);
+	});
+
+	it('takes the latest round when there is no current one to go by', () => {
+		expect(resolveActiveRound(null, [1, 2, 3], null)).toBe(3);
 	});
 
 	it('is null when there are no rounds at all', () => {
-		expect(resolveActiveRound(null, [])).toBeNull();
-		expect(resolveActiveRound(2, [])).toBeNull();
+		expect(resolveActiveRound(null, [], null)).toBeNull();
+		expect(resolveActiveRound(2, [], null)).toBeNull();
 	});
 });

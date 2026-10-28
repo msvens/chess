@@ -94,11 +94,35 @@ export function roundNumbers(rows: readonly TournamentRoundResultDto[]): number[
 }
 
 /**
- * The round to show, given what the visitor picked and what exists.
+ * The round being played, or the next one if it is done: what someone checking
+ * on an event wants to see.
  *
- * An explicit choice only counts while that round is still on offer; otherwise
- * the latest round wins, which is what someone checking on an event wants — even
- * when it has no results in yet.
+ * That is the last round with a finalized game, unless all its games are
+ * finalized, in which case it is the round after it (or itself, if it was the
+ * last). Before any result is in, the first round.
+ *
+ * Not simply the latest round: a round robin is often paired in full before it
+ * starts, and its last round then exists from day one. Not the first round with
+ * a pending game either: one postponed game would hold the default back for
+ * weeks. Pending is read from `finalized` rather than from a 0–0 score, which a
+ * double forfeit also gives.
+ */
+export function currentRound(rows: readonly TournamentRoundResultDto[]): number | null {
+	const rounds = roundNumbers(rows);
+	const started = rows.filter((row) => row.finalized).map((row) => row.roundNr || 1);
+	if (started.length === 0) return rounds[0] ?? null;
+
+	const latest = Math.max(...started);
+	const complete = rows.every((row) => (row.roundNr || 1) !== latest || row.finalized);
+	if (!complete) return latest;
+	return rounds.find((round) => round > latest) ?? latest;
+}
+
+/**
+ * The round to show, given what the visitor picked, what exists, and the round
+ * to fall back on (normally `currentRound`).
+ *
+ * An explicit choice only counts while that round is still on offer.
  *
  * The React page took `selected ?? last`, which went wrong two ways. Its results
  * page stays mounted across group changes, so round 7 of a long event survived
@@ -107,9 +131,11 @@ export function roundNumbers(rows: readonly TournamentRoundResultDto[]): number[
  */
 export function resolveActiveRound(
 	selected: number | null,
-	rounds: readonly number[]
+	rounds: readonly number[],
+	current: number | null
 ): number | null {
 	if (selected != null && rounds.includes(selected)) return selected;
+	if (current != null && rounds.includes(current)) return current;
 	return rounds[rounds.length - 1] ?? null;
 }
 
