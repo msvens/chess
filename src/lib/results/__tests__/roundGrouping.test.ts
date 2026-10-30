@@ -161,54 +161,89 @@ describe('playerDateLookups', () => {
 	});
 });
 
-/** A round's games, `done` of them finalized and the rest pending. */
-const round = (roundNr: number, games: number, done: number): TournamentRoundResultDto[] =>
+/** A round's games on one date, `done` of them finalized and the rest pending. */
+const round = (
+	roundNr: number,
+	date: string,
+	games: number,
+	done: number
+): TournamentRoundResultDto[] =>
 	Array.from(
 		{ length: games },
-		(_, i) => ({ roundNr, homeId: 1, awayId: 2, finalized: i < done }) as TournamentRoundResultDto
+		(_, i) =>
+			({ roundNr, homeId: 1, awayId: 2, date, finalized: i < done }) as TournamentRoundResultDto
 	);
 
+/** Noon local time on a day, as `currentRound` is handed it. */
+const on = (date: string) => new Date(`${date}T12:00:00`).getTime();
+
+/**
+ * Allsvenskan 2026/27 division 2 group 1 (6896/18664), as paired: a round robin
+ * over seven months, where one round-1 match is postponed to December and one
+ * round-4 match is brought forward to the day before round 2.
+ */
+const allsvenskan = (playedEarly = false, round2Done = false) => [
+	...round(1, '2026-10-18', 3, 3),
+	...round(1, '2026-12-05', 1, 0),
+	...round(2, '2026-11-15', 4, round2Done ? 4 : 0),
+	...round(3, '2026-12-06', 3, 0),
+	...round(3, '2027-02-06', 1, 0),
+	...round(4, '2026-11-14', 1, playedEarly ? 1 : 0),
+	...round(4, '2027-01-10', 3, 0),
+	...round(5, '2027-01-24', 4, 0)
+];
+
 describe('currentRound', () => {
-	it('moves on to the next round once one is done, with every round paired in advance', () => {
-		// 7126/19194: a team round robin paired in full, rounds 1–2 played.
-		expect(
-			currentRound([
-				...round(1, 3, 3),
-				...round(2, 3, 3),
-				...round(3, 3, 0),
-				...round(4, 3, 0),
-				...round(5, 3, 0)
-			])
-		).toBe(3);
+	it('keeps a round with a postponed match while it is the nearest', () => {
+		expect(currentRound(allsvenskan(), on('2026-10-30'))).toBe(1);
 	});
 
-	it('stays on a round that is still being played', () => {
-		expect(currentRound([...round(1, 5, 5), ...round(2, 5, 2), ...round(3, 5, 0)])).toBe(2);
+	it('is not dragged ahead by a match played early', () => {
+		expect(currentRound(allsvenskan(true), on('2026-11-14'))).toBe(2);
 	});
 
-	it('is not held back by a postponed game in an earlier round', () => {
-		// 7018/19284: one game of round 2 still pending while round 5 is under way.
-		expect(
-			currentRound([
-				...round(1, 5, 5),
-				...round(2, 5, 4),
-				...round(3, 5, 5),
-				...round(4, 5, 1),
-				...round(5, 5, 0)
-			])
-		).toBe(4);
+	it('moves on to the next round by date once one is done', () => {
+		expect(currentRound(allsvenskan(true, true), on('2026-11-16'))).toBe(3);
+	});
+
+	it('dates a round by most of its matches, not by a postponed one', () => {
+		// The round-1 match postponed to Dec 5 does not make round 1 the nearer one.
+		expect(currentRound(allsvenskan(true, true), on('2026-12-05'))).toBe(3);
+	});
+
+	it('keeps a played round up while its results are still coming in', () => {
+		// 7126/19194: a team round robin paired in full; round 2 played, not yet reported.
+		const rows = [
+			...round(1, '2026-09-28', 3, 3),
+			...round(2, '2026-10-26', 3, 1),
+			...round(3, '2026-11-23', 3, 0)
+		];
+		expect(currentRound(rows, on('2026-10-28'))).toBe(2);
+		expect(currentRound(rows, on('2026-11-20'))).toBe(3);
+	});
+
+	it('takes the lower round when several are played on one day', () => {
+		const rows = [
+			...round(1, '2026-10-24', 4, 4),
+			...round(2, '2026-10-24', 4, 1),
+			...round(3, '2026-10-24', 4, 0)
+		];
+		expect(currentRound(rows, on('2026-10-24'))).toBe(2);
 	});
 
 	it('shows the next round of a Swiss once it is paired', () => {
-		expect(currentRound([...round(1, 4, 4), ...round(2, 4, 0)])).toBe(2);
+		const rows = [...round(1, '2026-10-24', 4, 4), ...round(2, '2026-10-25', 4, 0)];
+		expect(currentRound(rows, on('2026-10-24'))).toBe(2);
 	});
 
 	it('stays on the last round of a finished event', () => {
-		expect(currentRound([...round(1, 4, 4), ...round(2, 4, 4)])).toBe(2);
+		const rows = [...round(1, '2026-10-24', 4, 4), ...round(2, '2026-10-25', 4, 4)];
+		expect(currentRound(rows, on('2026-12-01'))).toBe(2);
 	});
 
-	it('is the first round before any result is in', () => {
-		expect(currentRound([...round(1, 4, 0), ...round(2, 4, 0)])).toBe(1);
+	it('takes the first pending round when there are no dates to go by', () => {
+		const rows = [...round(1, '', 4, 4), ...round(2, '', 4, 1), ...round(3, '', 4, 0)];
+		expect(currentRound(rows, on('2026-10-24'))).toBe(2);
 	});
 
 	it('is null with no rounds at all', () => {
