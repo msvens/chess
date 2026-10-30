@@ -93,29 +93,77 @@ export function roundNumbers(rows: readonly TournamentRoundResultDto[]): number[
 	return [...new Set(rows.map((row) => row.roundNr || 1))].sort((a, b) => a - b);
 }
 
-/**
- * The round being played, or the next one if it is done: what someone checking
- * on an event wants to see.
- *
- * That is the last round with a finalized game, unless all its games are
- * finalized, in which case it is the round after it (or itself, if it was the
- * last). Before any result is in, the first round.
- *
- * Not simply the latest round: a round robin is often paired in full before it
- * starts, and its last round then exists from day one. Not the first round with
- * a pending game either: one postponed game would hold the default back for
- * weeks. Pending is read from `finalized` rather than from a 0–0 score, which a
- * double forfeit also gives.
- */
-export function currentRound(rows: readonly TournamentRoundResultDto[]): number | null {
-	const rounds = roundNumbers(rows);
-	const started = rows.filter((row) => row.finalized).map((row) => row.roundNr || 1);
-	if (started.length === 0) return rounds[0] ?? null;
+const DAY_MS = 24 * 60 * 60 * 1000;
 
-	const latest = Math.max(...started);
-	const complete = rows.every((row) => (row.roundNr || 1) !== latest || row.finalized);
-	if (!complete) return latest;
-	return rounds.find((round) => round > latest) ?? latest;
+/** Whole calendar days, so the time of day never tips which round is nearer. */
+function calendarDay(timestamp: number): number {
+	const date = new Date(timestamp);
+	return Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()) / DAY_MS;
+}
+
+/**
+ * The day a round is played: the one most of its games carry, the earliest on a
+ * tie. A single game moved forward or postponed then leaves its round where it
+ * was. The group's scheduled round dates are not used: they come with
+ * duplicates, and with rounds dated out of order.
+ */
+function roundDay(games: readonly TournamentRoundResultDto[]): number | null {
+	const counts = new Map<number, number>();
+	for (const game of games) {
+		const timestamp = parseDateToTimestamp(game.date);
+		if (Number.isNaN(timestamp)) continue;
+		const day = calendarDay(timestamp);
+		counts.set(day, (counts.get(day) ?? 0) + 1);
+	}
+	let best: number | null = null;
+	for (const [day, count] of counts) {
+		const bestCount = best == null ? 0 : (counts.get(best) ?? 0);
+		if (best == null || count > bestCount || (count === bestCount && day < best)) best = day;
+	}
+	return best;
+}
+
+/**
+ * The round being played, or the next one: what someone checking on an event
+ * wants to see.
+ *
+ * Of the rounds with a game still pending, the one whose day is nearest today,
+ * looking back as well as ahead; on a tie, the lower round, which is the one
+ * being played when a weekend event has several on one day. With nothing
+ * pending, the last round.
+ *
+ * Nearest rather than next: a team round is often reported a day or two after
+ * it is played, and looking back keeps its results up until the next round is
+ * nearer. Per round, not per game: in a round robin played over months, games
+ * are moved forward and postponed, and one played early must not drag the view
+ * to its round (Allsvenskan 18664 plays a round-4 match the day before round 2).
+ *
+ * Pending is read from `finalized` rather than from a 0–0 score, which a double
+ * forfeit also gives. Without dates to go by, the first round with a pending
+ * game.
+ */
+export function currentRound(
+	rows: readonly TournamentRoundResultDto[],
+	now: number = Date.now()
+): number | null {
+	const byRound = groupByRound(rows);
+	const rounds = [...byRound.keys()].sort((a, b) => a - b);
+	const pending = rounds.filter((round) => byRound.get(round)?.some((game) => !game.finalized));
+	if (pending.length === 0) return rounds[rounds.length - 1] ?? null;
+
+	const today = calendarDay(now);
+	let nearest: number | null = null;
+	let nearestDistance = Infinity;
+	for (const round of pending) {
+		const day = roundDay(byRound.get(round) ?? []);
+		if (day == null) continue;
+		const distance = Math.abs(day - today);
+		if (distance < nearestDistance) {
+			nearest = round;
+			nearestDistance = distance;
+		}
+	}
+	return nearest ?? pending[0];
 }
 
 /**
