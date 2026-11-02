@@ -373,6 +373,8 @@ export interface Translations {
 				loadingProgress: string;
 				error: string;
 				noTournaments: string;
+				/** The time-control filter left nothing to show. */
+				noTournamentsOfType: string;
 				place: string;
 				points: string;
 				outcome: string;
@@ -383,17 +385,19 @@ export interface Translations {
 				team: string;
 				opponents: string;
 			};
+			/** Shared by the Opponents tab (per game) and the tournament tabs (per group). */
+			timeControl: {
+				label: string;
+				all: string;
+				standard: string;
+				rapid: string;
+				blitz: string;
+				mixed: string;
+				unrated: string;
+			};
 			viewFullProfile: string;
 			opponentsTab: {
 				title: string;
-				timeControl: {
-					label: string;
-					all: string;
-					standard: string;
-					rapid: string;
-					blitz: string;
-					unrated: string;
-				};
 				charts: {
 					all: string;
 					white: string;
@@ -1186,6 +1190,7 @@ const translations: Record<Language, Translations> = {
 					loadingProgress: 'Loading tournaments ({done} of {total})...',
 					error: 'Could not retrieve data',
 					noTournaments: 'No tournament history found.',
+					noTournamentsOfType: 'No tournaments of this game type.',
 					place: 'Place',
 					points: 'Points',
 					outcome: 'Outcome',
@@ -1196,17 +1201,18 @@ const translations: Record<Language, Translations> = {
 					team: 'Team',
 					opponents: 'Opponents'
 				},
+				timeControl: {
+					label: 'Game Type',
+					all: 'All',
+					standard: 'Standard',
+					rapid: 'Rapid',
+					blitz: 'Blitz',
+					mixed: 'Mixed',
+					unrated: 'Unrated'
+				},
 				viewFullProfile: 'View Full Profile',
 				opponentsTab: {
 					title: 'Opponents',
-					timeControl: {
-						label: 'Game Type',
-						all: 'All',
-						standard: 'Standard',
-						rapid: 'Rapid',
-						blitz: 'Blitz',
-						unrated: 'Unrated'
-					},
 					charts: {
 						all: 'All',
 						white: 'White',
@@ -1985,6 +1991,7 @@ const translations: Record<Language, Translations> = {
 					loadingProgress: 'Laddar turneringar ({done} av {total})...',
 					error: 'Kunde inte hämta data',
 					noTournaments: 'Ingen turneringshistorik hittades.',
+					noTournamentsOfType: 'Inga turneringar med den här speltypen.',
 					place: 'Placering',
 					points: 'Poäng',
 					outcome: 'Utfall',
@@ -1995,17 +2002,18 @@ const translations: Record<Language, Translations> = {
 					team: 'Lag',
 					opponents: 'Motståndare'
 				},
+				timeControl: {
+					label: 'Speltyp',
+					all: 'Alla',
+					standard: 'Normal',
+					rapid: 'Snabbschack',
+					blitz: 'Blixtschack',
+					mixed: 'Mixade',
+					unrated: 'Oratade'
+				},
 				viewFullProfile: 'Visa Full Profil',
 				opponentsTab: {
 					title: 'Motståndare',
-					timeControl: {
-						label: 'Speltyp',
-						all: 'Alla',
-						standard: 'Normal',
-						rapid: 'Snabbschack',
-						blitz: 'Blixtschack',
-						unrated: 'Oratade'
-					},
 					charts: {
 						all: 'Alla',
 						white: 'Vit',

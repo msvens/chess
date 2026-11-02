@@ -12,7 +12,7 @@
 	 * deliberately unstable context object. None of that survives: `playerCache`
 	 * is a module singleton over a `SvelteMap`, so the names appear as they land.
 	 */
-	import TimeControlFilter, { type TimeControl } from './TimeControlFilter.svelte';
+	import TimeControlFilter, { type GameTimeControl } from './TimeControlFilter.svelte';
 	import OpponentGamesTable from './OpponentGamesTable.svelte';
 	import OpponentPieCharts from './OpponentPieCharts/OpponentPieCharts.svelte';
 	import {
@@ -30,7 +30,7 @@
 	let t = $derived(getTranslation(language.current));
 	let ot = $derived(t.pages.playerDetail.opponentsTab);
 
-	let selected = $state<TimeControl>('all');
+	let selected = $state<GameTimeControl>('all');
 
 	let counts = $derived({
 		all: profile.games.length,
@@ -91,7 +91,13 @@
 {:else}
 	<div class="space-y-6">
 		<div class="flex justify-start">
-			<TimeControlFilter {selected} onSelect={(value) => (selected = value)} {counts} />
+			<TimeControlFilter
+				{selected}
+				onSelect={(value) => {
+					if (value !== 'mixed') selected = value;
+				}}
+				{counts}
+			/>
 		</div>
 
 		<OpponentPieCharts all={stats.all} white={stats.white} black={stats.black} />
