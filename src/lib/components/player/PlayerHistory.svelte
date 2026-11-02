@@ -15,6 +15,9 @@
 	import PlayerTournamentList from './PlayerTournamentList.svelte';
 	import OpponentsTab from './OpponentsTab.svelte';
 	import HeadToHeadTab from './HeadToHeadTab.svelte';
+	import TimeControlFilter, { type TimeControl } from './TimeControlFilter.svelte';
+	import type { TournamentParticipation } from '$lib/player/participations';
+	import { countByTimeControl, filterByTimeControl } from '$lib/player/tournamentTimeControl';
 	import { getPlayerProfileState } from '$lib/stores/playerProfile.svelte';
 	import { language } from '$lib/stores/language.svelte';
 	import { getTranslation } from '$lib/translations';
@@ -26,6 +29,25 @@
 	let t = $derived(getTranslation(language.current).pages.playerDetail);
 
 	let selected = $state<PlayerTab>('individual');
+
+	/**
+	 * The tournament tabs' filter, back to all whenever the tab changes: a tab
+	 * should open on its whole list. The Opponents tab has its own.
+	 */
+	let timeControl = $state<TimeControl>('all');
+	function selectTab(tab: PlayerTab) {
+		if (tab !== selected) timeControl = 'all';
+		selected = tab;
+	}
+
+	const TOURNAMENT_OPTIONS: TimeControl[] = [
+		'all',
+		'standard',
+		'rapid',
+		'blitz',
+		'mixed',
+		'unrated'
+	];
 
 	/**
 	 * Choosing an opponent opens their tab.
@@ -58,7 +80,7 @@
 		{#each tabs as tab (tab.id)}
 			<button
 				type="button"
-				onclick={() => (selected = tab.id)}
+				onclick={() => selectTab(tab.id)}
 				class="px-4 py-3 text-sm font-medium whitespace-nowrap transition-colors {selected ===
 				tab.id
 					? 'border-b-2 border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400'
@@ -70,22 +92,41 @@
 	</div>
 
 	{#if selected === 'individual'}
-		<PlayerTournamentList
-			tournaments={profile.individualTournaments}
-			loading={profile.tournamentsLoading}
-			progress={profile.tournamentsProgress}
-			failed={profile.gamesFailed}
-		/>
+		{@render tournamentTab(profile.individualTournaments)}
 	{:else if selected === 'team'}
-		<PlayerTournamentList
-			tournaments={profile.teamTournaments}
-			loading={profile.tournamentsLoading}
-			progress={profile.tournamentsProgress}
-			failed={profile.gamesFailed}
-		/>
+		{@render tournamentTab(profile.teamTournaments)}
 	{:else if selected === 'opponents'}
 		<OpponentsTab />
 	{:else if selected === 'h2h' && profile.selectedOpponentId !== null}
 		<HeadToHeadTab opponentId={profile.selectedOpponentId} />
 	{/if}
 </div>
+
+<!-- The filter shows only once there is a loaded list to narrow; loading, an
+     error and an empty history keep the list's own messages. -->
+{#snippet tournamentTab(rows: TournamentParticipation[])}
+	{@const ready = !profile.tournamentsLoading && !profile.gamesFailed && rows.length > 0}
+	{@const shown = filterByTimeControl(rows, timeControl)}
+	{#if ready}
+		<div class="mb-4 flex justify-start">
+			<TimeControlFilter
+				selected={timeControl}
+				onSelect={(value) => (timeControl = value)}
+				counts={countByTimeControl(rows)}
+				options={TOURNAMENT_OPTIONS}
+			/>
+		</div>
+	{/if}
+	{#if ready && shown.length === 0}
+		<div class="py-8 text-center">
+			<div class="text-gray-600 dark:text-gray-400">{t.tournamentHistory.noTournamentsOfType}</div>
+		</div>
+	{:else}
+		<PlayerTournamentList
+			tournaments={shown}
+			loading={profile.tournamentsLoading}
+			progress={profile.tournamentsProgress}
+			failed={profile.gamesFailed}
+		/>
+	{/if}
+{/snippet}

@@ -9,7 +9,18 @@ import PlayerHistory from './PlayerHistory.svelte';
 const INDIVIDUAL = 3;
 const ALLSVENSKAN = 2;
 
-const tournament = (id: number, groupId: number, name: string, type: number): TournamentDto =>
+/** Round rating types, as SSF marks them: 1 standard, 2 rapid, 3 blitz. */
+const STANDARD = [1, 1];
+const BLITZ = [3, 3];
+const MIXED = [2, 1];
+
+const tournament = (
+	id: number,
+	groupId: number,
+	name: string,
+	type: number,
+	rated: number[] = STANDARD
+): TournamentDto =>
 	({
 		id,
 		name,
@@ -20,7 +31,16 @@ const tournament = (id: number, groupId: number, name: string, type: number): To
 			{
 				className: '',
 				subClasses: [],
-				groups: [{ id: groupId, name: 'A', start: '2025-01-01', end: '2025-01-02' }]
+				groups: [
+					{
+						id: groupId,
+						name: 'A',
+						start: '2025-01-01',
+						end: '2025-01-02',
+						rankingAlgorithm: 1,
+						tournamentRounds: rated.map((r, i) => ({ roundNumber: i + 1, rated: r }))
+					}
+				]
 			}
 		]
 	}) as unknown as TournamentDto;
@@ -52,9 +72,9 @@ function setup(prepare: (state: PlayerProfileState) => void = () => {}) {
  * getters: the store builds its lists from `games` and the shared tournament
  * cache, and going through both is what proves the wiring.
  */
-function withTournaments(state: PlayerProfileState, rows: [number, string, number][]) {
-	for (const [groupId, name, type] of rows) {
-		tournamentCache.add(groupId, tournament(groupId * 10, groupId, name, type));
+function withTournaments(state: PlayerProfileState, rows: [number, string, number, number[]?][]) {
+	for (const [groupId, name, type, rated] of rows) {
+		tournamentCache.add(groupId, tournament(groupId * 10, groupId, name, type, rated));
 	}
 	state.games = rows.map(([groupId]) => game(groupId));
 }
@@ -121,5 +141,55 @@ describe('what the tabs are given', () => {
 	it('passes the failure through', () => {
 		setup((state) => (state.gamesFailed = true));
 		expect(screen.getByText('Kunde inte hämta data')).toBeInTheDocument();
+	});
+});
+
+describe('the time-control filter on the tournament tabs', () => {
+	const history = (state: PlayerProfileState) =>
+		withTournaments(state, [
+			[10, 'Rilton Cup', INDIVIDUAL, STANDARD],
+			[11, 'Blixt-SM', INDIVIDUAL, BLITZ],
+			[12, 'Rapid och lång', INDIVIDUAL, MIXED],
+			[20, 'Allsvenskan', ALLSVENSKAN, STANDARD],
+			[21, 'Lag-blixt', ALLSVENSKAN, BLITZ]
+		]);
+
+	const choose = async (user: ReturnType<typeof userEvent.setup>, option: string) => {
+		await user.click(
+			screen.getByRole('button', { name: /^Alla|^Normal|^Snabb|^Blixt|^Mixade|^Oratade/ })
+		);
+		await user.click(screen.getByRole('option', { name: option }));
+	};
+
+	it('narrows the list to the chosen kind, mixed included', async () => {
+		const { user } = setup(history);
+		await choose(user, 'Mixade (1)');
+
+		expect(screen.getByText('Rapid och lång')).toBeInTheDocument();
+		expect(screen.queryByText('Rilton Cup')).toBeNull();
+		expect(screen.queryByText('Blixt-SM')).toBeNull();
+	});
+
+	it('goes back to all when the tab changes', async () => {
+		const { user } = setup(history);
+		await choose(user, 'Blixtschack (1)');
+		await user.click(screen.getByRole('button', { name: 'Lag' }));
+
+		expect(screen.getByRole('button', { name: 'Alla (2)' })).toBeInTheDocument();
+		expect(screen.getByText('Allsvenskan')).toBeInTheDocument();
+		expect(screen.getByText('Lag-blixt')).toBeInTheDocument();
+	});
+
+	it('says so when nothing is of the chosen kind, and keeps the filter', async () => {
+		const { user } = setup(history);
+		await choose(user, 'Snabbschack (0)');
+
+		expect(screen.getByText('Inga turneringar med den här speltypen.')).toBeInTheDocument();
+		expect(screen.getByRole('button', { name: 'Snabbschack (0)' })).toBeInTheDocument();
+	});
+
+	it('is not offered for an empty history', () => {
+		setup();
+		expect(screen.queryByRole('button', { name: /^Alla/ })).toBeNull();
 	});
 });

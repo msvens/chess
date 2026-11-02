@@ -50,6 +50,25 @@ describe('the time-control filter', () => {
 		expect(screen.getByRole('option', { name: 'Blixtschack (0)' })).toBeInTheDocument();
 	});
 
+	it('offers mixed when asked for all six, as the tournament tabs do', async () => {
+		const onSelect = vi.fn();
+		render(TimeControlFilter, {
+			selected: 'all',
+			onSelect,
+			counts: { ...counts, mixed: 5 },
+			options: ['all', 'standard', 'rapid', 'blitz', 'mixed', 'unrated']
+		});
+		await open(userEvent.setup());
+		expect(screen.getAllByRole('option').map((o) => o.textContent?.trim())).toEqual([
+			'Alla (230)',
+			'Normal (150)',
+			'Snabbschack (40)',
+			'Blixtschack (30)',
+			'Mixade (5)',
+			'Oratade (10)'
+		]);
+	});
+
 	it('marks the current control for assistive tech', async () => {
 		const { user } = setup('rapid');
 		await open(user);
