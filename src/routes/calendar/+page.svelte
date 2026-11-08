@@ -19,7 +19,8 @@
 	import CalendarView from '$lib/components/calendar/CalendarView.svelte';
 	import MapView from '$lib/components/calendar/MapView.svelte';
 	import { initialTab, saveTab, type CalendarTab } from '$lib/components/calendar/calendarPrefs';
-	import { TournamentService, type TournamentDto } from '$lib/api';
+	import { deduplicateTournaments } from '$lib/components/tournaments/tournamentSearch';
+	import { getTournamentsToday, TournamentService, type TournamentDto } from '$lib/api';
 	import {
 		countByCategory,
 		countByState,
@@ -48,7 +49,15 @@
 	// first and then jump.
 	let tab = $state<CalendarTab>(initialTab());
 
-	let tournaments = $state<TournamentDto[]>([]);
+	let coming = $state<TournamentDto[]>([]);
+	let playingToday = $state<TournamentDto[]>([]);
+	// By start date, the order the coming list arrives in: today's additions have
+	// usually started already, and the list view has no sort of its own.
+	let tournaments = $derived(
+		deduplicateTournaments([...coming, ...playingToday]).sort((a, b) =>
+			a.start.localeCompare(b.start)
+		)
+	);
 	let loading = $state(true);
 	let failed = $state(false);
 
@@ -84,11 +93,19 @@
 			if (cancelled) return;
 
 			if (response.status === 200 && response.data) {
-				tournaments = response.data;
+				coming = response.data;
 			} else {
 				failed = true;
 			}
 			loading = false;
+		})();
+
+		// The coming list drops a tournament on its last day, so today's are added
+		// separately. Not awaited with it: this search is slower, and when it fails
+		// the calendar is simply missing what ends today, as it always was.
+		(async () => {
+			const response = await getTournamentsToday({ service });
+			if (!cancelled && response.data) playingToday = response.data;
 		})();
 
 		return () => {

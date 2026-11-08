@@ -15,7 +15,7 @@
 	import NavItemLink from './NavItem.svelte';
 	import NavDropdown from './NavDropdown.svelte';
 	import NavbarMobileMenu from './NavbarMobileMenu.svelte';
-	import type { NavBrand, NavDisplay, NavIconAction, NavItem } from './navTypes';
+	import type { NavBrand, NavDisplay, NavIconAction, NavItem, NavLinkItem } from './navTypes';
 
 	interface NavbarProps {
 		brand: NavBrand;
@@ -38,8 +38,13 @@
 
 	let menuOpen = $state(false);
 
-	// The drawer shows everything, since it has no room for a centre/right split.
-	let mobileItems = $derived([...centerItems, ...rightItems]);
+	const isPinned = (item: NavItem): item is NavLinkItem =>
+		item.kind === 'link' && item.pinnedOnMobile === true;
+
+	let pinnedItems = $derived(centerItems.filter(isPinned));
+
+	// The drawer shows the rest, since it has no room for a centre/right split.
+	let mobileItems = $derived([...centerItems.filter((item) => !isPinned(item)), ...rightItems]);
 
 	const brandClass =
 		'flex items-center gap-2 text-base font-light leading-tight tracking-widest uppercase text-gray-900 dark:text-gray-200';
@@ -130,6 +135,9 @@
 			<div class="flex items-center">{@render brandMark()}</div>
 
 			<div class="flex items-center gap-1">
+				{#each pinnedItems as item (item.id)}
+					<NavItemLink {item} {display} />
+				{/each}
 				{#each actions as action (action.id)}
 					{@render actionButton(action, 'medium')}
 				{/each}

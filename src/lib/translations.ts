@@ -4,6 +4,7 @@ export interface Translations {
 	navbar: {
 		navigation: {
 			upcomingEvents: string;
+			today: string;
 			calendar: string;
 			results: string;
 			players: string;
@@ -221,6 +222,12 @@ export interface Translations {
 			title: string;
 			subtitle: string;
 			placeholder: string;
+		};
+		today: {
+			title: string;
+			subtitle: string;
+			loadError: string;
+			empty: string;
 		};
 		calendar: {
 			title: string;
@@ -833,6 +840,7 @@ const translations: Record<Language, Translations> = {
 		navbar: {
 			navigation: {
 				upcomingEvents: 'Upcoming Events',
+				today: 'Today',
 				calendar: 'Calendar',
 				results: 'Results',
 				players: 'Players',
@@ -1039,6 +1047,13 @@ const translations: Record<Language, Translations> = {
 				subtitle: 'Discover the latest chess tournaments and events happening in Sweden.',
 				placeholder:
 					'Event listings coming soon. This page will display upcoming tournaments with details, dates, and registration information.'
+			},
+			today: {
+				title: 'Today',
+				subtitle:
+					'Tournaments being played today. One that ends today appears once results are reported.',
+				loadError: 'Failed to load tournaments',
+				empty: 'No tournaments found for today.'
 			},
 			calendar: {
 				title: 'Tournament Calendar',
@@ -1633,6 +1648,7 @@ const translations: Record<Language, Translations> = {
 		navbar: {
 			navigation: {
 				upcomingEvents: 'Kommande Evenemang',
+				today: 'Idag',
 				calendar: 'Kalender',
 				results: 'Resultat',
 				players: 'Spelare',
@@ -1839,6 +1855,13 @@ const translations: Record<Language, Translations> = {
 				subtitle: 'Upptäck de senaste schackturneringarna och evenemangen som händer i Sverige.',
 				placeholder:
 					'Evenemangslistor kommer snart. Denna sida kommer att visa kommande turneringar med detaljer, datum och registreringsinformation.'
+			},
+			today: {
+				title: 'Idag',
+				subtitle:
+					'Turneringar som spelas idag. En turnering som slutar idag visas när resultat har rapporterats.',
+				loadError: 'Kunde inte ladda turneringar',
+				empty: 'Inga turneringar hittades för idag.'
 			},
 			calendar: {
 				title: 'Turneringskalender',

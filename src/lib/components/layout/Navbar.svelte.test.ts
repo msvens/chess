@@ -94,6 +94,17 @@ describe('Navbar mobile drawer', () => {
 		expect(button).toHaveAttribute('aria-expanded', 'true');
 	});
 
+	it('keeps a pinned item in the phone row, not in the drawer', () => {
+		renderNavbar();
+		// Desktop and phone row. An unpinned item is also in those two places:
+		// desktop and drawer.
+		expect(screen.getAllByRole('link', { name: /idag/i })).toHaveLength(2);
+		const drawer = screen.getByRole('button', { name: 'Close menu' })
+			.nextElementSibling as HTMLElement;
+		expect(within(drawer).queryByRole('link', { name: /idag/i })).toBeNull();
+		expect(within(drawer).getByRole('link', { name: /kalender/i })).toBeInTheDocument();
+	});
+
 	it('flattens the dropdown into the drawer rather than nesting it', async () => {
 		const user = userEvent.setup();
 		renderNavbar();

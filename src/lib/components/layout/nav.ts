@@ -13,6 +13,7 @@ import {
 	BookOpen,
 	BuildingOffice2,
 	Calendar,
+	Clock,
 	Cog6Tooth,
 	Moon,
 	Sun,
@@ -44,6 +45,14 @@ export function isActiveRoute(pathname: string, href: string): boolean {
 export function centerItems(language: Language): NavLinkItem[] {
 	const t = getTranslation(language);
 	return [
+		{
+			kind: 'link',
+			id: 'today',
+			href: '/today',
+			icon: Clock,
+			label: t.navbar.navigation.today,
+			pinnedOnMobile: true
+		},
 		{
 			kind: 'link',
 			id: 'calendar',

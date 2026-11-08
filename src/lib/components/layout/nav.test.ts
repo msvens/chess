@@ -34,9 +34,10 @@ describe('nav structure', () => {
 		expect(brand.lines).toEqual(['msvens', 'chess']);
 	});
 
-	it('lists the four primary sections in order', () => {
+	it('lists the primary sections in order', () => {
 		// Elo moved under the guide, reached through More.
 		expect(centerItems('sv').map((i) => i.href)).toEqual([
+			'/today',
 			'/calendar',
 			'/results',
 			'/players',

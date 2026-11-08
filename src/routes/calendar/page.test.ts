@@ -7,11 +7,13 @@ import { ORGANIZATIONS_STATE_KEY, OrganizationsState } from '$lib/stores/organiz
 import Page from './+page.svelte';
 
 const searchComingTournaments = vi.fn();
+const getTournamentsToday = vi.fn();
 
 vi.mock('$lib/api', async (importOriginal) => {
 	const actual = await importOriginal<typeof import('$lib/api')>();
 	return {
 		...actual,
+		getTournamentsToday: (...args: unknown[]) => getTournamentsToday(...args),
 		TournamentService: class {
 			searchComingTournaments = (...args: unknown[]) => searchComingTournaments(...args);
 		}
@@ -81,6 +83,42 @@ const listTab = () => screen.getByRole('button', { name: 'Lista' });
 beforeEach(() => {
 	localStorage.clear();
 	searchComingTournaments.mockReset();
+	getTournamentsToday.mockReset();
+	getTournamentsToday.mockResolvedValue({ status: 200, data: [] });
+});
+
+describe('tournaments played today', () => {
+	it('adds them to the coming list, once each', async () => {
+		getTournamentsToday.mockResolvedValue({
+			status: 200,
+			data: [tournament({ id: 1 }), tournament({ id: 2, name: 'Ends Today Open' })]
+		});
+		const user = setup([tournament({ id: 1 })]);
+		await user.click(listTab());
+		expect(await screen.findByRole('link', { name: 'Ends Today Open' })).toBeInTheDocument();
+		expect(screen.getAllByRole('link', { name: 'Rilton Cup' })).toHaveLength(1);
+	});
+
+	it('places them by start date, not after the coming list', async () => {
+		getTournamentsToday.mockResolvedValue({
+			status: 200,
+			data: [tournament({ id: 2, name: 'Ends Today Open', start: '2026-08-01' })]
+		});
+		const user = setup([tournament({ id: 1 })]);
+		await user.click(listTab());
+		await screen.findByRole('link', { name: 'Ends Today Open' });
+		expect(screen.getAllByRole('link').map((link) => link.textContent?.trim())).toEqual([
+			'Ends Today Open',
+			'Rilton Cup'
+		]);
+	});
+
+	it('keeps the coming list when the search fails', async () => {
+		getTournamentsToday.mockResolvedValue({ status: 500, error: 'boom' });
+		const user = setup([tournament({ id: 1 })]);
+		await user.click(listTab());
+		expect(await screen.findByRole('link', { name: 'Rilton Cup' })).toBeInTheDocument();
+	});
 });
 
 describe('the tab bar', () => {
