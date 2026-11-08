@@ -59,6 +59,8 @@ export interface NavLinkItem {
 	icon?: IconSource;
 	label: string;
 	title?: string;
+	/** On phones, shown in the top bar instead of the drawer. */
+	pinnedOnMobile?: boolean;
 }
 
 export interface NavDropdownItem {
