@@ -70,11 +70,11 @@ export interface PerformanceStats {
 }
 
 export interface TournamentSummary {
-	/** Points scored, in the event's own point system. */
+	/** Points scored in the event's own point system, walkovers included, as in the standings. */
 	totalScore: number;
 	/** Games that were actually played — walkovers and non-results excluded. */
 	playedCount: number;
-	/** The most `playedCount` games could score: a win's worth each, in the event's point system. */
+	/** The most the results so far could score: a win's worth each, walkovers included. */
 	maxScore: number;
 	byRatingType: Record<RatingType, RatingTypeStats>;
 	/** The rating types this event moved the player's rating on. */
@@ -198,11 +198,14 @@ export function summarise(
 
 	const performance: PerformanceStats = { opponentRatings: [], score: 0 };
 
-	const played = matches.filter((match) => !match.isWalkover && match.isCountable);
+	// A walkover scores in the tournament but is no game: it counts towards the
+	// total, and stays out of the rating figures.
+	const countable = matches.filter((match) => match.isCountable);
+	const played = countable.filter((match) => !match.isWalkover);
 
-	let totalScore = 0;
+	const totalScore = countable.reduce((sum, match) => sum + pointsOf(match), 0);
+
 	for (const match of played) {
-		totalScore += pointsOf(match);
 		const opponent = playerAt(match.opponentId, match.roundDate);
 
 		const forPerformance = performanceGame(match, opponent, rankingAlgorithm);
@@ -226,7 +229,7 @@ export function summarise(
 	return {
 		totalScore,
 		playedCount: played.length,
-		maxScore: played.length * winValue(pointSystem),
+		maxScore: countable.length * winValue(pointSystem),
 		byRatingType,
 		ratedTypes,
 		performance
