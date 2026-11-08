@@ -11,7 +11,32 @@
  * girls model matches Ganesh Srinivasson's reference script exactly (per-cell).
  */
 
-import type { JgpSeason } from './types';
+import type { JgpClubException, JgpSeason } from './types';
+
+/**
+ * Players whose main club is outside Stockholm but who also play for a Stockholm
+ * club. That belongs to the player, not the division, so both seasons share it.
+ */
+const CLUB_EXCEPTIONS_2026: JgpClubException[] = [
+	// 2006-2009
+	{ memberId: 542974, name: 'Henry Bjarnegård', stockholmClub: 'played a Stockholm club' },
+	// 2010-2012
+	{ memberId: 617072, name: 'Alexander Gärshag', stockholmClub: 'played a Stockholm club' },
+	{ memberId: 622594, name: 'Jonathan Jackmann', stockholmClub: 'played a Stockholm club' },
+	// 2013
+	{
+		memberId: 689356,
+		name: 'Benjamin Garavito Bengtsson',
+		stockholmClub: 'played a Stockholm club'
+	},
+	{
+		memberId: 715650,
+		name: 'Ingibjörg Ylfa Fannarsdóttir',
+		stockholmClub: 'played a Stockholm club'
+	},
+	// 2014
+	{ memberId: 669826, name: 'Ece Yigit', stockholmClub: 'played a Stockholm club' }
+];
 
 /**
  * 2026 open — an ongoing season. Age dispensations and club exceptions are
@@ -220,26 +245,7 @@ const OPEN_2026: JgpSeason = {
 		{ memberId: 715536, name: 'Saadhan Kowshik', birthYear: 2016, playClassYear: 2015 },
 		{ memberId: 664867, name: 'Samuel Najafi', birthYear: 2016, playClassYear: 2015 }
 	],
-	clubExceptions: [
-		// 2006-2009
-		{ memberId: 542974, name: 'Henry Bjarnegård', stockholmClub: 'played a Stockholm club' },
-		// 2010-2012
-		{ memberId: 617072, name: 'Alexander Gärshag', stockholmClub: 'played a Stockholm club' },
-		{ memberId: 622594, name: 'Jonathan Jackmann', stockholmClub: 'played a Stockholm club' },
-		// 2013
-		{
-			memberId: 689356,
-			name: 'Benjamin Garavito Bengtsson',
-			stockholmClub: 'played a Stockholm club'
-		},
-		{
-			memberId: 715650,
-			name: 'Ingibjörg Ylfa Fannarsdóttir',
-			stockholmClub: 'played a Stockholm club'
-		},
-		// 2014
-		{ memberId: 669826, name: 'Ece Yigit', stockholmClub: 'played a Stockholm club' }
-	]
+	clubExceptions: CLUB_EXCEPTIONS_2026
 };
 
 /**
@@ -425,7 +431,7 @@ const GIRLS_2026: JgpSeason = {
 		}
 	],
 	dispensations: [],
-	clubExceptions: []
+	clubExceptions: CLUB_EXCEPTIONS_2026
 };
 
 /** All configured JGP seasons. */

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { ClubDTO } from '$lib/api';
 import type { JgpSeason } from '$lib/data/jgp/types';
+import { jgpSeasons } from '$lib/data/jgp/seasons';
 import type { JgpPlayerResult } from './jgpEngine';
 import { STOCKHOLM_DISTRICT_ID, stockholmEligibility } from './eligibility';
 
@@ -54,5 +55,13 @@ describe('stockholmEligibility', () => {
 		const eligible = stockholmEligibility(withException, () => elsewhere);
 		expect(eligible(row({ memberId: 7 }))).toBe(true);
 		expect(eligible(row({ memberId: 8 }))).toBe(false);
+	});
+
+	it('applies the same exceptions to every division of the 2026 season', () => {
+		// Ece Yigit: main club in Eskilstuna, also plays for a Stockholm club.
+		for (const division of jgpSeasons) {
+			const eligible = stockholmEligibility(division, () => elsewhere);
+			expect(eligible(row({ memberId: 669826 }))).toBe(true);
+		}
 	});
 });
