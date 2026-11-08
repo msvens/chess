@@ -31,6 +31,7 @@
 	import RegistrationTable from '$lib/components/results/RegistrationTable.svelte';
 	import RoundStandingsTable from '$lib/components/results/RoundStandingsTable.svelte';
 	import RoundStepper from '$lib/components/results/RoundStepper.svelte';
+	import RoundTabs from '$lib/components/results/RoundTabs.svelte';
 	import TeamFinalResultsTable from '$lib/components/results/TeamFinalResultsTable.svelte';
 	import TeamRoundResults from '$lib/components/results/TeamRoundResults.svelte';
 	import TeamRoundStandingsTable from '$lib/components/results/TeamRoundStandingsTable.svelte';
@@ -91,6 +92,13 @@
 	let nf = $derived(t.notFound);
 	let resultLabels = $derived(getResultLabels(t));
 	let locale = $derived(localeOf(language.current));
+
+	/** The played date where there is one, the scheduled date otherwise: a future round has only the latter. */
+	const roundDateLabel = (round: number) =>
+		formatRoundDate(
+			resultsByRound.get(round)?.[0]?.date ?? results.roundsMap.get(round)?.roundDate,
+			locale
+		);
 
 	let tournamentId = $derived(Number.parseInt(page.params.tournamentId ?? '', 10));
 	let groupId = $derived(Number.parseInt(page.params.groupId ?? '', 10));
@@ -852,36 +860,12 @@
 										<div class="text-gray-600 dark:text-gray-400">{tr.roundByRound.noResults}</div>
 									</div>
 								{:else}
-									<div class="flex overflow-x-auto border-b border-gray-200 dark:border-gray-700">
-										{#each sortedRounds as round (round)}
-											{@const active = activeRound === round}
-											<!-- The played date where there is one, the scheduled date
-											     otherwise — a future round has only the latter. -->
-											{@const dateLabel = formatRoundDate(
-												resultsByRound.get(round)?.[0]?.date ??
-													results.roundsMap.get(round)?.roundDate,
-												locale
-											)}
-											<button
-												type="button"
-												onclick={() => (selectedRound = round)}
-												class="flex-shrink-0 px-4 py-2 text-sm font-medium whitespace-nowrap transition-colors {active
-													? 'border-b-2 border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400'
-													: 'text-gray-600 dark:text-gray-400'}"
-											>
-												<div>{tr.roundByRound.round} {round}</div>
-												{#if dateLabel}
-													<div
-														class="text-xs {active
-															? 'text-blue-500 dark:text-blue-300'
-															: 'text-gray-500 dark:text-gray-500'}"
-													>
-														{dateLabel}
-													</div>
-												{/if}
-											</button>
-										{/each}
-									</div>
+									<RoundTabs
+										rounds={sortedRounds}
+										{activeRound}
+										dateOf={roundDateLabel}
+										onSelect={(round) => (selectedRound = round)}
+									/>
 
 									<div class="p-4 md:p-6">
 										<Table

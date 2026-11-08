@@ -9,6 +9,7 @@
 	 */
 	import { untrack } from 'svelte';
 	import { ChevronDown, Icon } from 'svelte-hero-icons';
+	import RoundTabs from './RoundTabs.svelte';
 	import Link from '$lib/components/ui/Link.svelte';
 	import Table from '$lib/components/ui/Table/Table.svelte';
 	import type { TableColumn } from '$lib/components/ui/Table/tableTypes';
@@ -76,6 +77,16 @@
 		resolveActiveRound(selectedRound, sortedRounds, currentRound(roundResults))
 	);
 	let matches = $derived(activeRound == null ? [] : (matchesByRound.get(activeRound) ?? []));
+
+	/**
+	 * The date the round's first match carries. `TeamRoundResults.tsx` has a TODO
+	 * to fall back to the group's scheduled `roundDate` the way the individual page
+	 * does — deliberately not taken: measured across 44 team groups, the API always
+	 * dates these rows, even for rounds not yet played, so the fallback would never
+	 * render.
+	 */
+	const roundDateLabel = (round: number) =>
+		formatRoundDate(matchesByRound.get(round)?.[0]?.date, locale);
 
 	/** Byes and walkovers occupy a team slot but have no team to name. */
 	function teamLabel(id: number, teamNumber: number): string {
@@ -208,35 +219,7 @@
 			</h3>
 		</div>
 
-		<div class="flex overflow-x-auto border-b border-gray-200 dark:border-gray-700">
-			{#each sortedRounds as round (round)}
-				{@const active = activeRound === round}
-				<!-- The date the round's first match carries. `TeamRoundResults.tsx`
-				     has a TODO to fall back to the group's scheduled `roundDate` the
-				     way the individual page does — deliberately not taken: measured
-				     across 44 team groups, the API always dates these rows, even for
-				     rounds not yet played, so the fallback would never render. -->
-				{@const dateLabel = formatRoundDate(matchesByRound.get(round)?.[0]?.date, locale)}
-				<button
-					type="button"
-					onclick={() => selectRound(round)}
-					class="flex-shrink-0 px-4 py-2 text-sm font-medium whitespace-nowrap transition-colors {active
-						? 'border-b-2 border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400'
-						: 'text-gray-600 dark:text-gray-400'}"
-				>
-					<div>{tr.roundByRound.round} {round}</div>
-					{#if dateLabel}
-						<div
-							class="text-xs {active
-								? 'text-blue-500 dark:text-blue-300'
-								: 'text-gray-500 dark:text-gray-500'}"
-						>
-							{dateLabel}
-						</div>
-					{/if}
-				</button>
-			{/each}
-		</div>
+		<RoundTabs rounds={sortedRounds} {activeRound} dateOf={roundDateLabel} onSelect={selectRound} />
 
 		<div class="p-4 md:p-6">
 			<div class="space-y-2">
