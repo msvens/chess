@@ -178,6 +178,21 @@ const OPEN_2026: JgpSeason = {
 				{ groupId: 19207, isBeginner: true, label: 'E' },
 				{ groupId: 19208, isBeginner: true, label: 'F' }
 			]
+		},
+		{
+			label: 'Farsta SK JGP 2026',
+			shortLabel: 'Farsta',
+			date: '2026-11-07',
+			tournamentId: 7271,
+			groups: [
+				{ groupId: 19416, isBeginner: false, label: 'A', fromYear: 2006, toYear: 2009 },
+				{ groupId: 19417, isBeginner: false, label: 'B', fromYear: 2010, toYear: 2012 },
+				{ groupId: 19418, isBeginner: false, label: 'C', fromYear: 2013, toYear: 2015 },
+				{ groupId: 19419, isBeginner: false, label: 'D', fromYear: 2016, toYear: 9999 },
+				// E "Nybörjare med klocka" and F "Nybörjare utan klocka" — both beginner.
+				{ groupId: 19420, isBeginner: true, label: 'E' },
+				{ groupId: 19421, isBeginner: true, label: 'F' }
+			]
 		}
 	],
 	// Filled in during verification, age group by age group (cross-checked
@@ -391,6 +406,21 @@ const GIRLS_2026: JgpSeason = {
 				// "Mellanstadiet Allmän" → öppen/allmän => klass "y".
 				{ groupId: 19207, isBeginner: false, klass: 'y', rounds: 6, label: 'E' },
 				{ groupId: 19208, isBeginner: true, klass: 'z', rounds: 5, label: 'F' }
+			]
+		},
+		{
+			label: 'Farsta SK JGP 2026',
+			shortLabel: 'Farsta',
+			date: '2026-11-07',
+			tournamentId: 7271,
+			groups: [
+				{ groupId: 19416, isBeginner: false, klass: 'a', rounds: 7, label: 'A' },
+				{ groupId: 19417, isBeginner: false, klass: 'b', rounds: 7, label: 'B' },
+				{ groupId: 19418, isBeginner: false, klass: 'c', rounds: 7, label: 'C' },
+				{ groupId: 19419, isBeginner: false, klass: 'd', rounds: 7, label: 'D' },
+				// Two beginner groups, both "Nybörjare" => both "z", merged into one pool.
+				{ groupId: 19420, isBeginner: true, klass: 'z', rounds: 6, label: 'E' },
+				{ groupId: 19421, isBeginner: true, klass: 'z', rounds: 6, label: 'F' }
 			]
 		}
 	],
