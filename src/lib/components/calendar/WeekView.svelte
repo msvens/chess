@@ -12,7 +12,7 @@
 	import type { PackedRow } from '$lib/utils/calendarLayout';
 	import { barClasses } from './calendarColors';
 	import DayEventsPopover from './DayEventsPopover.svelte';
-	import { formatEventRange, hasReversedDates, shortDateFormat, typeLabel } from './eventLabels';
+	import { formatEventRange, hasReversedDates, typeLabel } from './eventLabels';
 	import { getOrganizationsState } from '$lib/stores/organizations.svelte';
 	import { language } from '$lib/stores/language.svelte';
 	import { localeOf } from '$lib/i18n';
@@ -34,7 +34,7 @@
 	let t = $derived(getTranslation(language.current));
 	let cal = $derived(t.pages.calendar);
 	let typeLabels = $derived(t.components.tournamentTypeFilter);
-	let dateFormat = $derived(shortDateFormat(localeOf(language.current)));
+	let locale = $derived(localeOf(language.current));
 
 	/** Enough height to read as a week, with any slack below the cards. */
 	let minBand = $derived(mobile.current ? 220 : 300);
@@ -162,7 +162,7 @@
 						<span
 							class="pointer-events-none relative z-10 block truncate text-[10px] leading-tight opacity-70"
 						>
-							{formatEventRange(tournament, dateFormat)}
+							{formatEventRange(tournament, locale, { showYear: false })}
 						</span>
 					{/if}
 

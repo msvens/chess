@@ -22,6 +22,7 @@
 	} from '$lib/utils/calendarLayout';
 	import { getAllTournamentTypes } from '$lib/utils/tournamentFilters';
 	import { language } from '$lib/stores/language.svelte';
+	import { formatDayRange } from '$lib/dateFormat';
 	import { localeOf } from '$lib/i18n';
 	import { getTranslation } from '$lib/translations';
 
@@ -86,13 +87,7 @@
 		}
 		const from = weekStart(anchor);
 		const to = addDays(from, 6);
-		const dayMonth = new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'short' });
-		const full = new Intl.DateTimeFormat(locale, {
-			day: 'numeric',
-			month: 'short',
-			year: 'numeric'
-		});
-		return `${dayMonth.format(from)} – ${full.format(to)}`;
+		return formatDayRange(from, to, locale);
 	});
 
 	let canGoPrev = $derived(

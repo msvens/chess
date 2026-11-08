@@ -248,9 +248,9 @@ describe('the table', () => {
 
 		const rows = screen.getAllByRole('row').slice(1);
 		expect(rows[0]).toHaveTextContent('Blixt-KM');
-		expect(rows[0]).toHaveTextContent('2025-2-3');
+		expect(rows[0]).toHaveTextContent('3 feb 2025');
 		expect(rows[1]).toHaveTextContent('Rilton Cup');
-		expect(rows[1]).toHaveTextContent('2025-1-15');
+		expect(rows[1]).toHaveTextContent('15 jan 2025');
 	});
 
 	it('links each game to its group', () => {

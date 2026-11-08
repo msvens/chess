@@ -124,6 +124,7 @@
 	{:else}
 		<PlayerTournamentList
 			tournaments={shown}
+			memberId={profile.memberId}
 			loading={profile.tournamentsLoading}
 			progress={profile.tournamentsProgress}
 			failed={profile.gamesFailed}

@@ -13,7 +13,7 @@
 	import { escapeKey } from '$lib/attachments/escapeKey';
 	import type { TournamentDto } from '$lib/api';
 	import { swatchClasses } from './calendarColors';
-	import { formatEventRange, hasReversedDates, longDateFormat, typeLabel } from './eventLabels';
+	import { formatEventRange, hasReversedDates, typeLabel } from './eventLabels';
 	import { placePopover, placementStyle } from './popoverPlacement';
 	import { getOrganizationsState } from '$lib/stores/organizations.svelte';
 	import { language } from '$lib/stores/language.svelte';
@@ -39,7 +39,6 @@
 	let headerFormat = $derived(
 		new Intl.DateTimeFormat(locale, { weekday: 'long', day: 'numeric', month: 'long' })
 	);
-	let dateFormat = $derived(longDateFormat(locale));
 
 	let element = $state<HTMLDivElement | null>(null);
 	// Hangs below-left until measured; anything else would flash in the wrong
@@ -118,7 +117,7 @@
 						<div class="flex gap-1">
 							<dt class="shrink-0 font-medium">{details.dateRange}:</dt>
 							<dd>
-								{formatEventRange(tournament, dateFormat)}
+								{formatEventRange(tournament, locale)}
 								{#if hasReversedDates(tournament)}
 									<!-- Shown as entered, and marked: the app cannot know which of
 									     the two dates is the wrong one. -->

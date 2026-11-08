@@ -42,6 +42,7 @@
 	import { getGroupResultsState } from '$lib/stores/groupResults.svelte';
 	import { playerCache } from '$lib/stores/playerCache.svelte';
 	import { language } from '$lib/stores/language.svelte';
+	import { formatApiDayRange } from '$lib/dateFormat';
 	import { localeOf } from '$lib/i18n';
 	import { getTranslation } from '$lib/translations';
 
@@ -102,14 +103,9 @@
 		const start = results.groupStartDate;
 		const end = results.groupEndDate;
 		if (!start || !end) return '';
-		const shown = (value: string) =>
-			new Date(value).toLocaleDateString(locale, {
-				year: 'numeric',
-				month: 'short',
-				day: 'numeric'
-			});
-		return start === end ? shown(start) : `${shown(start)} - ${shown(end)}`;
+		return formatApiDayRange(start, end, locale);
 	});
+	let groupLine = $derived([results.groupName, dateRange].filter(Boolean).join(', '));
 
 	// --- The summary panel ---
 	//
@@ -363,8 +359,7 @@
 				<span class="text-lg font-medium">{results.tournament.name}</span>
 			</Link>
 			<p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-				{#if results.groupName}{results.groupName},
-				{/if}{dateRange}
+				{groupLine}
 			</p>
 		</div>
 

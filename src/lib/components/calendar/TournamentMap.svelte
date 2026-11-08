@@ -18,7 +18,7 @@
 	import type { GeoPoint } from '$lib/geo/geocodeLoader';
 	import type { TournamentDto } from '$lib/api';
 	import TournamentPopup from './TournamentPopup.svelte';
-	import { longDateFormat, typeLabel } from './eventLabels';
+	import { typeLabel } from './eventLabels';
 	import { getOrganizationsState } from '$lib/stores/organizations.svelte';
 	import { language } from '$lib/stores/language.svelte';
 	import { localeOf } from '$lib/i18n';
@@ -48,7 +48,7 @@
 		reversedDates: t.pages.calendar.reversedDates
 	});
 	let typeLabels = $derived(t.components.tournamentTypeFilter);
-	let dateFormat = $derived(longDateFormat(localeOf(language.current)));
+	let locale = $derived(localeOf(language.current));
 
 	function drawMarkers(lib: typeof L, target: L.Map) {
 		cluster?.remove();
@@ -73,7 +73,7 @@
 									tournament.orgNumber
 								),
 								typeName: typeLabel(tournament.type, typeLabels),
-								dateFormat,
+								locale,
 								labels: popupLabels
 							}
 						})

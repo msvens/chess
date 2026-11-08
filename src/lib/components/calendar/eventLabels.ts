@@ -6,6 +6,7 @@
  * unknown type should read as. One module, one answer.
  */
 import { parseLocalDate, type TournamentDto } from '$lib/api';
+import { formatApiDayRange } from '$lib/dateFormat';
 import { getTournamentTypeKey } from '$lib/utils/tournamentFilters';
 
 /** The `components.tournamentTypeFilter` block of a translation. */
@@ -49,18 +50,10 @@ export function hasReversedDates(tournament: TournamentDto): boolean {
  * A single-day event reads as one date. A reversed range is *not* repaired —
  * see `hasReversedDates`; the caller marks it instead.
  */
-export function formatEventRange(tournament: TournamentDto, format: Intl.DateTimeFormat): string {
-	const start = format.format(parseLocalDate(tournament.start));
-	if (!tournament.end || tournament.end === tournament.start) return start;
-	return `${start} – ${format.format(parseLocalDate(tournament.end))}`;
-}
-
-/** `27 juni` — the week view's cards have no room for a year. */
-export function shortDateFormat(locale: string): Intl.DateTimeFormat {
-	return new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'short' });
-}
-
-/** `27 juni 2025` — the popovers and the map have room. */
-export function longDateFormat(locale: string): Intl.DateTimeFormat {
-	return new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'short', year: 'numeric' });
+export function formatEventRange(
+	tournament: TournamentDto,
+	locale: string,
+	options?: { showYear?: boolean }
+): string {
+	return formatApiDayRange(tournament.start, tournament.end, locale, options);
 }
