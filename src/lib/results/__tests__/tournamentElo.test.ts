@@ -167,9 +167,25 @@ describe('summarise', () => {
 		expect(summarise(matches, ME, playerAt, STANDARD_ALGORITHM, null).playedCount).toBe(1);
 	});
 
-	it('excludes a walkover from the score as well as the count', () => {
-		const matches = [match(), match({ round: 2, isWalkover: true })];
-		expect(summarise(matches, ME, playerAt, STANDARD_ALGORITHM, null).totalScore).toBe(1);
+	it('counts a walkover in the total, as the standings do, but not as a played game', () => {
+		// A walkover win, a loss, a win and a round not finished: 2 of 3.
+		const matches = [
+			match({ isWalkover: true }),
+			match({ round: 2, result: 'loss', color: 'black' }),
+			match({ round: 3 }),
+			match({ round: 4, isCountable: false })
+		];
+		const summary = summarise(matches, ME, playerAt, STANDARD_ALGORITHM, null);
+		expect(summary.totalScore).toBe(2);
+		expect(summary.maxScore).toBe(3);
+		expect(summary.playedCount).toBe(2);
+	});
+
+	it('leaves a walkover out of the rating figures', () => {
+		const withWalkover = [match(), match({ round: 2, isWalkover: true })];
+		const summary = summarise(withWalkover, ME, playerAt, STANDARD_ALGORITHM, null);
+		expect(summary.byRatingType.standard.gameCount).toBe(1);
+		expect(summary.performance.opponentRatings).toHaveLength(1);
 	});
 
 	it('scores through the result code, so an alternate point system is right', () => {
@@ -188,13 +204,13 @@ describe('summarise', () => {
 		expect(at(PointSystem.POINT310)).toBe(33);
 	});
 
-	it('leaves walkovers out of the maximum, and reads an unknown system as 1/½/0', () => {
+	it('puts walkovers in the maximum, and reads an unknown system as 1/½/0', () => {
 		const matches = [match(), match({ round: 2, isWalkover: true })];
 		expect(
 			summarise(matches, ME, playerAt, STANDARD_ALGORITHM, PointSystem.SCHACK4AN).maxScore
-		).toBe(3);
-		expect(summarise(matches, ME, playerAt, STANDARD_ALGORITHM, null).maxScore).toBe(1);
-		expect(summarise(matches, ME, playerAt, STANDARD_ALGORITHM, 99).maxScore).toBe(1);
+		).toBe(6);
+		expect(summarise(matches, ME, playerAt, STANDARD_ALGORITHM, null).maxScore).toBe(2);
+		expect(summarise(matches, ME, playerAt, STANDARD_ALGORITHM, 99).maxScore).toBe(2);
 	});
 
 	it('falls back to the row’s own points when there is no code', () => {
