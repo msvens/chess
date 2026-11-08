@@ -4,6 +4,8 @@
  * Pure, so the month grids — the part with off-by-one risk around month and year
  * boundaries — can be tested directly.
  */
+import { formatDay, shortMonthName } from '$lib/dateFormat';
+
 export interface CalendarDay {
 	date: number;
 	month: number;
@@ -75,11 +77,7 @@ export function formatDisplayDate(value: string, mode: 'date' | 'month', locale?
 		);
 	}
 	if (Number.isNaN(y) || Number.isNaN(m) || Number.isNaN(d)) return value;
-	return new Intl.DateTimeFormat(locale, {
-		year: 'numeric',
-		month: 'short',
-		day: 'numeric'
-	}).format(new Date(y, m - 1, d));
+	return formatDay(new Date(y, m - 1, d), locale);
 }
 
 /** Monday-first weekday initials for the locale. */
@@ -90,8 +88,7 @@ export function getWeekdayHeaders(locale?: string): string[] {
 }
 
 export function getMonthNames(locale?: string): string[] {
-	const formatter = new Intl.DateTimeFormat(locale, { month: 'short' });
-	return Array.from({ length: 12 }, (_, i) => formatter.format(new Date(2026, i, 1)));
+	return Array.from({ length: 12 }, (_, i) => shortMonthName(new Date(2026, i, 1), locale));
 }
 
 /** The month a value points at, for opening the popup in the right place. */

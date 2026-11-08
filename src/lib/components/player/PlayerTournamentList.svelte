@@ -13,14 +13,15 @@
 	 */
 	import Link from '$lib/components/ui/Link.svelte';
 	import type { TournamentParticipation } from '$lib/player/participations';
-	import { parseLocalDate } from '$lib/api';
-	import { compactDate } from '$lib/player/compactDate';
+	import { formatApiDayRange } from '$lib/dateFormat';
 	import { language } from '$lib/stores/language.svelte';
 	import { localeOf } from '$lib/i18n';
 	import { getTranslation } from '$lib/translations';
 
 	interface PlayerTournamentListProps {
 		tournaments: TournamentParticipation[];
+		/** Whose history this is; the score links to their games in the group. */
+		memberId?: number | null;
 		loading?: boolean;
 		/** While loading: tournaments fetched so far, once their number is known. */
 		progress?: { done: number; total: number };
@@ -30,6 +31,7 @@
 
 	let {
 		tournaments,
+		memberId = null,
 		loading = false,
 		progress,
 		failed = false
@@ -38,30 +40,11 @@
 	let t = $derived(getTranslation(language.current).pages.playerDetail.tournamentHistory);
 	let locale = $derived(localeOf(language.current));
 
-	/** Within one year the year is said once, at the end: `6-27 - 7-6 2025`. */
-	function compactRange(start: string, end: string): string {
-		if (start === end) return compactDate(start);
+	const groupHref = (row: TournamentParticipation) =>
+		`/results/${row.tournament.id}/${row.groupId}`;
 
-		const from = parseLocalDate(start);
-		const to = parseLocalDate(end);
-		if (Number.isNaN(from.getTime()) || Number.isNaN(to.getTime())) return `${start} - ${end}`;
-
-		if (from.getFullYear() === to.getFullYear()) {
-			return `${from.getMonth() + 1}-${from.getDate()} - ${to.getMonth() + 1}-${to.getDate()} ${to.getFullYear()}`;
-		}
-		return `${compactDate(start)} - ${compactDate(end)}`;
-	}
-
-	function fullDate(value: string): string {
-		const date = parseLocalDate(value);
-		if (Number.isNaN(date.getTime())) return value;
-		return date.toLocaleDateString(locale, { year: 'numeric', month: 'short', day: 'numeric' });
-	}
-
-	function fullRange(start: string, end: string): string {
-		if (start === end) return fullDate(start);
-		return `${fullDate(start)} - ${fullDate(end)}`;
-	}
+	const scoreHref = (row: TournamentParticipation) =>
+		memberId === null ? groupHref(row) : `${groupHref(row)}/${memberId}`;
 
 	/** A one-class event repeats itself if the class name is shown too. */
 	const classLine = (row: TournamentParticipation) =>
@@ -91,11 +74,10 @@
 {:else}
 	<div class="text-xs">
 		{#each tournaments as row, index (`${row.tournament.id}-${row.groupId}`)}
-			<Link
-				href="/results/{row.tournament.id}/{row.groupId}"
-				color="inherit"
-				underline="never"
-				class="block px-3 py-1.5 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800 {index <
+			<!-- Two links, not one: the name opens the group, the score opens this
+			     player's games in it. The highlight only ties the row together. -->
+			<div
+				class="px-3 py-1.5 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800 {index <
 				tournaments.length - 1
 					? 'border-b border-gray-200 dark:border-gray-700'
 					: ''}"
@@ -103,21 +85,14 @@
 				<div class="flex items-start justify-between">
 					<div class="flex flex-1 flex-col gap-0">
 						<h3 class="text-xs font-medium text-gray-900 dark:text-gray-200">
-							{row.tournament.name}
+							<Link href={groupHref(row)} color="inherit">{row.tournament.name}</Link>
 						</h3>
-						<!-- Mobile keeps the group line and a short date; the desktop row has
-						     room for the spelled-out date and the city. -->
-						<div class="flex flex-wrap gap-x-2 text-xs text-gray-600 md:hidden dark:text-gray-400">
+						<div class="flex flex-wrap gap-x-4 gap-y-0.5 text-xs text-gray-600 dark:text-gray-400">
 							{#if classLine(row)}<span>{classLine(row)}</span>{/if}
-							<span>•</span>
-							<span>{compactRange(row.groupStartDate, row.groupEndDate)}</span>
-						</div>
-						<div
-							class="hidden flex-wrap gap-x-4 gap-y-0.5 text-xs text-gray-600 md:flex dark:text-gray-400"
-						>
-							{#if classLine(row)}<span>{classLine(row)}</span>{/if}
-							<span>{fullRange(row.groupStartDate, row.groupEndDate)}</span>
-							{#if row.tournament.city}<span>{row.tournament.city}</span>{/if}
+							<span>{formatApiDayRange(row.groupStartDate, row.groupEndDate, locale)}</span>
+							<!-- Desktop only: on a phone the city pushes many rows to a third line. -->
+							{#if row.tournament.city}<span class="hidden md:inline">{row.tournament.city}</span
+								>{/if}
 						</div>
 					</div>
 					<div class="ml-4 flex-shrink-0 text-right">
@@ -126,16 +101,18 @@
 								{t.registered}
 							</span>
 						{:else}
-							<div class="text-xs font-medium text-gray-900 dark:text-gray-200">
-								{t.points}: {row.totalPoints}
-							</div>
-							<div class="text-xs text-gray-600 dark:text-gray-400">
-								{t.outcome}: {row.wins}/{row.draws}/{row.losses}
-							</div>
+							<Link href={scoreHref(row)} color="inherit" class="block">
+								<div class="text-xs font-medium text-gray-900 dark:text-gray-200">
+									{t.points}: {row.totalPoints}
+								</div>
+								<div class="text-xs text-gray-600 dark:text-gray-400">
+									{t.outcome}: {row.wins}/{row.draws}/{row.losses}
+								</div>
+							</Link>
 						{/if}
 					</div>
 				</div>
-			</Link>
+			</div>
 		{/each}
 	</div>
 {/if}

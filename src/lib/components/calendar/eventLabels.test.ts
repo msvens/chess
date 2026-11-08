@@ -1,12 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { TournamentDto } from '$lib/api';
-import {
-	formatEventRange,
-	hasReversedDates,
-	longDateFormat,
-	shortDateFormat,
-	typeLabel
-} from './eventLabels';
+import { formatEventRange, hasReversedDates, typeLabel } from './eventLabels';
 
 const ALLSVENSKAN = 2;
 const INDIVIDUAL = 3;
@@ -64,36 +58,35 @@ describe('spotting an end date before the start', () => {
 });
 
 describe('writing out an event’s dates', () => {
-	const long = longDateFormat('sv-SE');
-	const short = shortDateFormat('sv-SE');
+	const locale = 'sv-SE';
 
 	it('says one date for a single-day event', () => {
-		expect(formatEventRange(event('2026-09-01', '2026-09-01'), long)).toBe('1 sep. 2026');
+		expect(formatEventRange(event('2026-09-01', '2026-09-01'), locale)).toBe('1 sep 2026');
 	});
 
 	it('says one date when there is no end at all', () => {
-		expect(formatEventRange(event('2026-09-01'), long)).toBe('1 sep. 2026');
+		expect(formatEventRange(event('2026-09-01'), locale)).toBe('1 sep 2026');
 	});
 
-	it('says both for a range', () => {
-		expect(formatEventRange(event('2026-09-01', '2026-09-05'), long)).toBe(
-			'1 sep. 2026 – 5 sep. 2026'
+	it('says the shared month once in a range', () => {
+		expect(formatEventRange(event('2026-09-01', '2026-09-05'), locale)).toBe('1–5 sep 2026');
+	});
+
+	it('can drop the year, for the week cards', () => {
+		expect(formatEventRange(event('2026-09-01', '2026-09-05'), locale, { showYear: false })).toBe(
+			'1–5 sep'
 		);
-	});
-
-	it('drops the year in the short format, for the week cards', () => {
-		expect(formatEventRange(event('2026-09-01', '2026-09-05'), short)).toBe('1 sep. – 5 sep.');
 	});
 
 	it('prints a reversed range exactly as entered rather than repairing it', () => {
 		// The app cannot know which of the two dates is wrong, so it must not pick.
 		// `hasReversedDates` is what drives the marker beside this.
-		expect(formatEventRange(event('2026-09-08', '2026-07-31'), long)).toBe(
-			'8 sep. 2026 – 31 juli 2026'
+		expect(formatEventRange(event('2026-09-08', '2026-07-31'), locale)).toBe(
+			'8 sep 2026 – 31 juli 2026'
 		);
 	});
 
 	it('reads dates as local — a UTC parse slips a day west of Greenwich', () => {
-		expect(formatEventRange(event('2026-01-01', '2026-01-01'), long)).toBe('1 jan. 2026');
+		expect(formatEventRange(event('2026-01-01', '2026-01-01'), locale)).toBe('1 jan 2026');
 	});
 });

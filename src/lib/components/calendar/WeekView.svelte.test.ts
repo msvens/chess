@@ -70,7 +70,7 @@ describe('the week', () => {
 		setup([event()]);
 		expect(screen.getByText('Stockholm · Individuell')).toBeInTheDocument();
 		expect(screen.getByText('Wasa SK')).toBeInTheDocument();
-		expect(screen.getByText('10 juni – 12 juni')).toBeInTheDocument();
+		expect(screen.getByText('10–12 juni')).toBeInTheDocument();
 	});
 
 	it('links the card’s title to the tournament, alongside the button that opens it', () => {

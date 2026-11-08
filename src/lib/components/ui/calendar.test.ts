@@ -122,6 +122,10 @@ describe('locale lists', () => {
 		expect(getMonthNames('sv')).toHaveLength(12);
 		expect(getMonthNames('sv')).not.toEqual(getMonthNames('en'));
 	});
+
+	it('gives month names without an abbreviation dot', () => {
+		expect(getMonthNames('sv').join('')).not.toContain('.');
+	});
 });
 
 describe('viewDateFor', () => {

@@ -66,7 +66,7 @@ describe('which period is shown', () => {
 	it('names a week by its range when the week view is remembered', () => {
 		localStorage.setItem('calendar-view-mode', 'week');
 		setup([event()]);
-		expect(title()).toBe('9 mars – 15 mars 2026');
+		expect(title()).toBe('9–15 mars 2026');
 	});
 
 	it('remembers a change of view', async () => {

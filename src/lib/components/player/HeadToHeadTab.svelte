@@ -29,7 +29,8 @@
 		ratingRequests,
 		summarise
 	} from '$lib/player/headToHead';
-	import { compactDate } from '$lib/player/compactDate';
+	import { formatApiDay } from '$lib/dateFormat';
+	import { localeOf } from '$lib/i18n';
 	import {
 		formatEloChange,
 		formatPerformanceWithCount,
@@ -50,6 +51,7 @@
 	const profile = getPlayerProfileState();
 
 	let t = $derived(getTranslation(language.current));
+	let locale = $derived(localeOf(language.current));
 	let pd = $derived(t.pages.playerDetail);
 	let ot = $derived(pd.opponentsTab);
 	let elo = $derived(t.common.eloLabels);
@@ -187,7 +189,7 @@
 	</Link>
 	{#if start}
 		<span class="block text-xs text-gray-500 tabular-nums dark:text-gray-400">
-			{compactDate(start)}
+			{formatApiDay(start, locale)}
 		</span>
 	{/if}
 {/snippet}

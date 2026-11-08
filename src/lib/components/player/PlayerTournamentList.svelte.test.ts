@@ -43,12 +43,28 @@ describe('a history row', () => {
 		expect(screen.queryByText(/\d+.*\d+/)).toBeNull();
 	});
 
-	it('links to the group it is for', () => {
-		render(PlayerTournamentList, { tournaments: [row()] });
+	it('links the name to the group it is for', () => {
+		render(PlayerTournamentList, { tournaments: [row()], memberId: 408550 });
 		expect(screen.getByRole('link', { name: /Rilton Cup/ })).toHaveAttribute(
 			'href',
 			'/results/6084/17040'
 		);
+	});
+
+	it('links the score to the player’s games in that group', () => {
+		render(PlayerTournamentList, { tournaments: [row()], memberId: 408550 });
+		expect(screen.getByRole('link', { name: /Poäng: 6.5/ })).toHaveAttribute(
+			'href',
+			'/results/6084/17040/408550'
+		);
+	});
+
+	it('has no score link for an event not yet played', () => {
+		render(PlayerTournamentList, {
+			tournaments: [row({ isUpcoming: true })],
+			memberId: 408550
+		});
+		expect(screen.getAllByRole('link')).toHaveLength(1);
 	});
 
 	it('shows the points and the W/D/L split', () => {
@@ -67,51 +83,34 @@ describe('a history row', () => {
 
 	it('names the class only when the event has more than one', () => {
 		render(PlayerTournamentList, { tournaments: [row({ hasMultipleClasses: true })] });
-		// Once for the mobile line and once for the desktop one.
-		expect(screen.getAllByText('Elit, Grupp A').length).toBe(2);
+		expect(screen.getByText('Elit, Grupp A')).toBeInTheDocument();
 	});
 
 	it('shows the group alone when the class would add nothing', () => {
 		render(PlayerTournamentList, { tournaments: [row()] });
-		expect(screen.getAllByText('Grupp A').length).toBe(2);
+		expect(screen.getByText('Grupp A')).toBeInTheDocument();
 		expect(screen.queryByText(/Elit,/)).toBeNull();
 	});
 });
 
 describe('dates', () => {
-	it('drops the leading zeros and says the year once, in the compact line', () => {
+	it('says the shared year once', () => {
 		render(PlayerTournamentList, { tournaments: [row()] });
-		expect(screen.getByText('6-27 - 7-6 2025')).toBeInTheDocument();
-	});
-
-	it('spells both years out when a range crosses new year', () => {
-		render(PlayerTournamentList, {
-			tournaments: [row({ groupStartDate: '2025-12-27', groupEndDate: '2026-01-05' })]
-		});
-		expect(screen.getByText('2025-12-27 - 2026-1-5')).toBeInTheDocument();
+		expect(screen.getByText('27 juni – 6 juli 2025')).toBeInTheDocument();
 	});
 
 	it('says a single-day event once, not as a range', () => {
 		render(PlayerTournamentList, {
 			tournaments: [row({ groupStartDate: '2025-06-27', groupEndDate: '2025-06-27' })]
 		});
-		expect(screen.getByText('2025-6-27')).toBeInTheDocument();
-	});
-
-	it('reads the date as local, so it cannot slip a day', () => {
-		// `new Date('2025-06-27')` is UTC midnight; read with local getters west of
-		// Greenwich that is the 26th. `parseLocalDate` is the app's rule.
-		render(PlayerTournamentList, {
-			tournaments: [row({ groupStartDate: '2025-01-01', groupEndDate: '2025-01-01' })]
-		});
-		expect(screen.getByText('2025-1-1')).toBeInTheDocument();
+		expect(screen.getByText('27 juni 2025')).toBeInTheDocument();
 	});
 
 	it('shows the date it was given when it cannot be read', () => {
 		render(PlayerTournamentList, {
 			tournaments: [row({ groupStartDate: 'nonsense', groupEndDate: 'nonsense' })]
 		});
-		expect(screen.getAllByText('nonsense').length).toBeGreaterThan(0);
+		expect(screen.getByText('nonsense')).toBeInTheDocument();
 	});
 });
 

@@ -17,7 +17,7 @@
 		tournament: TournamentDto;
 		organizerName: string;
 		typeName: string;
-		dateFormat: Intl.DateTimeFormat;
+		locale: string;
 		labels: {
 			organizer: string;
 			city: string;
@@ -27,7 +27,7 @@
 		};
 	}
 
-	let { tournament, organizerName, typeName, dateFormat, labels }: TournamentPopupProps = $props();
+	let { tournament, organizerName, typeName, locale, labels }: TournamentPopupProps = $props();
 </script>
 
 <a href="/results/{tournament.id}" class="block text-sm font-semibold">{tournament.name}</a>
@@ -52,7 +52,7 @@
 	<div class="flex gap-1">
 		<dt class="shrink-0 font-medium">{labels.dateRange}:</dt>
 		<dd>
-			{formatEventRange(tournament, dateFormat)}
+			{formatEventRange(tournament, locale)}
 			{#if hasReversedDates(tournament)}
 				<!-- Shown as entered, and marked — as everywhere else the dates appear. -->
 				<span
