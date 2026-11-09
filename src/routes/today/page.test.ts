@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/svelte';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { TournamentDto } from '$lib/api';
+import type { TournamentToday } from '$lib/api';
 import { ORGANIZATIONS_STATE_KEY, OrganizationsState } from '$lib/stores/organizations.svelte';
 import Page from './+page.svelte';
 
@@ -15,7 +15,7 @@ const INDIVIDUAL = 3;
 const GRAND_PRIX = 7;
 
 const tournament = (id: number, name: string, type = INDIVIDUAL) =>
-	({ id, name, type, orgType: 1, orgNumber: 1 }) as TournamentDto;
+	({ id, name, type, orgType: 1, orgNumber: 1, groupsToday: [] }) as unknown as TournamentToday;
 
 function setup() {
 	render(Page, {
