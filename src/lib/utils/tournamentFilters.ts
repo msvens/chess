@@ -137,10 +137,10 @@ export function filterByType(tournaments: TournamentDto[], type: number | null):
  * played, and listed, as a tournament of their own. Shown beside them it reads
  * as one more event to go to, and it leads to a page with no results.
  */
-export function hideSeriesUnlessChosen(
-	tournaments: TournamentDto[],
+export function hideSeriesUnlessChosen<T extends TournamentDto>(
+	tournaments: T[],
 	type: number | null
-): TournamentDto[] {
+): T[] {
 	if (type === TournamentType.GRAND_PRIX) {
 		return tournaments;
 	}

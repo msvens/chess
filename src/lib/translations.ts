@@ -1051,7 +1051,7 @@ const translations: Record<Language, Translations> = {
 			today: {
 				title: 'Today',
 				subtitle:
-					'Tournaments being played today. One that ends today appears once results are reported.',
+					'Tournaments being played today. One that ends today may be missing until results are reported.',
 				loadError: 'Failed to load tournaments',
 				empty: 'No tournaments found for today.'
 			},
@@ -1859,7 +1859,7 @@ const translations: Record<Language, Translations> = {
 			today: {
 				title: 'Idag',
 				subtitle:
-					'Turneringar som spelas idag. En turnering som slutar idag visas när resultat har rapporterats.',
+					'Turneringar som spelas idag. En turnering som slutar idag kan saknas tills resultat har rapporterats.',
 				loadError: 'Kunde inte ladda turneringar',
 				empty: 'Inga turneringar hittades för idag.'
 			},

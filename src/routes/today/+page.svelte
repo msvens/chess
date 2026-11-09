@@ -10,12 +10,12 @@
 	import PageLayout from '$lib/components/layout/PageLayout.svelte';
 	import PageTitle from '$lib/components/layout/PageTitle.svelte';
 	import TodayTournaments from '$lib/components/today/TodayTournaments.svelte';
-	import { getTournamentsToday, TournamentService, type TournamentDto } from '$lib/api';
+	import { getTournamentsToday, TournamentService, type TournamentToday } from '$lib/api';
 	import { hideSeriesUnlessChosen } from '$lib/utils/tournamentFilters';
 	import { language } from '$lib/stores/language.svelte';
 	import { getTranslation } from '$lib/translations';
 
-	let tournaments = $state<TournamentDto[]>([]);
+	let tournaments = $state<TournamentToday[]>([]);
 	let loading = $state(true);
 	let failed = $state(false);
 
