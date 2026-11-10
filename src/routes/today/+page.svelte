@@ -10,8 +10,12 @@
 	import PageLayout from '$lib/components/layout/PageLayout.svelte';
 	import PageTitle from '$lib/components/layout/PageTitle.svelte';
 	import TodayTournaments from '$lib/components/today/TodayTournaments.svelte';
-	import { getTournamentsToday, TournamentService, type TournamentToday } from '$lib/api';
-	import { hideSeriesUnlessChosen } from '$lib/utils/tournamentFilters';
+	import {
+		getTournamentsToday,
+		isGrandPrix,
+		TournamentService,
+		type TournamentToday
+	} from '$lib/api';
 	import { language } from '$lib/stores/language.svelte';
 	import { getTranslation } from '$lib/translations';
 
@@ -29,7 +33,8 @@
 			if (cancelled) return;
 
 			if (response.status === 200 && response.data) {
-				tournaments = hideSeriesUnlessChosen(response.data, null);
+				// A series has no results, and its round dates don't reflect play.
+				tournaments = response.data.filter((tournament) => !isGrandPrix(tournament.type));
 			} else {
 				failed = true;
 			}

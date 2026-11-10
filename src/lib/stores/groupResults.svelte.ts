@@ -21,9 +21,9 @@ import {
 	formatRatingWithType,
 	getOpponentKind,
 	getPlayerRatingStrict,
+	isGrandPrix,
 	isTeamPairing,
 	isTeamTournament,
-	TournamentType,
 	type PlayerInfoDto,
 	type RoundDto,
 	type TeamTournamentEndResultDto,
@@ -93,7 +93,7 @@ export class GroupResultsState {
 	 * and serves neither through the API, so the page points there instead.
 	 */
 	get isSeries(): boolean {
-		return this.tournament?.type === TournamentType.GRAND_PRIX;
+		return this.tournament ? isGrandPrix(this.tournament.type) : false;
 	}
 
 	get thinkingTime(): string | null {
@@ -201,7 +201,7 @@ export class GroupResultsState {
 		// answers, but with nothing in it.
 		if (
 			(isTeamTournament(tournamentType) && !isTeamPairing(tournamentType)) ||
-			tournamentType === TournamentType.GRAND_PRIX
+			isGrandPrix(tournamentType)
 		) {
 			this.#clearResults();
 			this.lastUpdated = Date.now();

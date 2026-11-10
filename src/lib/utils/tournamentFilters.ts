@@ -13,6 +13,7 @@ import {
 	type TournamentDto,
 	TournamentType,
 	TournamentState,
+	isGrandPrix,
 	isTeamTournament,
 	getTournamentStatus,
 	type TournamentStatus
@@ -137,15 +138,15 @@ export function filterByType(tournaments: TournamentDto[], type: number | null):
  * played, and listed, as a tournament of their own. Shown beside them it reads
  * as one more event to go to, and it leads to a page with no results.
  */
-export function hideSeriesUnlessChosen<T extends TournamentDto>(
-	tournaments: T[],
+export function hideSeriesUnlessChosen(
+	tournaments: TournamentDto[],
 	type: number | null
-): T[] {
-	if (type === TournamentType.GRAND_PRIX) {
+): TournamentDto[] {
+	if (type !== null && isGrandPrix(type)) {
 		return tournaments;
 	}
 
-	return tournaments.filter((t) => t.type !== TournamentType.GRAND_PRIX);
+	return tournaments.filter((t) => !isGrandPrix(t.type));
 }
 
 /**
