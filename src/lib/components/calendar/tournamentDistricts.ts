@@ -34,11 +34,11 @@ export function districtsOf(
  * `null` is every district. `-1` is the Övriga bucket — the tournaments whose
  * organiser has no district — which is why this cannot be a plain equality test.
  */
-export function filterByDistrict(
-	tournaments: readonly TournamentDto[],
+export function filterByDistrict<T extends TournamentDto>(
+	tournaments: readonly T[],
 	districts: ReadonlyMap<number, number | null>,
 	districtId: number | null
-): TournamentDto[] {
+): T[] {
 	if (districtId === null) return [...tournaments];
 	if (districtId === -1) {
 		return tournaments.filter((tournament) => districts.get(tournament.id) == null);
