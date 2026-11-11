@@ -49,6 +49,21 @@ export function formatScore(points: number): string {
 }
 
 /**
+ * Render an individual player's quality points.
+ *
+ * SSF's `secPoints`, and the SDK playback's `qualityPoints`, pack the official
+ * tie-breaks into one sortable number: `QP + wins·0.01 + gamesWithBlack·0.0001`.
+ * Only the part before them is the quality points: whole halves for Buchholz,
+ * quarters for Sonneborn-Berger in a round robin. The packed part stays below a
+ * quarter (fewer than 25 wins), so flooring to the quarter strips it. Sort on
+ * the raw value, which keeps the tie-breaks.
+ */
+export function formatQualityPoints(value: number): string {
+	const qp = Math.floor(value * 4 + 1e-6) / 4;
+	return Number.isInteger(qp * 2) ? qp.toFixed(1) : qp.toFixed(2);
+}
+
+/**
  * Render a parsed result. Scores come from the SDK as numbers in the result's
  * own point system, so this works unchanged for Schackfyran (3-2-1) and the
  * 3-1-0 system.

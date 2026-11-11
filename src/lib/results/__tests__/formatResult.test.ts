@@ -5,11 +5,38 @@ import {
 	formatResult,
 	formatResultCode,
 	formatIndividualRowResult,
+	formatQualityPoints,
 	formatScore,
 	formatTeamMatchScore,
 	type ResultLabels
 } from '../formatResult';
 import type { BoardGame } from '../teamMatches';
+
+describe('formatQualityPoints', () => {
+	it('strips the packed wins and games with black', () => {
+		expect(formatQualityPoints(30.0403)).toBe('30.0');
+		// Rounding would have shown 25.6.
+		expect(formatQualityPoints(25.5604)).toBe('25.5');
+	});
+
+	it('does not let ten wins add a tenth', () => {
+		expect(formatQualityPoints(12.1006)).toBe('12.0');
+	});
+
+	it('keeps the quarter points of a round robin (Sonneborn-Berger)', () => {
+		// Group 19282: official 16.25, which halving would have made 16.5.
+		expect(formatQualityPoints(16.2904)).toBe('16.25');
+		expect(formatQualityPoints(9.7502)).toBe('9.75');
+	});
+
+	it('survives float noise just under a half', () => {
+		expect(formatQualityPoints(25.4999999999)).toBe('25.5');
+	});
+
+	it('shows zero as 0.0', () => {
+		expect(formatQualityPoints(0)).toBe('0.0');
+	});
+});
 
 const sv: ResultLabels = {
 	postponed: 'Uppskjutet',

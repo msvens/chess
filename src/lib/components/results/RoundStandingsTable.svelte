@@ -20,6 +20,7 @@
 		type PlayerInfoDto,
 		type RoundStandingRow
 	} from '$lib/api';
+	import { formatQualityPoints } from '$lib/results/formatResult';
 	import { language } from '$lib/stores/language.svelte';
 	import { getTranslation } from '$lib/translations';
 
@@ -145,7 +146,8 @@
 		{
 			id: 'qp',
 			header: labels.qp,
-			accessor: (row) => (row.qualityPoints != null ? Number(row.qualityPoints).toFixed(1) : '-'),
+			accessor: (row) =>
+				row.qualityPoints != null ? formatQualityPoints(Number(row.qualityPoints)) : '-',
 			align: 'center',
 			noWrap: true,
 			sortValue: (row) => row.qualityPoints ?? 0

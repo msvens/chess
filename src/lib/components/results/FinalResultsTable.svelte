@@ -16,6 +16,7 @@
 		isUnplaced,
 		type TournamentEndResultDto
 	} from '$lib/api';
+	import { formatQualityPoints } from '$lib/results/formatResult';
 	import { language } from '$lib/stores/language.svelte';
 	import { getTranslation } from '$lib/translations';
 
@@ -159,10 +160,9 @@
 		{
 			id: 'qp',
 			header: labels.qp,
-			// Tie-break points come back with float noise; they are only ever
-			// meaningful to the half point.
+			// The quality points without the packed tie-breaks; see `formatQualityPoints`.
 			accessor: (row) =>
-				row.secPoints !== undefined ? (Math.round(Number(row.secPoints) * 2) / 2).toFixed(1) : '-',
+				row.secPoints !== undefined ? formatQualityPoints(Number(row.secPoints)) : '-',
 			align: 'center',
 			noWrap: true,
 			sortValue: (row) => Number(row.secPoints) || 0

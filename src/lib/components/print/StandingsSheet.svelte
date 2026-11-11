@@ -11,6 +11,7 @@
 	import type { Snippet } from 'svelte';
 	import PrintSheet from './PrintSheet.svelte';
 	import { formatPlayerName, hasStandings, type TournamentEndResultDto } from '$lib/api';
+	import { formatQualityPoints } from '$lib/results/formatResult';
 	import { seedOrder } from '$lib/results/seeding';
 	import { language } from '$lib/stores/language.svelte';
 	import { getTranslation } from '$lib/translations';
@@ -64,7 +65,7 @@
 		>
 		<td class="py-0.5 pr-2">{nameOf(entry, print.name)}</td>
 		<td class="py-0.5 pr-2 text-right font-semibold tabular-nums">{entry.points}</td>
-		<td class="py-0.5 text-right tabular-nums">{entry.secPoints.toFixed(1)}</td>
+		<td class="py-0.5 text-right tabular-nums">{formatQualityPoints(entry.secPoints)}</td>
 	</tr>
 {/snippet}
 
