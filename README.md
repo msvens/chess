@@ -21,6 +21,8 @@ without it. The geocode files beside it are tracked, since they are slow to rebu
 
 The dev server proxies `/api/chess/v1` to the SSF API — in production nginx does the same. The
 proxy is required: SSF rejects CORS preflights, and the SDK forces one on every request.
+Likewise `/api/sthlm/v1` goes to the Stockholms Schackförbund API
+(https://verktyg.stockholmsschack.se/api/v1, e.g. `standings/jgp`), which sends no CORS headers.
 
 FIDE data comes from [mfide](https://github.com/msvens/mfide), which needs an API key. Production
 nginx serves it under `/api/fide` and adds the key, so the dev server forwards `/api/fide` to
