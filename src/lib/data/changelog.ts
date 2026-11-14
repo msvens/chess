@@ -20,6 +20,7 @@ export const changelog: ChangelogEntry[] = [
       {
         "type": "Changed",
         "items": [
+          "The JGP tables no longer draw lines after places 10 and 20. They were guessed final cut-offs, not official ones",
           "The Stockholm JGP standings are now the official ones, published by Stockholms Schackförbund, instead of being computed here from the tournament results. The page shows when they were last updated. Only the current season is shown, so the season picker is gone, along with the demo and \"partly deduced\" notices"
         ]
       }

@@ -74,20 +74,6 @@ describe('JgpStandingsTable', () => {
 		expect(cells[5]).toHaveTextContent('0');
 	});
 
-	it('rules off after the A-final and B-final cut-offs', () => {
-		const rows = Array.from({ length: 25 }, (_, i) =>
-			row({ memberId: i + 1, name: `Player ${i + 1}`, placement: i + 1 })
-		);
-		setup(rows);
-		const bodyRows = within(screen.getAllByRole('rowgroup')[1]).getAllByRole('row');
-		const heavy = (index: number) => bodyRows[index].className.includes('border-b-2');
-
-		expect(heavy(9)).toBe(true);
-		expect(heavy(19)).toBe(true);
-		expect(heavy(0)).toBe(false);
-		expect(heavy(10)).toBe(false);
-	});
-
 	it('says so when nobody has scored', () => {
 		setup([]);
 		expect(
