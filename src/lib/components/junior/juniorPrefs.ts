@@ -1,15 +1,14 @@
 /**
- * localStorage-backed preferences for the JGP page: the division and the season
- * year last looked at. Ports `components/junior/juniorPrefs.ts`.
+ * localStorage-backed preference for the JGP page: the division last looked at.
+ * Ports `components/junior/juniorPrefs.ts`.
  *
  * The React version wrote its own `typeof window` and try/catch guards; those
- * live in `$lib/storage` now, so what is left is the two keys and validation.
+ * live in `$lib/storage` now, so what is left is the key and validation.
  */
 import { safeGetItem, safeSetItem } from '$lib/storage';
-import type { JgpDivision } from '$lib/data/jgp/types';
+import type { JgpDivision } from '$lib/api/sthlm';
 
 const DIVISION_KEY = 'junior-jgp-division';
-const YEAR_KEY = 'junior-jgp-year';
 
 export const JGP_DIVISIONS: readonly JgpDivision[] = ['open', 'girls'];
 
@@ -25,20 +24,4 @@ export function initialDivision(): JgpDivision {
 
 export function saveDivision(division: JgpDivision): void {
 	safeSetItem(DIVISION_KEY, division);
-}
-
-/**
- * The season to open with: the one last looked at if that division still has
- * it, else its newest. One key across both divisions, as the React version had
- * it — with a season each, a shared year is more often right than not.
- */
-export function initialYear(available: number[]): number | null {
-	const saved = safeGetItem(YEAR_KEY);
-	const year = saved ? Number.parseInt(saved, 10) : Number.NaN;
-	if (Number.isFinite(year) && available.includes(year)) return year;
-	return available[0] ?? null;
-}
-
-export function saveYear(year: number): void {
-	safeSetItem(YEAR_KEY, String(year));
 }

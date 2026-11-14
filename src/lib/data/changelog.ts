@@ -16,7 +16,14 @@ export const changelog: ChangelogEntry[] = [
   {
     "version": "Unreleased",
     "date": null,
-    "sections": []
+    "sections": [
+      {
+        "type": "Changed",
+        "items": [
+          "The Stockholm JGP standings are now the official ones, published by Stockholms Schackförbund, instead of being computed here from the tournament results. The page shows when they were last updated. Only the current season is shown, so the season picker is gone, along with the demo and \"partly deduced\" notices"
+        ]
+      }
+    ]
   },
   {
     "version": "2.1.0",

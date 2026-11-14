@@ -85,9 +85,10 @@ without one, and the Vite proxy forwards `/api/fide` unchanged to https://chess.
 are allowed through (health, player, search, history, top); anything else 404s.
 
 **Stockholms Schackförbund data is under `/api/sthlm/v1`** → https://verktyg.stockholmsschack.se/api/v1
-(Vite proxy in dev, nginx in prod, GET only). Currently `standings/flickornas` and `standings/jgp`.
+(Vite proxy in dev, nginx in prod, GET only). Currently `standings/jgp` and `standings/flickornas`,
+the official JGP standings (current season only) read by `src/lib/api/sthlm.ts`.
 No CORS headers upstream, so always go through the proxy. Same slash rule as SSF: it 404s _with_ a
-trailing slash.
+trailing slash; `upstream.integration.test.ts` guards that too.
 
 # `static/data/`
 
