@@ -1,10 +1,9 @@
 import { render, screen } from '@testing-library/svelte';
 import { describe, expect, it } from 'vitest';
-import type { JgpTournamentRef } from '$lib/data/jgp/types';
+import type { JgpTournament } from '$lib/stores/jgpStandings.svelte';
 import JgpTournamentLegend from './JgpTournamentLegend.svelte';
 
-const tournament = (tournamentId: number, label: string, date: string): JgpTournamentRef =>
-	({ tournamentId, label, shortLabel: label, date, groups: [] }) as JgpTournamentRef;
+const tournament = (id: number, name: string, date: string): JgpTournament => ({ id, name, date });
 
 describe('JgpTournamentLegend', () => {
 	it('numbers the tournaments in column order, with their dates', () => {

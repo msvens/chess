@@ -5,11 +5,11 @@
 	 * Ports `components/junior/JgpTournamentLegend.tsx`.
 	 */
 	import Link from '$lib/components/ui/Link.svelte';
-	import type { JgpTournamentRef } from '$lib/data/jgp/types';
+	import type { JgpTournament } from '$lib/stores/jgpStandings.svelte';
 	import { language } from '$lib/stores/language.svelte';
 	import { getTranslation } from '$lib/translations';
 
-	let { tournaments }: { tournaments: JgpTournamentRef[] } = $props();
+	let { tournaments }: { tournaments: JgpTournament[] } = $props();
 
 	let t = $derived(getTranslation(language.current).pages.junior);
 </script>
@@ -19,12 +19,12 @@
 		{t.tournamentsHeading}
 	</h2>
 	<ol class="space-y-1 text-sm text-gray-600 dark:text-gray-400">
-		{#each tournaments as tournament, index (tournament.tournamentId)}
+		{#each tournaments as tournament, index (tournament.id)}
 			<li class="flex gap-2">
 				<span class="w-5 shrink-0 text-right text-gray-400 tabular-nums dark:text-gray-500">
 					{index + 1}.
 				</span>
-				<Link href="/results/{tournament.tournamentId}">{tournament.label}</Link>
+				<Link href="/results/{tournament.id}">{tournament.name}</Link>
 				<span class="text-gray-400 tabular-nums dark:text-gray-500">{tournament.date}</span>
 			</li>
 		{/each}

@@ -84,6 +84,12 @@ without one, and the Vite proxy forwards `/api/fide` unchanged to https://chess.
 (override with `FIDE_PROXY_TARGET`), so dev needs no local mfide. Only the endpoints the app uses
 are allowed through (health, player, search, history, top); anything else 404s.
 
+**Stockholms Schackförbund data is under `/api/sthlm/v1`** → https://verktyg.stockholmsschack.se/api/v1
+(Vite proxy in dev, nginx in prod, GET only). Currently `standings/jgp` and `standings/flickornas`,
+the official JGP standings (current season only) read by `src/lib/api/sthlm.ts`.
+No CORS headers upstream, so always go through the proxy. Same slash rule as SSF: it 404s _with_ a
+trailing slash; `upstream.integration.test.ts` guards that too.
+
 # `static/data/`
 
 Club and district data is static JSON loaded once at startup, then queried synchronously.

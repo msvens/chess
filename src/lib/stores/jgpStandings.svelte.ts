@@ -1,44 +1,66 @@
 /**
- * Loads and scores one JGP season. Ports `lib/junior/useJgpStandings.ts`.
+ * The official JGP standings for one division, with the names and dates of the
+ * tournaments its columns stand for.
  *
  * Holds state and actions only — no `$effect` — so it can be tested by
- * instantiating it. The page owns the one effect, which waits for the
- * organizations data before calling `load`: without club data every player
- * resolves to no district and the whole table would be filtered away.
+ * instantiating it. The page owns the one effect that calls `load`.
  *
- * The eligibility rule and the session cache are plain modules under
- * `$lib/junior/`; what is reactive here is only whether the tables have arrived.
+ * The standings come from Stockholms Schackförbund, which lists the tournaments
+ * by id only; their names and dates come from SSF.
  */
-import type { JgpSeason } from '$lib/data/jgp/types';
-import { stockholmEligibility, type ClubLookup } from '$lib/junior/eligibility';
-import type { JgpAgeClassTable, JgpPlayerResult } from '$lib/junior/jgpEngine';
-import { loadSeasonStandings } from '$lib/junior/jgpStandings';
-import { SeasonTableCache } from '$lib/junior/seasonCache';
+import { TournamentService, type ApiResponse, type TournamentDto } from '$lib/api';
+import {
+	getJgpStandings,
+	type JgpDivision,
+	type JgpSeasonStandings,
+	type JgpTable
+} from '$lib/api/sthlm';
 
-export type SeasonLoader = (
-	season: JgpSeason,
-	isEligible: (row: JgpPlayerResult) => boolean
-) => Promise<JgpAgeClassTable[]>;
+export interface JgpTournament {
+	id: number;
+	/** SSF's name; the bare id when SSF could not say. */
+	name: string;
+	/** Start date (`YYYY-MM-DD`); empty when unknown. */
+	date: string;
+}
+
+export type StandingsFetcher = (division: JgpDivision) => Promise<ApiResponse<JgpSeasonStandings>>;
+/** One tournament per id, in order; `null` where it could not be fetched. */
+export type TournamentsFetcher = (ids: number[]) => Promise<(TournamentDto | null)[]>;
+
+interface DivisionStandings {
+	lastUpdated: string;
+	tournaments: JgpTournament[];
+	tables: JgpTable[];
+}
+
+const fetchTournaments: TournamentsFetcher = async (ids) =>
+	(await new TournamentService().getTournamentBatch(ids)).map((result) => result.data);
 
 export class JgpStandingsState {
-	tables = $state<JgpAgeClassTable[] | null>(null);
+	lastUpdated = $state<string | null>(null);
+	tournaments = $state<JgpTournament[]>([]);
+	tables = $state<JgpTable[] | null>(null);
 	loading = $state(false);
-	/** A message, not a flag: this loader can fail for reasons worth showing. */
 	error = $state<string | null>(null);
 
-	#cache = new SeasonTableCache();
+	/** Not reactive on purpose: what renders is copied out into the fields above. */
+	#cache: Partial<Record<JgpDivision, DivisionStandings>> = {};
 
 	/** Which load is current, so a slow one cannot overwrite a newer one. */
 	#generation = 0;
 
-	constructor(private readonly loader: SeasonLoader = loadSeasonStandings) {}
+	constructor(
+		private readonly standings: StandingsFetcher = getJgpStandings,
+		private readonly tournamentsById: TournamentsFetcher = fetchTournaments
+	) {}
 
-	async load(season: JgpSeason, getClub: ClubLookup): Promise<void> {
+	async load(division: JgpDivision): Promise<void> {
 		const mine = ++this.#generation;
 
-		const cached = this.#cache.get(season);
+		const cached = this.#cache[division];
 		if (cached) {
-			this.tables = cached;
+			this.#show(cached);
 			this.loading = false;
 			this.error = null;
 			return;
@@ -47,19 +69,40 @@ export class JgpStandingsState {
 		this.loading = true;
 		this.error = null;
 		this.tables = null;
+		this.tournaments = [];
+		this.lastUpdated = null;
 
-		try {
-			const tables = await this.loader(season, stockholmEligibility(season, getClub));
-			if (mine !== this.#generation) return;
-			this.#cache.set(season, tables);
-			this.tables = tables;
-		} catch (err) {
-			if (mine !== this.#generation) return;
-			// Unlike the SDK, this loader really can throw: it fans out over the
-			// results endpoints and normalises what comes back.
-			this.error = err instanceof Error ? err.message : String(err);
-		} finally {
-			if (mine === this.#generation) this.loading = false;
+		const response = await this.standings(division);
+		if (mine !== this.#generation) return;
+		if (!response.data) {
+			this.error = response.error ?? `HTTP ${response.status}`;
+			this.loading = false;
+			return;
 		}
+
+		// A missing name is not worth failing the standings over: the column
+		// still links to the tournament by id.
+		const { lastUpdated, tournamentIds, tables } = response.data;
+		const found = await this.tournamentsById(tournamentIds);
+		if (mine !== this.#generation) return;
+
+		const result: DivisionStandings = {
+			lastUpdated,
+			tables,
+			tournaments: tournamentIds.map((id, index) => ({
+				id,
+				name: found[index]?.name ?? String(id),
+				date: found[index]?.start?.slice(0, 10) ?? ''
+			}))
+		};
+		this.#cache[division] = result;
+		this.#show(result);
+		this.loading = false;
+	}
+
+	#show(standings: DivisionStandings): void {
+		this.lastUpdated = standings.lastUpdated;
+		this.tournaments = standings.tournaments;
+		this.tables = standings.tables;
 	}
 }

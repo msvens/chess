@@ -4,6 +4,10 @@ All notable changes to msvens chess will be documented in this file.
 
 ## [Unreleased]
 
+### Changed
+
+- The Stockholm JGP standings are now the official ones, published by Stockholms Schackförbund, instead of being computed here from the tournament results. The page shows when they were last updated. Only the current season is shown, so the season picker is gone, along with the demo and "partly deduced" notices
+
 ---
 
 ## [2.1.0] - 2026-10-17

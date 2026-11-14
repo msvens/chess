@@ -700,7 +700,6 @@ export interface Translations {
 			title: string;
 			subtitle: string;
 			officialPageLink: string;
-			demoBanner: string;
 			navigation: {
 				stockholmsJgp: string;
 			};
@@ -708,12 +707,11 @@ export interface Translations {
 				open: string;
 				girls: string;
 			};
-			year: string;
 			loading: string;
 			error: string;
 			noData: string;
-			disclaimer: string;
-			finalsLink: string;
+			/** Precedes the date the official standings were last updated. */
+			lastUpdated: string;
 			tournamentsHeading: string;
 			table: {
 				pos: string;
@@ -1509,8 +1507,6 @@ const translations: Record<Language, Translations> = {
 				title: 'Stockholm Junior Grand Prix',
 				subtitle: "Season-long standings for Stockholm's junior tournament series",
 				officialPageLink: 'Official JGP pages ↗',
-				demoBanner:
-					'🚧 Under construction — this is a demo. Standings and layout are still being validated.',
 				navigation: {
 					stockholmsJgp: 'Stockholms JGP'
 				},
@@ -1518,13 +1514,10 @@ const translations: Record<Language, Translations> = {
 					open: 'Open',
 					girls: 'Girls'
 				},
-				year: 'Season',
-				loading: 'Computing standings…',
+				loading: 'Loading standings…',
 				error: 'Could not load standings',
 				noData: 'No standings available for this season.',
-				disclaimer:
-					'Computed from official SSF results. Eligibility (secondary Stockholm-club membership) and age dispensations are partly deduced from the published standings, so totals can differ slightly from the official ones.',
-				finalsLink: 'View the finals →',
+				lastUpdated: 'Updated',
 				tournamentsHeading: 'Tournaments',
 				table: {
 					pos: '#',
@@ -2319,8 +2312,6 @@ const translations: Record<Language, Translations> = {
 				title: 'Stockholms Junior Grand Prix',
 				subtitle: 'Säsongsställning för Stockholms juniortävlingsserie',
 				officialPageLink: 'Officiella JGP-sidor ↗',
-				demoBanner:
-					'🚧 Under uppbyggnad — detta är en demo. Ställningar och layout håller fortfarande på att valideras.',
 				navigation: {
 					stockholmsJgp: 'Stockholms JGP'
 				},
@@ -2328,13 +2319,10 @@ const translations: Record<Language, Translations> = {
 					open: 'Öppen',
 					girls: 'Tjejer'
 				},
-				year: 'Säsong',
-				loading: 'Beräknar ställning…',
+				loading: 'Laddar ställning…',
 				error: 'Kunde inte ladda ställningen',
 				noData: 'Ingen ställning tillgänglig för den här säsongen.',
-				disclaimer:
-					'Beräknad från officiella SSF-resultat. Behörighet (sekundärt medlemskap i Stockholmsklubb) och åldersdispenser är delvis härledda från de publicerade ställningarna, så totalerna kan skilja sig något från de officiella.',
-				finalsLink: 'Visa finalen →',
+				lastUpdated: 'Uppdaterad',
 				tournamentsHeading: 'Tävlingar',
 				table: {
 					pos: '#',

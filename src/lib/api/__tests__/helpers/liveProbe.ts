@@ -28,6 +28,8 @@ export const SSF_BASE = 'https://member.schack.se/public/api/v1';
  * keyless test run reaches it the same way the app does.
  */
 export const FIDE_BASE = 'https://chess.msvens.com/api/fide';
+/** Stockholms Schackförbund's API (the JGP standings). */
+export const STHLM_BASE = 'https://verktyg.stockholmsschack.se/api/v1';
 
 async function probe(
 	host: string,
@@ -58,5 +60,22 @@ export function fideUnreachable(): Promise<boolean> {
 	return probe(
 		'chess.msvens.com/api/fide (mfide)',
 		new MfideService(FIDE_BASE, undefined, PROBE_TIMEOUT_MS).getHealth()
+	);
+}
+
+/**
+ * True when Stockholms Schackförbund's API can't be reached. There is no SDK
+ * client for it, so this mirrors the SDK's transport statuses by hand.
+ */
+export function sthlmUnreachable(): Promise<boolean> {
+	return probe(
+		'verktyg.stockholmsschack.se',
+		fetch(`${STHLM_BASE}/standings/jgp`, { signal: AbortSignal.timeout(PROBE_TIMEOUT_MS) }).then(
+			(res) => ({ status: res.status }),
+			(err: unknown) => ({
+				status: err instanceof DOMException && err.name === 'TimeoutError' ? 408 : 0,
+				error: String(err)
+			})
+		)
 	);
 }

@@ -5,7 +5,7 @@ import { sveltekit } from '@sveltejs/kit/vite';
 import { svelteTesting } from '@testing-library/svelte/vite';
 import { fileURLToPath } from 'node:url';
 
-// Upstreams. In production nginx owns these two prefixes; in dev the Vite
+// Upstreams. In production nginx owns these prefixes; in dev the Vite
 // proxy below stands in for it, so the app always talks to same-origin
 // /api/* and never needs CORS.
 //
@@ -14,6 +14,10 @@ import { fileURLToPath } from 'node:url';
 // GETs), which forces one. Direct browser calls therefore cannot work.
 const SSF_API = 'https://member.schack.se';
 const SSF_API_PREFIX = '/public/api/v1';
+// Stockholms Schackförbund (standings etc.). No CORS headers upstream, so it is
+// proxied the same way; it also 404s on a trailing slash, so no normalisation.
+const STHLM_API = 'https://verktyg.stockholmsschack.se';
+const STHLM_API_PREFIX = '/api/v1';
 // FIDE data comes from mfide, which needs an API key. Production nginx adds it
 // under /api/fide, so dev forwards there too: a fresh clone runs without a
 // local mfide and the key never enters this repo. To test against a local
@@ -58,6 +62,11 @@ export default defineConfig({
 				target: SSF_API,
 				changeOrigin: true,
 				rewrite: (path) => path.replace(/^\/api\/chess\/v1/, SSF_API_PREFIX)
+			},
+			'/api/sthlm/v1': {
+				target: STHLM_API,
+				changeOrigin: true,
+				rewrite: (path) => path.replace(/^\/api\/sthlm\/v1/, STHLM_API_PREFIX)
 			},
 			// No rewrite: the target's nginx owns /api/fide and maps it onto mfide.
 			'/api/fide': {

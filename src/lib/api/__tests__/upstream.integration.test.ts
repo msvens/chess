@@ -1,6 +1,7 @@
 // @vitest-environment node
 /**
- * Live contract tests against the SSF API and the FIDE path (mfide behind nginx).
+ * Live contract tests against the SSF API, the FIDE path (mfide behind nginx) and
+ * Stockholms Schackförbund's standings API.
  *
  * Scope is deliberately narrow: only the upstream behaviours that exist as
  * assumptions in OUR proxy configuration (`vite.config.ts` in dev, nginx in prod).
@@ -19,7 +20,14 @@
  * .github/workflows/integration.yml), so a flaky upstream cannot block a merge.
  */
 import { describe, expect, it } from 'vitest';
-import { FIDE_BASE, SSF_BASE, fideUnreachable, ssfUnreachable } from './helpers/liveProbe';
+import {
+	FIDE_BASE,
+	SSF_BASE,
+	STHLM_BASE,
+	fideUnreachable,
+	ssfUnreachable,
+	sthlmUnreachable
+} from './helpers/liveProbe';
 
 describe.skipIf(await ssfUnreachable())('SSF upstream contract', () => {
 	// The rule the entire proxy design rests on. Both proxies use prefix
@@ -72,6 +80,21 @@ describe.skipIf(await fideUnreachable())('FIDE (mfide via chess.msvens.com) cont
 	// Only the endpoints the app uses pass; the rest of mfide stays behind a key.
 	it('does not expose the rest of mfide', async () => {
 		const res = await fetch(`${FIDE_BASE}/v1/key`);
+		expect(res.status).toBe(404);
+	});
+});
+
+describe.skipIf(await sthlmUnreachable())('Stockholms Schackförbund upstream contract', () => {
+	// Same rule as SSF, and the same reason the proxy must not normalise slashes.
+	const standings = ['/standings/jgp', '/standings/flickornas'];
+
+	it.each(standings)('GET %s succeeds WITHOUT a trailing slash', async (path) => {
+		const res = await fetch(`${STHLM_BASE}${path}`);
+		expect(res.status).toBe(200);
+	});
+
+	it.each(standings)('GET %s 404s WITH a trailing slash', async (path) => {
+		const res = await fetch(`${STHLM_BASE}${path}/`);
 		expect(res.status).toBe(404);
 	});
 });

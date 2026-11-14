@@ -10,30 +10,33 @@
 	import Link from '$lib/components/ui/Link.svelte';
 	import Table from '$lib/components/ui/Table/Table.svelte';
 	import type { TableColumn } from '$lib/components/ui/Table/tableTypes';
-	import type { JgpTournamentRef } from '$lib/data/jgp/types';
-	import type { JgpAgeClassTable, JgpStandingRow } from '$lib/junior/jgpEngine';
+	import type { JgpStandingRow, JgpTable } from '$lib/api/sthlm';
+	import type { JgpTournament } from '$lib/stores/jgpStandings.svelte';
 	import { language } from '$lib/stores/language.svelte';
 	import { getTranslation } from '$lib/translations';
 
 	interface JgpStandingsTableProps {
-		table: JgpAgeClassTable;
+		table: JgpTable;
 		/** The season's tournaments, in column order. */
-		tournaments: JgpTournamentRef[];
+		tournaments: JgpTournament[];
 	}
 
 	let { table, tournaments }: JgpStandingsTableProps = $props();
 
 	let t = $derived(getTranslation(language.current).pages.junior);
 
-	const columnId = (tournament: JgpTournamentRef) => `t${tournament.tournamentId}`;
+	const columnId = (tournament: JgpTournament) => `t${tournament.id}`;
 
 	/** The header snippet gets its column; this is how it finds its tournament. */
 	let byColumnId = $derived(
 		new Map(tournaments.map((tournament, index) => [columnId(tournament), { tournament, index }]))
 	);
 
-	/** Integers plain, halves as .5, no score at all blank. */
-	const score = (value: number | null): string => {
+	/**
+	 * Integers plain, halves as .5. No score at all is blank, which is not the
+	 * same as 0: a 0 means played in the wrong class without dispensation.
+	 */
+	const score = (value: number | undefined): string => {
 		if (value == null) return '';
 		return Number.isInteger(value) ? String(value) : value.toFixed(1);
 	};
@@ -42,7 +45,7 @@
 		{
 			id: 'pos',
 			header: t.table.pos,
-			accessor: (row) => row.place,
+			accessor: (row) => row.placement,
 			align: 'left',
 			cellClassName: 'tabular-nums'
 		},
@@ -54,11 +57,11 @@
 			align: 'left',
 			cellClassName: 'tabular-nums'
 		},
-		{ id: 'club', header: t.table.club, accessor: (row) => row.clubName, align: 'left' },
-		...tournaments.map((tournament, index): TableColumn<JgpStandingRow> => ({
+		{ id: 'club', header: t.table.club, accessor: (row) => row.club, align: 'left' },
+		...tournaments.map((tournament): TableColumn<JgpStandingRow> => ({
 			id: columnId(tournament),
 			headerSnippet: tournamentHeader,
-			accessor: (row) => score(row.perTournament[index]),
+			accessor: (row) => score(row.points[tournament.id]),
 			align: 'right',
 			headerClassName: 'tabular-nums',
 			cellClassName: 'tabular-nums'
@@ -82,7 +85,7 @@
 {#snippet tournamentHeader(column: TableColumn<JgpStandingRow>)}
 	{@const entry = byColumnId.get(column.id)}
 	{#if entry}
-		<Link href="/results/{entry.tournament.tournamentId}" title={entry.tournament.label}>
+		<Link href="/results/{entry.tournament.id}" title={entry.tournament.name}>
 			{entry.index + 1}
 		</Link>
 	{/if}

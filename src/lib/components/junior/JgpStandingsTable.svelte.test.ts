@@ -1,30 +1,25 @@
 import { render, screen, within } from '@testing-library/svelte';
 import { describe, expect, it } from 'vitest';
-import type { JgpTournamentRef } from '$lib/data/jgp/types';
-import type { JgpAgeClassTable, JgpStandingRow } from '$lib/junior/jgpEngine';
+import type { JgpStandingRow, JgpTable } from '$lib/api/sthlm';
+import type { JgpTournament } from '$lib/stores/jgpStandings.svelte';
 import JgpStandingsTable from './JgpStandingsTable.svelte';
 
-const tournament = (tournamentId: number, label: string): JgpTournamentRef =>
-	({ tournamentId, label, shortLabel: label, date: '2026-03-07', groups: [] }) as JgpTournamentRef;
+const tournament = (id: number, name: string): JgpTournament => ({ id, name, date: '2026-03-07' });
 
 const tournaments = [tournament(6544, 'Tyresö JGP 2026'), tournament(6540, 'Trojanska Hästen')];
 
 const row = (over: Partial<JgpStandingRow> = {}): JgpStandingRow => ({
+	placement: 1,
 	memberId: 1,
 	name: 'Anna Svensson',
 	birthYear: 2013,
-	clubName: 'SK Rockaden',
-	perTournament: [25, 22],
+	club: 'SK Rockaden',
+	points: { 6544: 25, 6540: 22 },
 	total: 47,
-	played: 2,
-	place: 1,
 	...over
 });
 
-const table = (rows: JgpStandingRow[]): JgpAgeClassTable => ({
-	ageClass: { label: '2013', fromYear: 2013, toYear: 2013 },
-	rows
-});
+const table = (rows: JgpStandingRow[]): JgpTable => ({ label: '2013', rows });
 
 const setup = (rows: JgpStandingRow[]) =>
 	render(JgpStandingsTable, { props: { table: table(rows), tournaments } });
@@ -64,22 +59,24 @@ describe('JgpStandingsTable', () => {
 	});
 
 	it('shows whole scores plain and halves to one decimal', () => {
-		setup([row({ perTournament: [25, 12.5], total: 37.5 })]);
+		setup([row({ points: { 6544: 25, 6540: 12.5 }, total: 37.5 })]);
 		expect(screen.getByText('25')).toBeInTheDocument();
 		expect(screen.getByText('12.5')).toBeInTheDocument();
 		expect(screen.getByText('37.5')).toBeInTheDocument();
 	});
 
-	it('leaves a tournament the player did not score in blank', () => {
-		setup([row({ perTournament: [25, null], total: 25 })]);
+	it('leaves a tournament the player did not play blank, but shows a 0 as 0', () => {
+		// A 0 is a game in the wrong class without dispensation — not the same as absent.
+		setup([row({ points: { 6540: 0 }, total: 0 })]);
 		const cells = within(screen.getAllByRole('rowgroup')[1]).getAllByRole('cell');
 		// pos, name, born, club, t1, t2, total
-		expect(cells[5]).toHaveTextContent('');
+		expect(cells[4]).toHaveTextContent(/^$/);
+		expect(cells[5]).toHaveTextContent('0');
 	});
 
 	it('rules off after the A-final and B-final cut-offs', () => {
 		const rows = Array.from({ length: 25 }, (_, i) =>
-			row({ memberId: i + 1, name: `Player ${i + 1}`, place: i + 1 })
+			row({ memberId: i + 1, name: `Player ${i + 1}`, placement: i + 1 })
 		);
 		setup(rows);
 		const bodyRows = within(screen.getAllByRole('rowgroup')[1]).getAllByRole('row');
