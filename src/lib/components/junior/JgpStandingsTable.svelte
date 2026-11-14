@@ -4,8 +4,7 @@
 	 * total. Ports `components/junior/JgpStandingsTable.tsx`.
 	 *
 	 * The numbered column headers link to each tournament, the names to each
-	 * player, the Total column is pinned right, and heavier rules fall after
-	 * ranks 10 and 20 — the A-final and B-final cut-offs.
+	 * player, and the Total column is pinned right.
 	 */
 	import Link from '$lib/components/ui/Link.svelte';
 	import Table from '$lib/components/ui/Table/Table.svelte';
@@ -95,7 +94,6 @@
 	data={table.rows}
 	{columns}
 	getRowKey={(row) => row.memberId}
-	rowDivider={(_row, index) => index === 9 || index === 19}
 	density="compact"
 	emptyMessage={t.noData}
 	loadingMessage={t.loading}

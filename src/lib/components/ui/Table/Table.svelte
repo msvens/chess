@@ -55,8 +55,6 @@
 		class?: string;
 		getRowKey?: (row: T, index: number) => string | number;
 		onRowClick?: (row: T, index: number) => void;
-		/** Draws a heavier rule under a row — used to mark cut-offs in standings. */
-		rowDivider?: (row: T, index: number) => boolean;
 		/** Desktop. Omit to size rows automatically from the row count. */
 		density?: TableDensity;
 		/** Mobile, set separately from `density`. Omit for `micro`. */
@@ -87,7 +85,6 @@
 		class: cls = '',
 		getRowKey,
 		onRowClick,
-		rowDivider,
 		density,
 		mobileDensity,
 		mobileLayout = 'auto',
@@ -255,11 +252,7 @@
 						{@const zebra = striped && index % 2 === 1}
 						<tr
 							class="group
-								{border
-								? rowDivider?.(row, index)
-									? 'border-b-2 border-gray-400 dark:border-gray-500'
-									: 'border-b border-gray-200 dark:border-gray-700'
-								: ''}
+								{border ? 'border-b border-gray-200 dark:border-gray-700' : ''}
 								{hover ? 'transition-colors hover:bg-gray-100 dark:hover:bg-gray-700/30' : ''}
 								{onRowClick ? 'cursor-pointer' : ''}
 								{zebra ? 'bg-gray-50 dark:bg-gray-800/30' : ''}"
