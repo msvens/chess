@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@msvens/schack-se-sdk':
-        specifier: github:msvens/schack-se-sdk#v0.31.2
-        version: https://codeload.github.com/msvens/schack-se-sdk/tar.gz/5a48b469910e2c9de17cfa157d34507c6a38529e
+        specifier: github:msvens/schack-se-sdk#v0.31.3
+        version: https://codeload.github.com/msvens/schack-se-sdk/tar.gz/32c6cdb2c7b18a16558f940a0d38a8d20ccc1369
       leaflet:
         specifier: ^1.9.4
         version: 1.9.4
@@ -427,9 +427,9 @@ packages:
   '@jridgewell/trace-mapping@0.3.31':
     resolution: {integrity: sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==}
 
-  '@msvens/schack-se-sdk@https://codeload.github.com/msvens/schack-se-sdk/tar.gz/5a48b469910e2c9de17cfa157d34507c6a38529e':
-    resolution: {gitHosted: true, integrity: sha512-MuILB375Wf6tUXnUqwq3kdAAHQ6vWeLmgkfKAw8dz+niYOiZnFkFIvr1bJzS79nbEa9MfUOo5NfBLWkUa/xR6Q==, tarball: https://codeload.github.com/msvens/schack-se-sdk/tar.gz/5a48b469910e2c9de17cfa157d34507c6a38529e}
-    version: 0.31.2
+  '@msvens/schack-se-sdk@https://codeload.github.com/msvens/schack-se-sdk/tar.gz/32c6cdb2c7b18a16558f940a0d38a8d20ccc1369':
+    resolution: {gitHosted: true, integrity: sha512-rg/YejiL0ZpDKlWJUchVsFH4QOAwT3Ihh/0bLlokgoTyjeiOVkM8U21cwFvYu0O8NGvA7hOpad6rshb3dSZysQ==, tarball: https://codeload.github.com/msvens/schack-se-sdk/tar.gz/32c6cdb2c7b18a16558f940a0d38a8d20ccc1369}
+    version: 0.31.3
 
   '@oxc-project/types@0.144.0':
     resolution: {integrity: sha512-nuhZIOLuI6TFQ32I/WnUx+SCPY7SdSKwgnFHydAuoS1+Z4BRcaP+RRJmGzl9lw+0OFF7UmaESf7KQRXaNLHypg==}
@@ -2080,7 +2080,7 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
 
-  '@msvens/schack-se-sdk@https://codeload.github.com/msvens/schack-se-sdk/tar.gz/5a48b469910e2c9de17cfa157d34507c6a38529e': {}
+  '@msvens/schack-se-sdk@https://codeload.github.com/msvens/schack-se-sdk/tar.gz/32c6cdb2c7b18a16558f940a0d38a8d20ccc1369': {}
 
   '@oxc-project/types@0.144.0': {}
 
