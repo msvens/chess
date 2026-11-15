@@ -8,7 +8,7 @@ const standings = (label: string, tournamentIds = [6544]): ApiResponse<JgpSeason
 	data: {
 		lastUpdated: '2026-11-13T19:32:59+00:00',
 		tournamentIds,
-		tables: [{ label, rows: [] }]
+		tables: [{ label, rows: [], separators: [] }]
 	}
 });
 

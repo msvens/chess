@@ -29,7 +29,7 @@ const row = (over: Partial<JgpStandingRow> = {}): JgpStandingRow => ({
 	...over
 });
 
-const table = (label: string, rows = [row()]): JgpTable => ({ label, rows });
+const table = (label: string, rows = [row()]): JgpTable => ({ label, rows, separators: [] });
 
 const respond = (tables: JgpTable[]) =>
 	getJgpStandings.mockResolvedValue({
