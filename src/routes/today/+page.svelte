@@ -1,14 +1,7 @@
 <script lang="ts">
 	/**
-	 * Tournaments being played today: the calendar's today square, expanded.
-	 *
-	 * The same data as the calendar (the coming list plus what is played today,
-	 * which the coming list drops on its last day) read by the same `playedDays`,
-	 * so the two pages cannot disagree about what today holds.
-	 *
-	 * The subtitle stays visible on phones: the upstream lists cannot show an
-	 * event ending today until it has results, and without that note a short
-	 * list in the morning looks like a bug.
+	 * Tournaments being played today, as the SDK's `getTournamentsToday` gives
+	 * them: what counts as played today, and which groups, is the SDK's rule.
 	 */
 	import { onMount } from 'svelte';
 	import PageLayout from '$lib/components/layout/PageLayout.svelte';
@@ -24,18 +17,15 @@
 		getTournamentsToday,
 		isGrandPrix,
 		TournamentService,
-		type TournamentDto
+		type TournamentToday
 	} from '$lib/api';
-	import { deduplicateTournaments } from '$lib/components/tournaments/tournamentSearch';
-	import { toDayNumber } from '$lib/utils/calendarLayout';
-	import { playedDays, playedOn } from '$lib/utils/playedDays';
 	import { getOrganizationsState } from '$lib/stores/organizations.svelte';
 	import { language } from '$lib/stores/language.svelte';
 	import { getTranslation } from '$lib/translations';
 
 	const organizations = getOrganizationsState();
 
-	let loaded = $state<TournamentDto[]>([]);
+	let tournaments = $state<TournamentToday[]>([]);
 	let loading = $state(true);
 	let failed = $state(false);
 
@@ -43,12 +33,6 @@
 	let districtId = $state<number | null>(null);
 
 	let t = $derived(getTranslation(language.current).pages.today);
-
-	/** Read once: the page shows the day it was opened on. */
-	const today = toDayNumber(new Date());
-
-	let playing = $derived(playedOn(loaded.map(playedDays), today));
-	let tournaments = $derived(playing.map((entry) => entry.tournament));
 
 	// The organiser's district, as in the calendar. Filtered here rather than by
 	// the SDK's `districtId`, so switching is instant and each district has a
@@ -58,29 +42,24 @@
 			organizations.getDistrictIdForOrganizer(orgType, orgNumber)
 		)
 	);
-	let shown = $derived.by(() => {
-		const ids = new Set(filterByDistrict(tournaments, districtOf, districtId).map((t) => t.id));
-		return playing.filter((entry) => ids.has(entry.tournament.id));
-	});
+	let shown = $derived(
+		filterByDistrict(tournaments, districtOf, districtId).map((tournament) => ({
+			tournament,
+			groups: tournament.groupsToday.map(({ group }) => group)
+		}))
+	);
 	let districtCounts = $derived(countByDistrict(tournaments, districtOf));
 
 	onMount(() => {
 		let cancelled = false;
 
 		(async () => {
-			const service = new TournamentService();
-			const [coming, endingToday] = await Promise.all([
-				service.searchComingTournaments(),
-				getTournamentsToday({ service })
-			]);
+			const response = await getTournamentsToday({ service: new TournamentService() });
 			if (cancelled) return;
 
-			if (coming.status === 200 && coming.data) {
-				// What ends today is only in the second list; if that search fails,
-				// today is missing those, as the calendar is.
-				loaded = deduplicateTournaments([...coming.data, ...(endingToday.data ?? [])])
-					// A series has no results, and its round dates don't reflect play.
-					.filter((tournament) => !isGrandPrix(tournament.type));
+			if (response.status === 200 && response.data) {
+				// A series has no results, and its round dates don't reflect play.
+				tournaments = response.data.filter((tournament) => !isGrandPrix(tournament.type));
 			} else {
 				failed = true;
 			}
