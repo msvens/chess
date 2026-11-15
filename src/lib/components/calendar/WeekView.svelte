@@ -6,9 +6,12 @@
 	 * Cards are grid items rather than absolutely-positioned bars — a week has
 	 * room for the organiser, the city and the dates, so the cards size to their
 	 * content and the lane index becomes a grid row.
+	 *
+	 * Clicking anywhere on a card takes you to the group playing, when exactly
+	 * one does; otherwise it opens the popover, which links the tournament and
+	 * the groups playing. The title is styled as a link because the card is one.
 	 */
 	import { MediaQuery } from 'svelte/reactivity';
-	import Link from '$lib/components/ui/Link.svelte';
 	import type { PackedRow } from '$lib/utils/calendarLayout';
 	import { barClasses } from './calendarColors';
 	import DayEventsPopover from './DayEventsPopover.svelte';
@@ -105,20 +108,28 @@
 						tournament.type
 					)}"
 				>
-					<!-- Opening the card is a real button behind its content, so the link
-					     on top of it stays a link. Wrapping would nest interactive
+					<!-- Opening the card is a real control behind its content, so the
+					     link on top of it stays a link. Wrapping would nest interactive
 					     elements; a div with a click handler would not be reachable by
 					     keyboard. -->
-					<button
-						type="button"
-						onclick={() => (open = { tournamentId: tournament.id, colOffset: segment.colOffset })}
-						aria-label={tournament.name}
-						class="absolute inset-0 z-0 cursor-pointer rounded-md"
-					></button>
+					{#if segment.groups.length === 1}
+						<a
+							href="/results/{tournament.id}/{segment.groups[0].id}"
+							aria-label={tournament.name}
+							class="absolute inset-0 z-0 cursor-pointer rounded-md"
+						></a>
+					{:else}
+						<button
+							type="button"
+							onclick={() => (open = { tournamentId: tournament.id, colOffset: segment.colOffset })}
+							aria-label={tournament.name}
+							class="absolute inset-0 z-0 cursor-pointer rounded-md"
+						></button>
+					{/if}
 
-					<!-- Taps pass through the row to the button behind it — the row spans
-					     the card, and on mobile it is nearly all of it. Only the link and
-					     the warning's tooltip take the pointer back. -->
+					<!-- Clicks pass through the row to the control behind it — the row
+					     spans the card, and on mobile it is nearly all of it. Only the
+					     warning's tooltip takes the pointer back. -->
 					<span
 						class="pointer-events-none relative z-10 flex items-start gap-0.5 text-[11px] leading-tight font-semibold sm:text-xs"
 					>
@@ -133,14 +144,9 @@
 						{#if mobile.current}
 							<span class="truncate">{tournament.name}</span>
 						{:else}
-							<Link
-								href="/results/{tournament.id}"
-								color="blue"
-								underline="always"
-								class="pointer-events-auto line-clamp-2"
-							>
+							<span class="line-clamp-2 text-blue-600 underline dark:text-blue-400">
 								{tournament.name}
-							</Link>
+							</span>
 						{/if}
 						{#if segment.continuesRight}<span aria-hidden="true" class="ml-auto shrink-0">▶</span
 							>{/if}
@@ -169,7 +175,7 @@
 					{#if isOpen}
 						<DayEventsPopover
 							date={popoverDate}
-							events={[tournament]}
+							events={[{ tournament, groups: segment.groups }]}
 							onClose={() => (open = null)}
 						/>
 					{/if}

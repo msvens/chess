@@ -6,6 +6,7 @@ All notable changes to msvens chess will be documented in this file.
 
 ### Changed
 
+- The calendar shows tournaments on the days they are played, from their round dates, so leagues and club championships appear on each evening they play rather than only on the day they started. Clicking one goes straight to the group playing that day, or lists the groups when several play. A day's list shows the groups too, and Today lists exactly what the calendar has on today's date
 - The JGP tables mark the finals cut-offs where Stockholms Schackförbund sets them, instead of guessed lines after places 10 and 20
 - The Stockholm JGP standings are now the official ones, published by Stockholms Schackförbund, instead of being computed here from the tournament results. The page shows when they were last updated. Only the current season is shown, so the season picker is gone, along with the demo and "partly deduced" notices
 

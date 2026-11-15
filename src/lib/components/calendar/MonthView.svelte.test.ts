@@ -1,9 +1,10 @@
-import { render, screen } from '@testing-library/svelte';
+import { render, screen, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import type { DistrictDTO, TournamentDto } from '$lib/api';
 import { ORGANIZATIONS_STATE_KEY, OrganizationsState } from '$lib/stores/organizations.svelte';
 import { buildMonthRows, toDayNumber } from '$lib/utils/calendarLayout';
+import { playedDays } from '$lib/utils/playedDays';
 import MonthView from './MonthView.svelte';
 
 const INDIVIDUAL = 3;
@@ -25,6 +26,27 @@ const event = (over: Partial<TournamentDto> = {}): TournamentDto =>
 		...over
 	}) as TournamentDto;
 
+/** A season-long event whose groups play on their round dates. */
+const league = (groups: [id: number, name: string, rounds: string[]][]) =>
+	event({
+		name: 'KM',
+		// Starts on a day in the June grid, so its absence there is checkable.
+		start: '2025-06-02',
+		end: '2025-06-30',
+		rootClasses: [
+			{
+				classID: 1,
+				className: 'KM',
+				subClasses: [],
+				groups: groups.map(([id, name, rounds]) => ({
+					id,
+					name,
+					tournamentRounds: rounds.map((roundDate) => ({ roundDate }))
+				}))
+			}
+		] as unknown as TournamentDto['rootClasses']
+	});
+
 class TestOrganizations extends OrganizationsState {
 	constructor() {
 		super();
@@ -42,10 +64,11 @@ class TestOrganizations extends OrganizationsState {
 const WEEKDAYS = ['mån', 'tis', 'ons', 'tors', 'fre', 'lör', 'sön'];
 
 function setup(tournaments: TournamentDto[]) {
+	const events = tournaments.map(playedDays);
 	render(MonthView, {
 		props: {
-			rows: buildMonthRows(ANCHOR, tournaments, TODAY),
-			tournaments,
+			rows: buildMonthRows(ANCHOR, events, TODAY),
+			events,
 			weekdayLabels: WEEKDAYS
 		},
 		context: new Map([[ORGANIZATIONS_STATE_KEY, new TestOrganizations()]])
@@ -65,9 +88,9 @@ describe('the grid', () => {
 		expect(screen.getByRole('button', { name: /SM 2025/ })).toBeInTheDocument();
 	});
 
-	it('marks a long event with a dot rather than spanning it', () => {
-		// Over a week, so `calendarLayout` renders a start-only marker. 56 of the
-		// 137 live tournaments are like this.
+	it('marks a long event with no round dates with a dot rather than spanning it', () => {
+		// Over a week and nothing to place it by, so `playedDays` makes it a
+		// start-day marker.
 		setup([event({ start: '2025-06-02', end: '2025-06-20' })]);
 		expect(screen.getByRole('button', { name: /Rilton Cup/ })).toHaveTextContent('•');
 	});
@@ -165,5 +188,46 @@ describe('dates the organiser got wrong', () => {
 	it('leaves an ordinary event unmarked', () => {
 		setup([event()]);
 		expect(screen.getByRole('button', { name: /Rilton Cup/ })).not.toHaveTextContent('⚠');
+	});
+});
+
+describe('a league on the days it plays', () => {
+	it('shows on each round day, not on its start date', () => {
+		setup([league([[10, 'Grupp A', ['2025-06-03', '2025-06-10']]])]);
+		expect(screen.getAllByRole('link', { name: /KM/ })).toHaveLength(2);
+		expect(screen.queryByRole('button', { name: /evenemang den .*2 juni/ })).toBeNull();
+	});
+
+	it('links straight to the group when only one plays that day', () => {
+		setup([league([[10, 'Grupp A', ['2025-06-10']]])]);
+		expect(screen.getByRole('link', { name: /KM/ })).toHaveAttribute('href', '/results/1/10');
+	});
+
+	it('opens the groups playing when there are several', async () => {
+		const user = setup([
+			league([
+				[10, 'Grupp A', ['2025-06-10']],
+				[11, 'Grupp B', ['2025-06-10']],
+				[12, 'Grupp C', ['2025-06-12']]
+			])
+		]);
+		await user.click(screen.getByRole('button', { name: /^KM/ }));
+
+		const popover = screen.getByRole('dialog');
+		expect(within(popover).getByRole('link', { name: 'Grupp A' })).toHaveAttribute(
+			'href',
+			'/results/1/10'
+		);
+		expect(within(popover).getByRole('link', { name: 'Grupp B' })).toBeInTheDocument();
+		// Grupp C plays on another day.
+		expect(within(popover).queryByRole('link', { name: 'Grupp C' })).toBeNull();
+	});
+
+	it('lists a day with its groups from the day button too', async () => {
+		const user = setup([league([[10, 'Grupp A', ['2025-06-10']]])]);
+		await user.click(screen.getByRole('button', { name: /1 evenemang den .*10 juni/ }));
+		expect(
+			within(screen.getByRole('dialog')).getByRole('link', { name: 'Grupp A' })
+		).toBeInTheDocument();
 	});
 });

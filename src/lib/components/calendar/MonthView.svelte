@@ -7,8 +7,8 @@
 	 * they are and which lane each sits in. What is left here is turning lanes
 	 * into pixels and deciding what a click opens.
 	 */
-	import { MONTH_MAX_LANES, tournamentsForDay, type PackedRow } from '$lib/utils/calendarLayout';
-	import type { TournamentDto } from '$lib/api';
+	import { MONTH_MAX_LANES, type PackedRow } from '$lib/utils/calendarLayout';
+	import { playedOn, type CalendarEvent, type Group } from '$lib/utils/playedDays';
 	import EventBar from './EventBar.svelte';
 	import DayEventsPopover from './DayEventsPopover.svelte';
 	import { language } from '$lib/stores/language.svelte';
@@ -17,12 +17,13 @@
 
 	interface MonthViewProps {
 		rows: PackedRow[];
-		tournaments: TournamentDto[];
+		/** Every tournament with its played days, to list a whole day. */
+		events: CalendarEvent[];
 		/** Mon–Sun, in the current language. */
 		weekdayLabels: string[];
 	}
 
-	let { rows, tournaments, weekdayLabels }: MonthViewProps = $props();
+	let { rows, events, weekdayLabels }: MonthViewProps = $props();
 
 	let cal = $derived(getTranslation(language.current).pages.calendar);
 
@@ -41,8 +42,11 @@
 	const PAD_B = 6;
 	const MIN_ROW = 96; // keeps the grid calendar-shaped even in a quiet month
 
-	/** `tournamentId: null` opens the whole day; an id opens just that event. */
-	let open = $state<{ day: number; tournamentId: number | null } | null>(null);
+	/**
+	 * `tournamentId: null` opens the whole day; an id opens just that event, with
+	 * the groups of the bar that was clicked — a weekend bar spans several days.
+	 */
+	let open = $state<{ day: number; tournamentId: number | null; groups: Group[] } | null>(null);
 
 	let openDate = $derived.by(() => {
 		if (!open) return null;
@@ -55,18 +59,19 @@
 
 	let openEvents = $derived.by(() => {
 		if (!open) return [];
-		if (open.tournamentId !== null) {
-			const match = tournaments.find((t) => t.id === open?.tournamentId);
-			return match ? [match] : [];
+		const { day, tournamentId, groups } = open;
+		if (tournamentId !== null) {
+			const match = events.find((e) => e.tournament.id === tournamentId);
+			return match ? [{ tournament: match.tournament, groups }] : [];
 		}
-		return tournamentsForDay(tournaments, open.day);
+		return playedOn(events, day);
 	});
 
 	/** Bars drawn, per day, versus events actually on that day. */
 	function overflowFor(row: PackedRow): number[] {
 		const rowStart = row.cells[0].dayNumber;
 		return row.cells.map((cell) => {
-			const total = tournamentsForDay(tournaments, cell.dayNumber).length;
+			const total = playedOn(events, cell.dayNumber).length;
 			const shown = row.segments.filter(
 				(segment) =>
 					segment.laneIndex < MONTH_MAX_LANES &&
@@ -103,7 +108,7 @@
 
 		<div class="relative grid grid-cols-7" style="min-height: {minHeight}px">
 			{#each row.cells as cell, colIndex (cell.dayNumber)}
-				{@const dayEvents = tournamentsForDay(tournaments, cell.dayNumber)}
+				{@const dayEvents = playedOn(events, cell.dayNumber)}
 				<div
 					class="relative border-r border-b border-gray-200 last:border-r-0 dark:border-gray-700
 						{colIndex === 6 ? 'border-r-0' : ''}
@@ -116,7 +121,7 @@
 					{#if dayEvents.length > 0}
 						<button
 							type="button"
-							onclick={() => (open = { day: cell.dayNumber, tournamentId: null })}
+							onclick={() => (open = { day: cell.dayNumber, tournamentId: null, groups: [] })}
 							aria-label={cal.dayEvents
 								.replace('{count}', String(dayEvents.length))
 								.replace('{date}', dayFormat.format(cell.date))}
@@ -142,7 +147,7 @@
 							type="button"
 							onclick={(event) => {
 								event.stopPropagation();
-								open = { day: cell.dayNumber, tournamentId: null };
+								open = { day: cell.dayNumber, tournamentId: null, groups: [] };
 							}}
 							style="top: {HEADER_H + lanes * LANE_H}px"
 							class="absolute left-1 z-20 text-[10px] font-medium text-gray-500 hover:text-blue-600 sm:text-[11px] dark:text-gray-400 dark:hover:text-blue-400"
@@ -164,7 +169,7 @@
 					top={HEADER_H + segment.laneIndex * LANE_H}
 					height={BAR_H}
 					onSelect={(tournament, dayNumber) =>
-						(open = { day: dayNumber, tournamentId: tournament.id })}
+						(open = { day: dayNumber, tournamentId: tournament.id, groups: segment.groups })}
 				/>
 			{/each}
 		</div>

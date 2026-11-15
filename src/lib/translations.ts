@@ -268,7 +268,8 @@ export interface Translations {
 				latest: string;
 			};
 			moreEvents: string;
-			longerEvent: string;
+			/** Tooltip on a marker: placed on its start day, not on days it is played. */
+			startDateOnly: string;
 			reversedDates: string;
 			viewLabel: string;
 			dayEvents: string;
@@ -1092,7 +1093,7 @@ const translations: Record<Language, Translations> = {
 					latest: 'Last event'
 				},
 				moreEvents: '+{count} more',
-				longerEvent: 'Longer event',
+				startDateOnly: 'Start date only',
 				reversedDates: 'End date is before the start date — shown on the start date',
 				viewLabel: 'View',
 				dayEvents: '{count} events on {date}',
@@ -1896,7 +1897,7 @@ const translations: Record<Language, Translations> = {
 					latest: 'Sista evenemanget'
 				},
 				moreEvents: '+{count} fler',
-				longerEvent: 'Längre evenemang',
+				startDateOnly: 'Endast startdatum',
 				reversedDates: 'Slutdatum är före startdatum — visas på startdatumet',
 				viewLabel: 'Vy',
 				dayEvents: '{count} evenemang den {date}',

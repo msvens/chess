@@ -7,11 +7,15 @@
 	 * and `escapeKey` attachments, and its `useLayoutEffect` — which measured the
 	 * node and wrote five style properties onto it — is now a measurement here
 	 * plus a decision in `popoverPlacement`, which is testable on its own.
+	 *
+	 * Each tournament lists the groups playing that day, as links to their
+	 * results — the same groups `/today` shows.
 	 */
 	import Link from '$lib/components/ui/Link.svelte';
 	import { clickOutside } from '$lib/attachments/clickOutside';
 	import { escapeKey } from '$lib/attachments/escapeKey';
-	import type { TournamentDto } from '$lib/api';
+	import type { PlayedEntry } from '$lib/utils/playedDays';
+	import { groupLabel } from '$lib/components/tournaments/groupLabel';
 	import { swatchClasses } from './calendarColors';
 	import { formatEventRange, hasReversedDates, typeLabel } from './eventLabels';
 	import { placePopover, placementStyle } from './popoverPlacement';
@@ -22,7 +26,7 @@
 
 	interface DayEventsPopoverProps {
 		date: Date;
-		events: TournamentDto[];
+		events: PlayedEntry[];
 		onClose: () => void;
 	}
 
@@ -85,7 +89,7 @@
 	</div>
 
 	<ul class="flex max-h-80 flex-col gap-3 overflow-y-auto">
-		{#each events as tournament (tournament.id)}
+		{#each events as { tournament, groups } (tournament.id)}
 			<li class="flex gap-2">
 				<span
 					aria-hidden="true"
@@ -130,6 +134,17 @@
 							</dd>
 						</div>
 					</dl>
+					{#if groups.length > 0}
+						<ul class="mt-1 space-y-0.5 text-xs">
+							{#each groups as group (group.id)}
+								<li>
+									<Link href="/results/{tournament.id}/{group.id}" class="block truncate">
+										{groupLabel(tournament, group)}
+									</Link>
+								</li>
+							{/each}
+						</ul>
+					{/if}
 				</div>
 			</li>
 		{/each}

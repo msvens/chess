@@ -5,6 +5,9 @@
 	 *
 	 * Navigation is bounded by the data — there is no point paging into months
 	 * that hold nothing, since the endpoint only returns upcoming events.
+	 *
+	 * The days each tournament is played are worked out once here, from its
+	 * groups' round dates, and shared by both views.
 	 */
 	import CalendarNav from './CalendarNav.svelte';
 	import MonthView from './MonthView.svelte';
@@ -20,6 +23,7 @@
 		getEventDateBounds,
 		toDayNumber
 	} from '$lib/utils/calendarLayout';
+	import { playedDays } from '$lib/utils/playedDays';
 	import { getAllTournamentTypes } from '$lib/utils/tournamentFilters';
 	import { language } from '$lib/stores/language.svelte';
 	import { formatDayRange } from '$lib/dateFormat';
@@ -59,7 +63,8 @@
 	const weekStart = (date: Date) => addDays(date, -((date.getDay() + 6) % 7));
 	const weekKey = (date: Date) => toDayNumber(weekStart(date));
 
-	let bounds = $derived(getEventDateBounds(tournaments));
+	let events = $derived(tournaments.map(playedDays));
+	let bounds = $derived(getEventDateBounds(events));
 
 	/** Only the types on screen get a colour key entry, in canonical order. */
 	let legendTypes = $derived.by(() => {
@@ -74,12 +79,8 @@
 		return Array.from({ length: 7 }, (_, index) => format.format(addDays(monday, index)));
 	});
 
-	let monthRows = $derived(
-		view === 'month' ? buildMonthRows(anchor, tournaments, todayDayNumber) : []
-	);
-	let weekRow = $derived(
-		view === 'week' ? buildWeekRow(anchor, tournaments, todayDayNumber) : null
-	);
+	let monthRows = $derived(view === 'month' ? buildMonthRows(anchor, events, todayDayNumber) : []);
+	let weekRow = $derived(view === 'week' ? buildWeekRow(anchor, events, todayDayNumber) : null);
 
 	let title = $derived.by(() => {
 		if (view === 'month') {
@@ -126,7 +127,7 @@
 	{:else if error}
 		<div class="py-12 text-center text-red-600 dark:text-red-400">{error}</div>
 	{:else if view === 'month'}
-		<MonthView rows={monthRows} {tournaments} {weekdayLabels} />
+		<MonthView rows={monthRows} {events} {weekdayLabels} />
 	{:else if weekRow}
 		<WeekView row={weekRow} {weekdayLabels} />
 	{/if}
