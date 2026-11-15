@@ -6,6 +6,10 @@
 	 * Positioned as a percentage of the seven-column row so it lines up with the
 	 * day cells drawn behind it, rather than living inside any one cell — a bar
 	 * spanning Tuesday to Friday belongs to four of them.
+	 *
+	 * When exactly one group plays on the bar's days it is a link straight to
+	 * that group's results; otherwise it opens the tournament's popover, which
+	 * lists the groups.
 	 */
 	import type { PositionedSegment } from '$lib/utils/calendarLayout';
 	import type { TournamentDto } from '$lib/api';
@@ -40,31 +44,55 @@
 	let title = $derived(
 		[
 			segment.tournament.name,
-			segment.startOnly ? `(${cal.longerEvent})` : '',
+			segment.marker ? `(${cal.startDateOnly})` : '',
 			suspect ? `— ${cal.reversedDates}` : ''
 		]
 			.filter(Boolean)
 			.join(' ')
 	);
+
+	/** The one group playing on these days, if there is exactly one. */
+	let only = $derived(segment.groups.length === 1 ? segment.groups[0] : null);
+
+	let style = $derived(
+		`position: absolute; top: ${top}px; height: ${height}px; left: calc(${left}% + 2px); width: calc(${width}% - 4px)`
+	);
+	let classes = $derived(
+		`flex items-center gap-0.5 overflow-hidden rounded border px-1 text-left text-[10px] leading-none transition-opacity hover:opacity-80 sm:text-xs ${barClasses(segment.tournament.type)}`
+	);
 </script>
 
-<button
-	type="button"
-	onclick={(event) => {
-		event.stopPropagation();
-		onSelect(segment.tournament, rowStartDayNumber + segment.colOffset);
-	}}
-	{title}
-	style="position: absolute; top: {top}px; height: {height}px; left: calc({left}% + 2px); width: calc({width}% - 4px)"
-	class="flex items-center gap-0.5 overflow-hidden rounded border px-1 text-left text-[10px] leading-none transition-opacity hover:opacity-80 sm:text-xs {barClasses(
-		segment.tournament.type
-	)}"
->
+{#snippet content()}
 	{#if segment.continuesLeft}<span aria-hidden="true" class="shrink-0">◀</span>{/if}
-	{#if segment.startOnly}<span aria-hidden="true" class="shrink-0 opacity-70">•</span>{/if}
+	{#if segment.marker}<span aria-hidden="true" class="shrink-0 opacity-70">•</span>{/if}
 	{#if suspect}
 		<span class="shrink-0 text-amber-600 dark:text-amber-400" aria-hidden="true">⚠</span>
 	{/if}
 	<span class="truncate">{segment.tournament.name}</span>
 	{#if segment.continuesRight}<span aria-hidden="true" class="ml-auto shrink-0">▶</span>{/if}
-</button>
+{/snippet}
+
+{#if only}
+	<a
+		href="/results/{segment.tournament.id}/{only.id}"
+		onclick={(event) => event.stopPropagation()}
+		{title}
+		{style}
+		class={classes}
+	>
+		{@render content()}
+	</a>
+{:else}
+	<button
+		type="button"
+		onclick={(event) => {
+			event.stopPropagation();
+			onSelect(segment.tournament, rowStartDayNumber + segment.colOffset);
+		}}
+		{title}
+		{style}
+		class={classes}
+	>
+		{@render content()}
+	</button>
+{/if}

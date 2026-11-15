@@ -1,16 +1,18 @@
 <script lang="ts">
 	/**
-	 * Tournaments being played today, each with the groups playing.
+	 * Tournaments being played today, each with the groups playing — the
+	 * calendar's today square, expanded.
 	 */
 	import Link from '$lib/components/ui/Link.svelte';
-	import { findTournamentGroup, type GroupToday, type TournamentToday } from '$lib/api';
+	import { groupLabel } from '$lib/components/tournaments/groupLabel';
+	import type { PlayedEntry } from '$lib/utils/playedDays';
 	import { localeOf } from '$lib/i18n';
 	import { getOrganizationsState } from '$lib/stores/organizations.svelte';
 	import { language } from '$lib/stores/language.svelte';
 	import { getTranslation } from '$lib/translations';
 
 	interface TodayTournamentsProps {
-		tournaments: TournamentToday[];
+		tournaments: PlayedEntry[];
 		loading?: boolean;
 		error?: string;
 	}
@@ -23,15 +25,10 @@
 	let t = $derived(translation.pages.today);
 
 	let sorted = $derived(
-		[...tournaments].sort((a, b) => a.name.localeCompare(b.name, localeOf(language.current)))
+		[...tournaments].sort((a, b) =>
+			a.tournament.name.localeCompare(b.tournament.name, localeOf(language.current))
+		)
 	);
-
-	/** A one-class event repeats itself if the class name is shown too. */
-	function groupLabel(tournament: TournamentToday, group: GroupToday['group']): string {
-		const found = findTournamentGroup(tournament, group.id);
-		const className = found?.hasMultipleClasses ? found.parentClass.className : '';
-		return className ? `${className}, ${group.name}` : group.name;
-	}
 </script>
 
 {#if loading}
@@ -44,7 +41,7 @@
 	<p class="py-8 text-center text-gray-600 dark:text-gray-400">{t.empty}</p>
 {:else}
 	<ul class="divide-y divide-gray-200 dark:divide-gray-700">
-		{#each sorted as tournament (tournament.id)}
+		{#each sorted as { tournament, groups } (tournament.id)}
 			{@const organizer = organizations.getOrganizerName(tournament.orgType, tournament.orgNumber)}
 			<li class="py-3">
 				<h2 class="font-medium">
@@ -54,9 +51,9 @@
 					{#if organizer}<span>{organizer}</span>{/if}
 					{#if tournament.city}<span>{tournament.city}</span>{/if}
 				</div>
-				{#if tournament.groupsToday.length > 0}
+				{#if groups.length > 0}
 					<ul class="mt-1 text-sm">
-						{#each tournament.groupsToday as { group } (group.id)}
+						{#each groups as group (group.id)}
 							<li>
 								<Link href="/results/{tournament.id}/{group.id}">
 									{groupLabel(tournament, group)}

@@ -1,9 +1,10 @@
-import { render, screen } from '@testing-library/svelte';
+import { render, screen, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import type { DistrictDTO, TournamentDto } from '$lib/api';
 import { ORGANIZATIONS_STATE_KEY, OrganizationsState } from '$lib/stores/organizations.svelte';
 import { buildWeekRow, toDayNumber } from '$lib/utils/calendarLayout';
+import { playedDays } from '$lib/utils/playedDays';
 import WeekView from './WeekView.svelte';
 
 const INDIVIDUAL = 3;
@@ -43,7 +44,10 @@ const WEEKDAYS = ['mån', 'tis', 'ons', 'tors', 'fre', 'lör', 'sön'];
 
 function setup(tournaments: TournamentDto[]) {
 	render(WeekView, {
-		props: { row: buildWeekRow(ANCHOR, tournaments, TODAY), weekdayLabels: WEEKDAYS },
+		props: {
+			row: buildWeekRow(ANCHOR, tournaments.map(playedDays), TODAY),
+			weekdayLabels: WEEKDAYS
+		},
 		context: new Map([[ORGANIZATIONS_STATE_KEY, new TestOrganizations()]])
 	});
 	return userEvent.setup();
@@ -73,11 +77,10 @@ describe('the week', () => {
 		expect(screen.getByText('10–12 juni')).toBeInTheDocument();
 	});
 
-	it('links the card’s title to the tournament, alongside the button that opens it', () => {
-		// Nested interactive elements would be invalid; the button sits behind.
+	it('gives the card one action, so its title is not a second link', () => {
 		setup([event()]);
-		expect(screen.getByRole('link', { name: 'Rilton Cup' })).toHaveAttribute('href', '/results/1');
 		expect(screen.getByRole('button', { name: 'Rilton Cup' })).toBeInTheDocument();
+		expect(screen.queryByRole('link', { name: 'Rilton Cup' })).toBeNull();
 	});
 });
 
@@ -130,5 +133,46 @@ describe('dates the organiser got wrong', () => {
 		expect(
 			screen.queryByLabelText('Slutdatum är före startdatum — visas på startdatumet')
 		).toBeNull();
+	});
+});
+
+describe('a league on the days it plays', () => {
+	const league = (groups: [id: number, rounds: string[]][]) =>
+		event({
+			name: 'KM',
+			start: '2025-05-01',
+			end: '2025-06-30',
+			rootClasses: [
+				{
+					classID: 1,
+					className: 'KM',
+					subClasses: [],
+					groups: groups.map(([id, rounds]) => ({
+						id,
+						name: `Grupp ${id}`,
+						tournamentRounds: rounds.map((roundDate) => ({ roundDate }))
+					}))
+				}
+			] as unknown as TournamentDto['rootClasses']
+		});
+
+	it('makes the card a link to the group when only one plays', () => {
+		setup([league([[10, ['2025-06-10']]])]);
+		expect(screen.getByRole('link', { name: 'KM' })).toHaveAttribute('href', '/results/1/10');
+	});
+
+	it('opens the groups when several play', async () => {
+		const user = setup([
+			league([
+				[10, ['2025-06-10']],
+				[11, ['2025-06-10']]
+			])
+		]);
+		await user.click(screen.getByRole('button', { name: 'KM' }));
+		const popover = screen.getByRole('dialog');
+		// The tournament itself is the popover's first link.
+		expect(within(popover).getByRole('link', { name: 'KM' })).toHaveAttribute('href', '/results/1');
+		expect(within(popover).getByRole('link', { name: 'Grupp 10' })).toBeInTheDocument();
+		expect(within(popover).getByRole('link', { name: 'Grupp 11' })).toBeInTheDocument();
 	});
 });

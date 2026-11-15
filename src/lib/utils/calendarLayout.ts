@@ -7,9 +7,7 @@
  * bugs (see the project memory note on `value && ...` and date pitfalls).
  */
 import { parseLocalDate, type TournamentDto } from '$lib/api';
-
-/** Events longer than this many days are marked on their start date only. */
-export const LONG_EVENT_THRESHOLD = 7;
+import type { CalendarEvent, Group } from './playedDays';
 
 /** Max lanes (stacked bars) rendered per day cell in month view before "+N more". */
 export const MONTH_MAX_LANES = 3;
@@ -37,8 +35,10 @@ export interface PositionedSegment {
 	continuesLeft: boolean;
 	/** Bar continues into the next row (render a ▶ hint). */
 	continuesRight: boolean;
-	/** True for >7-day events: a single start-date marker rather than a span. */
-	startOnly: boolean;
+	/** A start-day marker, not a claim of play: see `playedDays`. */
+	marker: boolean;
+	/** The groups playing on the segment's days, in class order. */
+	groups: Group[];
 }
 
 export interface PackedRow {
@@ -57,6 +57,12 @@ export interface PackedRow {
  */
 export function toDayNumber(date: Date): number {
 	return Math.floor(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()) / 86_400_000);
+}
+
+/** The local-midnight Date for a day number; the inverse of `toDayNumber`. */
+export function fromDayNumber(dayNumber: number): Date {
+	const utc = new Date(dayNumber * 86_400_000);
+	return new Date(utc.getUTCFullYear(), utc.getUTCMonth(), utc.getUTCDate());
 }
 
 /** Add `n` days to a date (DST-safe — uses calendar arithmetic). */
@@ -135,45 +141,40 @@ export function buildWeekCells(anchor: Date, todayDayNumber: number): DayCell[] 
 /**
  * Position + lane-pack a single contiguous row of day cells.
  *
- * Each tournament is split to the portion visible in this row; a >7-day event
- * collapses to a single start-date marker. Overlapping segments are greedily
- * assigned to lanes (left-to-right by start column) so they stack vertically.
+ * A tournament is drawn on the days it is played (`playedDays`): each run of
+ * consecutive played days in this row becomes one bar, so a weekend open is a
+ * bar and a weekly league is a chip on each evening it plays. Overlapping
+ * segments are greedily assigned to lanes (left-to-right by start column) so
+ * they stack vertically.
  */
-export function packRow(cells: DayCell[], tournaments: TournamentDto[]): PackedRow {
+export function packRow(cells: DayCell[], events: CalendarEvent[]): PackedRow {
 	const rowStart = cells[0].dayNumber;
 	const rowEnd = cells[cells.length - 1].dayNumber;
 
 	const segments: PositionedSegment[] = [];
-	for (const tournament of tournaments) {
-		const ev = parseEventDays(tournament);
-		if (!ev) continue;
+	for (const { tournament, days, marker } of events) {
+		const inRow = [...days.keys()]
+			.filter((d) => d >= rowStart && d <= rowEnd)
+			.sort((a, b) => a - b);
 
-		const startOnly = ev.end - ev.start + 1 > LONG_EVENT_THRESHOLD;
-		if (startOnly) {
-			// Only the start day gets a marker, and only if it falls in this row.
-			if (ev.start < rowStart || ev.start > rowEnd) continue;
+		let runStart = 0;
+		for (let i = 0; i < inRow.length; i++) {
+			// Close the run at the last day, or where the next day is not the one after.
+			if (i < inRow.length - 1 && inRow[i + 1] === inRow[i] + 1) continue;
+			const first = inRow[runStart];
+			const last = inRow[i];
+			const groups = [...new Set(inRow.slice(runStart, i + 1).flatMap((d) => days.get(d) ?? []))];
 			segments.push({
 				tournament,
-				colOffset: ev.start - rowStart,
-				colSpan: 1,
+				colOffset: first - rowStart,
+				colSpan: last - first + 1,
 				laneIndex: 0,
-				continuesLeft: false,
-				continuesRight: false,
-				startOnly: true
+				continuesLeft: first === rowStart && days.has(rowStart - 1),
+				continuesRight: last === rowEnd && days.has(rowEnd + 1),
+				marker,
+				groups
 			});
-		} else {
-			const segStart = Math.max(ev.start, rowStart);
-			const segEnd = Math.min(ev.end, rowEnd);
-			if (segStart > segEnd) continue;
-			segments.push({
-				tournament,
-				colOffset: segStart - rowStart,
-				colSpan: segEnd - segStart + 1,
-				laneIndex: 0,
-				continuesLeft: ev.start < rowStart,
-				continuesRight: ev.end > rowEnd,
-				startOnly: false
-			});
+			runStart = i + 1;
 		}
 	}
 
@@ -203,63 +204,37 @@ export function packRow(cells: DayCell[], tournaments: TournamentDto[]): PackedR
 /** Build all 6 packed rows for a month view. */
 export function buildMonthRows(
 	anchor: Date,
-	tournaments: TournamentDto[],
+	events: CalendarEvent[],
 	todayDayNumber: number
 ): PackedRow[] {
-	return buildMonthMatrix(anchor, todayDayNumber).map((cells) => packRow(cells, tournaments));
+	return buildMonthMatrix(anchor, todayDayNumber).map((cells) => packRow(cells, events));
 }
 
 /** Build the single packed row for a week view. */
 export function buildWeekRow(
 	anchor: Date,
-	tournaments: TournamentDto[],
+	events: CalendarEvent[],
 	todayDayNumber: number
 ): PackedRow {
-	return packRow(buildWeekCells(anchor, todayDayNumber), tournaments);
+	return packRow(buildWeekCells(anchor, todayDayNumber), events);
 }
 
 /**
- * Tournaments to surface for a given day in a popover. Matches what is *drawn*:
- * short events covering the day, plus long events whose start is that day.
- */
-export function tournamentsForDay(
-	tournaments: TournamentDto[],
-	dayNumber: number
-): TournamentDto[] {
-	return tournaments.filter((t) => {
-		const ev = parseEventDays(t);
-		if (!ev) return false;
-		if (ev.end - ev.start + 1 > LONG_EVENT_THRESHOLD) return ev.start === dayNumber;
-		return dayNumber >= ev.start && dayNumber <= ev.end;
-	});
-}
-
-/**
- * Earliest and latest tournament *start* dates in the set, as local-midnight
- * Dates. Used to bound navigation and to jump to first/last event.
+ * The first and last day anything is played, as local-midnight Dates. Used to
+ * bound navigation and to jump to the first or last event — so a league that
+ * started in September but plays into May lets you page to May.
  */
 export function getEventDateBounds(
-	tournaments: TournamentDto[]
+	events: CalendarEvent[]
 ): { earliest: Date; latest: Date } | null {
 	let min: number | null = null;
 	let max: number | null = null;
-	let minDate: Date | null = null;
-	let maxDate: Date | null = null;
-
-	for (const t of tournaments) {
-		if (!t.start) continue;
-		const date = parseLocalDate(t.start);
-		const day = toDayNumber(date);
-		if (min === null || day < min) {
-			min = day;
-			minDate = date;
-		}
-		if (max === null || day > max) {
-			max = day;
-			maxDate = date;
+	for (const { days } of events) {
+		for (const day of days.keys()) {
+			if (min === null || day < min) min = day;
+			if (max === null || day > max) max = day;
 		}
 	}
-
-	if (!minDate || !maxDate) return null;
-	return { earliest: minDate, latest: maxDate };
+	if (min === null || max === null) return null;
+	return { earliest: fromDayNumber(min), latest: fromDayNumber(max) };
 }

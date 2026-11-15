@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/svelte';
 import { describe, expect, it } from 'vitest';
-import type { TournamentToday } from '$lib/api';
+import type { TournamentDto } from '$lib/api';
+import type { PlayedEntry } from '$lib/utils/playedDays';
 import { ORGANIZATIONS_STATE_KEY, OrganizationsState } from '$lib/stores/organizations.svelte';
 import TodayTournaments from './TodayTournaments.svelte';
 
@@ -12,20 +13,22 @@ const withClasses = (id: number, name: string, classes: [className: string, grou
 		groups: [{ id: id * 10 + i, name: groupName }]
 	}));
 	return {
-		id,
-		name,
-		city: 'Stockholm',
-		orgType: 1,
-		orgNumber: 1,
-		rootClasses,
-		groupsToday: rootClasses.map(({ groups: [group] }) => ({ group, rounds: [] }))
-	} as unknown as TournamentToday;
+		tournament: {
+			id,
+			name,
+			city: 'Stockholm',
+			orgType: 1,
+			orgNumber: 1,
+			rootClasses
+		} as unknown as TournamentDto,
+		groups: rootClasses.map(({ groups: [group] }) => group)
+	} as unknown as PlayedEntry;
 };
 
 const tournament = (id: number, name: string, groupName?: string) =>
 	withClasses(id, name, groupName ? [['Klass', groupName]] : []);
 
-function setup(props: { tournaments: TournamentToday[]; loading?: boolean; error?: string }) {
+function setup(props: { tournaments: PlayedEntry[]; loading?: boolean; error?: string }) {
 	render(TodayTournaments, {
 		props,
 		context: new Map([[ORGANIZATIONS_STATE_KEY, new OrganizationsState()]])

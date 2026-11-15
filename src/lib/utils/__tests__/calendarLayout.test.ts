@@ -8,10 +8,9 @@ import {
 	buildWeekCells,
 	packRow,
 	buildWeekRow,
-	tournamentsForDay,
-	getEventDateBounds,
-	LONG_EVENT_THRESHOLD
+	getEventDateBounds
 } from '$lib/utils/calendarLayout';
+import { playedDays, type CalendarEvent } from '$lib/utils/playedDays';
 
 /** Minimal mock — only the fields the layout functions inspect. */
 function makeTournament(overrides: Partial<TournamentDto>): TournamentDto {
@@ -45,6 +44,32 @@ function makeTournament(overrides: Partial<TournamentDto>): TournamentDto {
 		rootClasses: [],
 		...overrides
 	} as TournamentDto;
+}
+
+/**
+ * A tournament as the layout sees it. Without groups it falls back on its own
+ * dates (see `playedDays`), which is what most of these cases exercise.
+ */
+const ev = (overrides: Partial<TournamentDto>): CalendarEvent =>
+	playedDays(makeTournament(overrides));
+
+/** One class of groups, each playing on its round dates. */
+function league(overrides: Partial<TournamentDto>, groups: [id: number, rounds: string[]][]) {
+	const rootClasses = [
+		{
+			classID: 1,
+			className: 'Klass',
+			subClasses: [],
+			groups: groups.map(([id, rounds]) => ({
+				id,
+				name: `Grupp ${id}`,
+				start: '',
+				end: '',
+				tournamentRounds: rounds.map((roundDate, i) => ({ roundNumber: i + 1, roundDate }))
+			}))
+		}
+	] as unknown as TournamentDto['rootClasses'];
+	return ev({ start: '2024-06-01', end: '2024-06-30', ...overrides, rootClasses });
 }
 
 // Anchor inside a known week. 2024-06-12 is a Wednesday;
@@ -102,7 +127,7 @@ describe('packRow — single week row 2024-06-10..16', () => {
 	const cells = buildWeekCells(WEEK_ANCHOR, toDayNumber(WEEK_ANCHOR));
 
 	it('positions a single-day event in the right column', () => {
-		const row = packRow(cells, [makeTournament({ start: '2024-06-12', end: '2024-06-12' })]);
+		const row = packRow(cells, [ev({ start: '2024-06-12', end: '2024-06-12' })]);
 		expect(row.segments).toHaveLength(1);
 		expect(row.segments[0]).toMatchObject({
 			colOffset: 2,
@@ -113,7 +138,7 @@ describe('packRow — single week row 2024-06-10..16', () => {
 	});
 
 	it('spans a multi-day event within the week', () => {
-		const row = packRow(cells, [makeTournament({ start: '2024-06-11', end: '2024-06-13' })]);
+		const row = packRow(cells, [ev({ start: '2024-06-11', end: '2024-06-13' })]);
 		expect(row.segments[0]).toMatchObject({
 			colOffset: 1,
 			colSpan: 3,
@@ -123,7 +148,7 @@ describe('packRow — single week row 2024-06-10..16', () => {
 	});
 
 	it('clips an event that started before this row and flags continuesLeft', () => {
-		const row = packRow(cells, [makeTournament({ start: '2024-06-08', end: '2024-06-11' })]);
+		const row = packRow(cells, [ev({ start: '2024-06-08', end: '2024-06-11' })]);
 		expect(row.segments[0]).toMatchObject({
 			colOffset: 0,
 			colSpan: 2,
@@ -134,7 +159,7 @@ describe('packRow — single week row 2024-06-10..16', () => {
 
 	it('clips an event that runs past this row and flags continuesRight', () => {
 		// 5-day event Sat 15 → Wed 19: in this row only 15,16 are visible (cols 5,6).
-		const row = packRow(cells, [makeTournament({ start: '2024-06-15', end: '2024-06-19' })]);
+		const row = packRow(cells, [ev({ start: '2024-06-15', end: '2024-06-19' })]);
 		expect(row.segments[0]).toMatchObject({
 			colOffset: 5,
 			colSpan: 2,
@@ -143,25 +168,25 @@ describe('packRow — single week row 2024-06-10..16', () => {
 		});
 	});
 
-	it('renders a >7-day event as a start-only marker', () => {
-		const row = packRow(cells, [makeTournament({ start: '2024-06-11', end: '2024-06-30' })]);
+	it('marks a >7-day event with no round dates on its start day only', () => {
+		const row = packRow(cells, [ev({ start: '2024-06-11', end: '2024-06-30' })]);
 		expect(row.segments).toHaveLength(1);
-		expect(row.segments[0]).toMatchObject({ startOnly: true, colOffset: 1, colSpan: 1 });
+		expect(row.segments[0]).toMatchObject({ marker: true, colOffset: 1, colSpan: 1 });
 	});
 
-	it('does not show a long event on a non-start row', () => {
+	it('does not show such an event on a non-start row', () => {
 		// Long event whose start is in a previous week → nothing in this row.
-		const row = packRow(cells, [makeTournament({ start: '2024-06-01', end: '2024-06-30' })]);
+		const row = packRow(cells, [ev({ start: '2024-06-01', end: '2024-06-30' })]);
 		expect(row.segments).toHaveLength(0);
 	});
 
 	it('lane-packs overlapping events onto separate lanes', () => {
 		const row = packRow(cells, [
-			makeTournament({ id: 1, start: '2024-06-10', end: '2024-06-12' }),
-			makeTournament({ id: 2, start: '2024-06-11', end: '2024-06-13' }),
-			makeTournament({ id: 3, start: '2024-06-15', end: '2024-06-16' })
+			ev({ id: 1, start: '2024-06-10', end: '2024-06-12' }),
+			ev({ id: 2, start: '2024-06-11', end: '2024-06-13' }),
+			ev({ id: 3, start: '2024-06-15', end: '2024-06-16' })
 		]);
-		const lane = (id: number) => row.segments.find((s) => s.tournament.id === id)!.laneIndex;
+		const lane = (id: number) => row.segments.find((seg) => seg.tournament.id === id)!.laneIndex;
 		expect(lane(1)).toBe(0);
 		expect(lane(2)).toBe(1); // overlaps #1 → new lane
 		expect(lane(3)).toBe(0); // no overlap with #1 → reuses lane 0
@@ -172,7 +197,7 @@ describe('packRow — single week row 2024-06-10..16', () => {
 describe('week-boundary split (the critical case)', () => {
 	it('splits a 4-day event straddling Sun→Mon into two segments', () => {
 		// Fri 2024-06-14 → Mon 2024-06-17. Week A: 10..16, Week B: 17..23.
-		const t = makeTournament({ start: '2024-06-14', end: '2024-06-17' });
+		const t = ev({ start: '2024-06-14', end: '2024-06-17' });
 		const today = toDayNumber(WEEK_ANCHOR);
 
 		const rowA = packRow(buildWeekCells(new Date(2024, 5, 12), today), [t]);
@@ -199,11 +224,7 @@ describe('buildWeekRow', () => {
 	const today = toDayNumber(WEEK_ANCHOR);
 
 	it('packs the anchor week into one row', () => {
-		const row = buildWeekRow(
-			WEEK_ANCHOR,
-			[makeTournament({ start: '2024-06-12', end: '2024-06-12' })],
-			today
-		);
+		const row = buildWeekRow(WEEK_ANCHOR, [ev({ start: '2024-06-12', end: '2024-06-12' })], today);
 		expect(row.cells).toHaveLength(7);
 		expect(row.cells[0].date.getDate()).toBe(10); // Mon 2024-06-10
 		expect(row.segments).toHaveLength(1);
@@ -211,43 +232,64 @@ describe('buildWeekRow', () => {
 	});
 
 	it('agrees with packRow(buildWeekCells(...)), which it composes', () => {
-		const tournaments = [makeTournament({ start: '2024-06-11', end: '2024-06-13' })];
+		const tournaments = [ev({ start: '2024-06-11', end: '2024-06-13' })];
 		const viaHelper = buildWeekRow(WEEK_ANCHOR, tournaments, today);
 		const viaParts = packRow(buildWeekCells(WEEK_ANCHOR, today), tournaments);
 		expect(viaHelper.segments).toEqual(viaParts.segments);
 	});
 
 	it('flags an event running past the end of the week', () => {
-		const row = buildWeekRow(
-			WEEK_ANCHOR,
-			[makeTournament({ start: '2024-06-14', end: '2024-06-20' })],
-			today
-		);
+		const row = buildWeekRow(WEEK_ANCHOR, [ev({ start: '2024-06-14', end: '2024-06-20' })], today);
 		expect(row.segments[0].continuesRight).toBe(true);
 	});
 });
 
-describe('tournamentsForDay', () => {
-	const events = [
-		makeTournament({ id: 1, start: '2024-06-11', end: '2024-06-13' }), // short, covers 12
-		makeTournament({ id: 2, start: '2024-06-12', end: '2024-06-12' }), // single on 12
-		makeTournament({ id: 3, start: '2024-06-01', end: '2024-06-30' }) // long, starts before 12
-	];
+describe('a tournament on the days it is played', () => {
+	const cells = buildWeekCells(WEEK_ANCHOR, toDayNumber(WEEK_ANCHOR));
 
-	it('includes short events covering the day', () => {
-		const ids = tournamentsForDay(events, toDayNumber(new Date(2024, 5, 12))).map((t) => t.id);
-		expect(ids).toContain(1);
-		expect(ids).toContain(2);
+	it('puts a weekly league on each evening it plays, not on its start date', () => {
+		// Started 1 June; plays Tuesday 11th and Thursday 13th this week.
+		const row = packRow(cells, [league({}, [[10, ['2024-06-04', '2024-06-11', '2024-06-13']]])]);
+		expect(row.segments.map((seg) => [seg.colOffset, seg.colSpan])).toEqual([
+			[1, 1],
+			[3, 1]
+		]);
+		expect(row.segments.every((seg) => !seg.marker)).toBe(true);
 	});
 
-	it('excludes long events on a non-start day', () => {
-		const ids = tournamentsForDay(events, toDayNumber(new Date(2024, 5, 12))).map((t) => t.id);
-		expect(ids).not.toContain(3);
+	it('draws consecutive days as one bar', () => {
+		const row = packRow(cells, [league({}, [[10, ['2024-06-15', '2024-06-16']]])]);
+		expect(row.segments).toHaveLength(1);
+		expect(row.segments[0]).toMatchObject({ colOffset: 5, colSpan: 2 });
 	});
 
-	it('includes a long event on its start day', () => {
-		const ids = tournamentsForDay(events, toDayNumber(new Date(2024, 5, 1))).map((t) => t.id);
-		expect(ids).toContain(3);
+	it('carries the groups playing on the bar’s days', () => {
+		const row = packRow(cells, [
+			league({}, [
+				[10, ['2024-06-15']],
+				[11, ['2024-06-16']],
+				[12, ['2024-06-11']]
+			])
+		]);
+		const weekend = row.segments.find((seg) => seg.colOffset === 5)!;
+		expect(weekend.groups.map((g) => g.id)).toEqual([10, 11]);
+		const tuesday = row.segments.find((seg) => seg.colOffset === 1)!;
+		expect(tuesday.groups.map((g) => g.id)).toEqual([12]);
+	});
+
+	it('flags a run that crosses into the next or previous week', () => {
+		const event = league({}, [[10, ['2024-06-16', '2024-06-17']]]);
+		const today = toDayNumber(WEEK_ANCHOR);
+		const thisWeek = packRow(buildWeekCells(new Date(2024, 5, 12), today), [event]);
+		const nextWeek = packRow(buildWeekCells(new Date(2024, 5, 19), today), [event]);
+		expect(thisWeek.segments[0]).toMatchObject({ colOffset: 6, continuesRight: true });
+		expect(nextWeek.segments[0]).toMatchObject({ colOffset: 0, continuesLeft: true });
+	});
+
+	it('does not join a chip to a round in the next week that is not the next day', () => {
+		const event = league({}, [[10, ['2024-06-16', '2024-06-18']]]);
+		const row = packRow(cells, [event]);
+		expect(row.segments[0]).toMatchObject({ colOffset: 6, continuesRight: false });
 	});
 });
 
@@ -256,19 +298,14 @@ describe('getEventDateBounds', () => {
 		expect(getEventDateBounds([])).toBeNull();
 	});
 
-	it('returns earliest and latest start dates', () => {
+	it('spans the first and last day anything is played', () => {
 		const bounds = getEventDateBounds([
-			makeTournament({ start: '2024-06-20' }),
-			makeTournament({ start: '2024-06-05' }),
-			makeTournament({ start: '2024-06-12' })
+			ev({ start: '2024-06-20', end: '2024-06-20' }),
+			ev({ start: '2024-06-05', end: '2024-06-05' }),
+			// Started in May, plays into July: the bounds follow the rounds.
+			league({ start: '2024-05-01', end: '2024-07-31' }, [[10, ['2024-06-12', '2024-07-09']]])
 		])!;
-		expect(bounds.earliest.getDate()).toBe(5);
-		expect(bounds.latest.getDate()).toBe(20);
-	});
-});
-
-describe('constants', () => {
-	it('uses a 7-day long-event threshold', () => {
-		expect(LONG_EVENT_THRESHOLD).toBe(7);
+		expect(bounds.earliest).toEqual(new Date(2024, 5, 5));
+		expect(bounds.latest).toEqual(new Date(2024, 6, 9));
 	});
 });
