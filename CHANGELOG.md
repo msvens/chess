@@ -4,11 +4,46 @@ All notable changes to msvens chess will be documented in this file.
 
 ## [Unreleased]
 
+---
+
+## [2.2.0] - 2026-11-15
+
+### Added
+
+- A Today page: every tournament being played today with the groups playing, and a district filter to narrow it down
+- Open a group by its id, or by pasting a link from resultat.schack.se or member.schack.se, in a new box on the results page
+- The SSF Id on a player's profile links to their rating history on schack.se, like the FIDE Id beside it
+- A time-control filter on a player's Individual and Team tabs: Normal, Rapid, Blitz, Mixed and Unrated, each with a count
+- In a player's tournament list, the score links to their games in that group
+- A proper "not found" page, for a mistyped address and for a tournament, group or player that doesn't exist
+
 ### Changed
 
 - The calendar shows tournaments on the days they are played, from their round dates, so leagues and club championships appear on each evening they play rather than only on the day they started. Clicking one goes straight to the group playing that day, or lists the groups when several play. A day's list shows the groups too, and Today lists exactly what the calendar has on today's date
-- The JGP tables mark the finals cut-offs where Stockholms Schackförbund sets them, instead of guessed lines after places 10 and 20
+- The calendar always opens on today. The tab and the week or month view are still remembered
+- Tournaments ending today, and one-day tournaments, are in the calendar on the day they are played
+- Grand Prix series are left out of the calendar unless the Grand Prix type is chosen, and their pages point to schack.se, since the series standings and stage results are only published there
+- A group opens on the round being played, the one nearest in time, rather than the last round paired
+- On a phone, the round tabs keep the current round in view
+- Results tables on a phone fit the screen: one line per row and about twice as many rows, with no sideways scrolling
+- Groups whose games aren't rated no longer show Elo columns
+- Pairings show the same rating as the results table when a player has none of the round's type, e.g. a standard rating in a rapid round
+- The Elo calculator's FIDE data comes from FIDE's official monthly rating lists, which are current and quicker to load
+- Dates are written out the same way everywhere, e.g. "7 nov 2026", including on phones
+- A name search accepts "/", so "Allsvenskan 2026/27" finds that season. When the search returns its maximum of 100 groups, a note says so and asks for a more specific search
 - The Stockholm JGP standings are now the official ones, published by Stockholms Schackförbund, instead of being computed here from the tournament results. The page shows when they were last updated. Only the current season is shown, so the season picker is gone, along with the demo and "partly deduced" notices
+- The JGP tables mark the finals cut-offs where Stockholms Schackförbund sets them, instead of guessed lines after places 10 and 20
+- The logo's knight is re-centred, and the About page credits its designer
+
+### Removed
+
+- The "also on the official results page" link shown on one-day groups during play. It was a backup from when the SSF API lagged, which it no longer does
+
+### Fixed
+
+- Tapping an event in the calendar's week view on a phone now opens it
+- A player's tournament total counts walkovers, so it matches the official standings
+- Quality points show their real value (e.g. 16.25 in a round robin), instead of a rounded number with the tie-breaks packed into it
 
 ---
 
