@@ -64,6 +64,40 @@ describe('parseJgpStandings', () => {
 		]);
 	});
 
+	it('gives each age class its own finals cut-offs', () => {
+		const parsed = parseJgpStandings({
+			last_updated: '',
+			tournament_ids: [],
+			standings: { '2013': [], '2006-2009': [], '2016': [] },
+			finals_separators: { '2006-2009': [8], '2013': [8, 16] }
+		});
+		expect(Object.fromEntries(parsed.tables.map((t) => [t.label, t.separators]))).toEqual({
+			'2006-2009': [8],
+			'2013': [8, 16],
+			// A class the API gives no cut-offs for gets no lines.
+			'2016': []
+		});
+	});
+
+	it('gives the girls ranking the flat list of cut-offs', () => {
+		const parsed = parseJgpStandings({
+			last_updated: '',
+			tournament_ids: [],
+			standings: [wireRow()],
+			finals_separators: [16]
+		});
+		expect(parsed.tables[0].separators).toEqual([16]);
+	});
+
+	it('has no cut-offs when the payload carries none', () => {
+		const parsed = parseJgpStandings({
+			last_updated: '',
+			tournament_ids: [],
+			standings: [wireRow()]
+		});
+		expect(parsed.tables[0].separators).toEqual([]);
+	});
+
 	it('keeps the official placement even when totals tie', () => {
 		const parsed = parseJgpStandings({
 			last_updated: '',

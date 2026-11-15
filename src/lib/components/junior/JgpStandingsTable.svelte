@@ -4,7 +4,8 @@
 	 * total. Ports `components/junior/JgpStandingsTable.tsx`.
 	 *
 	 * The numbered column headers link to each tournament, the names to each
-	 * player, and the Total column is pinned right.
+	 * player, the Total column is pinned right, and a heavier rule marks each
+	 * finals cut-off, where Stockholms Schackförbund puts them.
 	 */
 	import Link from '$lib/components/ui/Link.svelte';
 	import Table from '$lib/components/ui/Table/Table.svelte';
@@ -94,6 +95,7 @@
 	data={table.rows}
 	{columns}
 	getRowKey={(row) => row.memberId}
+	rowDivider={(_row, index) => table.separators.includes(index + 1)}
 	density="compact"
 	emptyMessage={t.noData}
 	loadingMessage={t.loading}

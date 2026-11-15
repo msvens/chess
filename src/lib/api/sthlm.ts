@@ -37,6 +37,11 @@ export interface JgpTable {
 	/** Age class (`2006-2009`, `2018 onward`); empty for the girls' single ranking. */
 	label: string;
 	rows: JgpStandingRow[];
+	/**
+	 * Finals cut-offs: a line goes after the Nth row for each N. Counted in rows
+	 * rather than matched to `placement`, so a shared place could never draw two.
+	 */
+	separators: number[];
 }
 
 export interface JgpSeasonStandings {
@@ -61,6 +66,8 @@ interface WireStandings {
 	tournament_ids: number[];
 	/** Open: keyed by age class. Girls: one flat list. */
 	standings: Record<string, WireRow[]> | WireRow[];
+	/** Shaped like `standings`. Optional: without it there are simply no lines. */
+	finals_separators?: Record<string, number[]> | number[];
 }
 
 const toRow = (row: WireRow): JgpStandingRow => ({
@@ -88,13 +95,21 @@ const byLeadingYear = (a: string, b: string): number => {
 };
 
 export function parseJgpStandings(wire: WireStandings): JgpSeasonStandings {
+	const separators = wire.finals_separators;
 	const tables = Array.isArray(wire.standings)
-		? [{ label: '', rows: wire.standings.map(toRow) }]
+		? [
+				{
+					label: '',
+					rows: wire.standings.map(toRow),
+					separators: Array.isArray(separators) ? separators : []
+				}
+			]
 		: Object.keys(wire.standings)
 				.sort(byLeadingYear)
 				.map((label) => ({
 					label,
-					rows: (wire.standings as Record<string, WireRow[]>)[label].map(toRow)
+					rows: (wire.standings as Record<string, WireRow[]>)[label].map(toRow),
+					separators: (separators && !Array.isArray(separators) && separators[label]) || []
 				}));
 	return { lastUpdated: wire.last_updated, tournamentIds: wire.tournament_ids, tables };
 }

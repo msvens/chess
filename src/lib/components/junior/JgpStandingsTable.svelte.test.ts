@@ -19,10 +19,14 @@ const row = (over: Partial<JgpStandingRow> = {}): JgpStandingRow => ({
 	...over
 });
 
-const table = (rows: JgpStandingRow[]): JgpTable => ({ label: '2013', rows });
+const table = (rows: JgpStandingRow[], separators: number[] = []): JgpTable => ({
+	label: '2013',
+	rows,
+	separators
+});
 
-const setup = (rows: JgpStandingRow[]) =>
-	render(JgpStandingsTable, { props: { table: table(rows), tournaments } });
+const setup = (rows: JgpStandingRow[], separators: number[] = []) =>
+	render(JgpStandingsTable, { props: { table: table(rows, separators), tournaments } });
 
 const headerCells = () => within(screen.getAllByRole('rowgroup')[0]).getAllByRole('columnheader');
 
@@ -72,6 +76,25 @@ describe('JgpStandingsTable', () => {
 		// pos, name, born, club, t1, t2, total
 		expect(cells[4]).toHaveTextContent(/^$/);
 		expect(cells[5]).toHaveTextContent('0');
+	});
+
+	it('rules off after each finals cut-off the standings give, and nowhere else', () => {
+		const rows = Array.from({ length: 20 }, (_, i) =>
+			row({ memberId: i + 1, name: `Player ${i + 1}`, placement: i + 1 })
+		);
+		setup(rows, [8, 16]);
+		const bodyRows = within(screen.getAllByRole('rowgroup')[1]).getAllByRole('row');
+		const heavy = bodyRows
+			.map((tr, index) => (tr.className.includes('border-b-2') ? index + 1 : null))
+			.filter((n) => n !== null);
+
+		expect(heavy).toEqual([8, 16]);
+	});
+
+	it('draws no cut-off lines when the standings give none', () => {
+		setup([row({ memberId: 1 }), row({ memberId: 2, placement: 2 })]);
+		const bodyRows = within(screen.getAllByRole('rowgroup')[1]).getAllByRole('row');
+		expect(bodyRows.some((tr) => tr.className.includes('border-b-2'))).toBe(false);
 	});
 
 	it('says so when nobody has scored', () => {
