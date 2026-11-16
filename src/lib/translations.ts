@@ -345,6 +345,19 @@ export interface Translations {
 			error: string;
 			notFound: string;
 			backButton: string;
+			/** The month's games valued in rating points, shown above the rating chart. */
+			monthlyEstimate: {
+				/** The closed line under the chart; `{month}` is the month's name. */
+				title: string;
+				loading: string;
+				/** Opened, but no rated game this month counts. */
+				empty: string;
+				error: string;
+				/** A group's result; `{score}` of `{games}`. */
+				scoreOf: string;
+				/** Under the lines: why this is not the rating yet. */
+				note: string;
+			};
 			playerInfo: {
 				title: string;
 				memberId: string;
@@ -1170,6 +1183,14 @@ const translations: Record<Language, Translations> = {
 				error: 'Failed to load player information',
 				notFound: 'Player not found',
 				backButton: 'Back to Players',
+				monthlyEstimate: {
+					title: 'Estimated rating · {month}',
+					loading: 'Counting {month}…',
+					empty: 'No rated games in {month} yet.',
+					error: 'Could not count {month}.',
+					scoreOf: '{score} of {games}',
+					note: 'FIDE publishes ratings once a month, after the organiser has reported the tournament.'
+				},
 				playerInfo: {
 					title: 'Player Information',
 					memberId: 'Member ID',
@@ -1974,6 +1995,14 @@ const translations: Record<Language, Translations> = {
 				error: 'Misslyckades att ladda spelarinformation',
 				notFound: 'Spelare hittades inte',
 				backButton: 'Tillbaka till Spelare',
+				monthlyEstimate: {
+					title: 'Uppskattad rating · {month}',
+					loading: 'Räknar {month}…',
+					empty: 'Inga ratade partier i {month} ännu.',
+					error: 'Kunde inte räkna {month}.',
+					scoreOf: '{score} av {games}',
+					note: 'FIDE publicerar ratingen en gång i månaden, när arrangören har rapporterat turneringen.'
+				},
 				playerInfo: {
 					title: 'Spelarinformation',
 					memberId: 'Medlems-ID',
