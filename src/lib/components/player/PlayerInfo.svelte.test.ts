@@ -32,4 +32,29 @@ describe('PlayerInfo', () => {
 			'https://ratings.fide.com/profile/1234567'
 		);
 	});
+
+	it('shows each rating’s own K beside it, linking to how K works', () => {
+		render(PlayerInfo, {
+			props: {
+				player: player({
+					elo: { rating: 2410, k: 10, rapidRating: 2300, rapidk: 20, blitzRating: 2250, blitzK: 20 }
+				} as Partial<PlayerInfoDto>)
+			}
+		});
+		const ks = screen.getAllByRole('link', { name: /^K \d+$/ });
+		expect(ks.map((k) => k.textContent?.trim())).toEqual(['K 10', 'K 20', 'K 20']);
+		expect(ks[0]).toHaveAttribute('href', '/guide/elo/fine-print#k-factors');
+	});
+
+	it('gives no K to a time control without a rating, nor a separate K row', () => {
+		render(PlayerInfo, {
+			props: {
+				player: player({
+					elo: { rating: 1500, k: 40, rapidRating: 0, rapidk: 40 }
+				} as Partial<PlayerInfoDto>)
+			}
+		});
+		expect(screen.getAllByRole('link', { name: /^K \d+$/ })).toHaveLength(1);
+		expect(screen.queryByText(/K-faktor:/)).toBeNull();
+	});
 });
