@@ -33,13 +33,31 @@
 	// which would shift a year-only value back a year west of UTC.
 	let birthYear = $derived(birthYearOf(player.birthdate)?.toString() ?? '-');
 
-	/** The five figures, in the order the live site lists them. */
+	/**
+	 * Each FIDE rating carries its own K: a player can have K 40 in rapid and
+	 * K 20 in standard. Shown beside the rating it belongs to, and only when
+	 * there is a rating for it to apply to. LASK has no K.
+	 */
+	const kFor = (value: number | null | undefined, k: number | null | undefined) =>
+		value && value > 0 && k && k > 0 ? k : null;
+
 	let ratingRows = $derived([
-		{ label: t.eloRating.title, value: rating(player.elo?.rating) },
-		{ label: t.eloRating.rapidRating, value: rating(player.elo?.rapidRating) },
-		{ label: t.eloRating.blitzRating, value: rating(player.elo?.blitzRating) },
-		{ label: t.laskRating.title, value: rating(player.lask?.rating) },
-		{ label: t.eloRating.kFactor, value: rating(player.elo?.k) }
+		{
+			label: t.eloRating.title,
+			value: rating(player.elo?.rating),
+			k: kFor(player.elo?.rating, player.elo?.k)
+		},
+		{
+			label: t.eloRating.rapidRating,
+			value: rating(player.elo?.rapidRating),
+			k: kFor(player.elo?.rapidRating, player.elo?.rapidk)
+		},
+		{
+			label: t.eloRating.blitzRating,
+			value: rating(player.elo?.blitzRating),
+			k: kFor(player.elo?.blitzRating, player.elo?.blitzK)
+		},
+		{ label: t.laskRating.title, value: rating(player.lask?.rating), k: null }
 	]);
 </script>
 
@@ -127,7 +145,20 @@
 			{#each ratingRows as row (row.label)}
 				<div class="flex justify-between">
 					<span class="text-gray-600 dark:text-gray-400">{row.label}:</span>
-					<span class="font-medium text-gray-900 dark:text-gray-200">{row.value}</span>
+					<span class="flex items-baseline gap-2">
+						<span class="font-medium text-gray-900 dark:text-gray-200">{row.value}</span>
+						{#if row.k !== null}
+							<!-- The K is the same word in both languages; the tooltip names it. -->
+							<Link
+								href="/guide/elo/fine-print#k-factors"
+								color="gray"
+								title={t.eloRating.kFactor}
+								class="text-xs tabular-nums"
+							>
+								K {row.k}
+							</Link>
+						{/if}
+					</span>
 				</div>
 			{/each}
 		</div>

@@ -31,7 +31,9 @@
 	</section>
 
 	<section>
-		<h2 class="mb-3 text-xl font-semibold text-gray-900 dark:text-gray-200">K-faktorer</h2>
+		<h2 id="k-factors" class="mb-3 text-xl font-semibold text-gray-900 dark:text-gray-200">
+			K-faktorer
+		</h2>
 		<p class="mb-3 leading-relaxed text-gray-700 dark:text-gray-300">
 			K-faktorn bestämmer hur mycket din rating ändras efter varje parti. En högre K-faktor innebär
 			större svängningar. FIDE använder tre nivåer:
