@@ -16,6 +16,7 @@
 	import PageLayout from '$lib/components/layout/PageLayout.svelte';
 	import PlayerInfo from '$lib/components/player/PlayerInfo.svelte';
 	import EloRatingChart from '$lib/components/player/EloRatingChart/EloRatingChart.svelte';
+	import MonthlyEstimate from '$lib/components/player/MonthlyEstimate.svelte';
 	import PlayerHistory from '$lib/components/player/PlayerHistory.svelte';
 	import { setPlayerProfileState } from '$lib/stores/playerProfile.svelte';
 	import { addRecentPlayer } from '$lib/recentPlayers';
@@ -86,6 +87,9 @@
 				errorLabel={elo.historyError}
 				emptyLabel={elo.noHistory}
 			/>
+			{#key memberId}
+				<MonthlyEstimate {memberId} />
+			{/key}
 		</div>
 
 		<div class="mt-8">

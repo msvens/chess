@@ -30,6 +30,7 @@
 	import { monotonePath, type Point } from './curve';
 	import { labelIndices, linearScale, nearestIndex, pointScale, tooltipX, tooltipY } from './scale';
 	import { niceTicks } from './ticks';
+	import { RATING_COLOURS } from '../ratingColours';
 
 	interface EloRatingChartProps {
 		memberId: number;
@@ -74,10 +75,10 @@
 	 * Only the legend is sorted — see `legend` below.
 	 */
 	let series = $derived([
-		{ key: 'lask' as const, colour: '#d97706', label: labels.lask },
-		{ key: 'standard' as const, colour: '#0284c7', label: labels.standard },
-		{ key: 'rapid' as const, colour: '#be123c', label: labels.rapid },
-		{ key: 'blitz' as const, colour: '#059669', label: labels.blitz }
+		{ key: 'lask' as const, colour: RATING_COLOURS.lask, label: labels.lask },
+		{ key: 'standard' as const, colour: RATING_COLOURS.standard, label: labels.standard },
+		{ key: 'rapid' as const, colour: RATING_COLOURS.rapid, label: labels.rapid },
+		{ key: 'blitz' as const, colour: RATING_COLOURS.blitz, label: labels.blitz }
 	]);
 
 	/**
