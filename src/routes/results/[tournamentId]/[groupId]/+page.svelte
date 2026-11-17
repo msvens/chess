@@ -74,6 +74,8 @@
 	import { language } from '$lib/stores/language.svelte';
 	import { localeOf } from '$lib/i18n';
 	import { getTranslation } from '$lib/translations';
+	import PageHead from '$lib/components/layout/PageHead.svelte';
+	import { titleGroupLabel } from '$lib/components/tournaments/groupLabel';
 
 	const results = getGroupResultsState();
 
@@ -158,6 +160,27 @@
 	);
 	/** With nothing to pick between, the group name is redundant beside the heading. */
 	let isSingleGroup = $derived(!hasMultipleClasses && !hasMultipleGroups);
+
+	// --- Title and description, for search results ---
+
+	/** The group's label, when it says more than the tournament's name. */
+	let headGroup = $derived(
+		results.tournament && results.group ? titleGroupLabel(results.tournament, results.group) : null
+	);
+	let headTitle = $derived(
+		results.tournament
+			? headGroup
+				? `${results.tournament.name} · ${headGroup}`
+				: results.tournament.name
+			: t.pages.results.title
+	);
+	let headDescription = $derived.by(() => {
+		if (!results.tournament) return undefined;
+		const name = results.tournament.name;
+		return headGroup
+			? t.seo.group.replace('{group}', headGroup).replace('{tournament}', name)
+			: t.seo.tournament.replace('{tournament}', name);
+	});
 
 	let classItems = $derived<SelectableListItem[]>(
 		allClasses.map((cls) => ({
@@ -467,6 +490,8 @@
 {#snippet sidebarHeading(text: string, extraClass = '')}
 	<h3 class="mb-2 text-lg font-semibold text-gray-900 dark:text-gray-200 {extraClass}">{text}</h3>
 {/snippet}
+
+<PageHead title={headTitle} description={headDescription} />
 
 <PageLayout fullScreen maxWidth="5xl">
 	{#if results.notFound}

@@ -22,6 +22,7 @@
 	import { getOrganizationsState } from '$lib/stores/organizations.svelte';
 	import { language } from '$lib/stores/language.svelte';
 	import { getTranslation } from '$lib/translations';
+	import PageHead from '$lib/components/layout/PageHead.svelte';
 
 	const organizations = getOrganizationsState();
 
@@ -72,7 +73,7 @@
 	});
 </script>
 
-<svelte:head><title>{t.title} — msvens chess</title></svelte:head>
+<PageHead title={t.title} description={t.subtitle} />
 
 <PageLayout maxWidth="4xl">
 	<PageTitle title={t.title} subtitle={t.subtitle} hideSubtitleOnMobile={false} />

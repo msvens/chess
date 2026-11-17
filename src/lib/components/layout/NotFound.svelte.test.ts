@@ -26,4 +26,11 @@ describe('NotFound', () => {
 		render(NotFound, { props: { title: 'Något gick fel', message: 'Försök igen.' } });
 		expect(screen.getByText('Försök igen.')).toBeInTheDocument();
 	});
+
+	it('asks search engines not to index the address', () => {
+		render(NotFound);
+		expect(document.head.querySelector('meta[name="robots"]')?.getAttribute('content')).toBe(
+			'noindex'
+		);
+	});
 });

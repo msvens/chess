@@ -22,6 +22,7 @@
 	import { addRecentPlayer } from '$lib/recentPlayers';
 	import { language } from '$lib/stores/language.svelte';
 	import { getTranslation } from '$lib/translations';
+	import PageHead from '$lib/components/layout/PageHead.svelte';
 
 	const profile = setPlayerProfileState();
 
@@ -53,7 +54,17 @@
 	});
 </script>
 
-<svelte:head><title>{profile.currentPlayerName || pd.notFound} — msvens chess</title></svelte:head>
+<!-- While the player loads, the section's name: not "not found", which a crawler could snapshot. -->
+<PageHead
+	title={profile.player
+		? profile.currentPlayerName
+		: profile.playerLoading
+			? t.pages.players.title
+			: pd.notFound}
+	description={profile.player
+		? t.seo.player.replace('{player}', profile.currentPlayerName)
+		: undefined}
+/>
 
 <PageLayout maxWidth="4xl">
 	{#if profile.invalidId}

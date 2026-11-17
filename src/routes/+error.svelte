@@ -9,6 +9,7 @@
 	import { page } from '$app/state';
 	import PageLayout from '$lib/components/layout/PageLayout.svelte';
 	import NotFound from '$lib/components/layout/NotFound.svelte';
+	import PageHead from '$lib/components/layout/PageHead.svelte';
 	import { language } from '$lib/stores/language.svelte';
 	import { getTranslation } from '$lib/translations';
 
@@ -16,9 +17,7 @@
 	let missing = $derived(page.status === 404);
 </script>
 
-<svelte:head>
-	<title>{missing ? t.title : t.errorTitle} — msvens chess</title>
-</svelte:head>
+<PageHead title={missing ? t.title : t.errorTitle} />
 
 <PageLayout maxWidth="3xl">
 	{#if missing}

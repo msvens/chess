@@ -23,6 +23,7 @@
 	import { getGroupResultsState } from '$lib/stores/groupResults.svelte';
 	import { language } from '$lib/stores/language.svelte';
 	import { getTranslation } from '$lib/translations';
+	import PageHead from '$lib/components/layout/PageHead.svelte';
 
 	const results = getGroupResultsState();
 
@@ -146,6 +147,15 @@
 		});
 	});
 </script>
+
+<PageHead
+	title={teamName && results.tournament
+		? `${teamName} · ${results.tournament.name}`
+		: t.pages.results.title}
+	description={teamName && results.tournament
+		? t.seo.team.replace('{team}', teamName).replace('{tournament}', results.tournament.name)
+		: undefined}
+/>
 
 <PageLayout fullScreen maxWidth="5xl">
 	{#if results.notFound}

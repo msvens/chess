@@ -39,6 +39,12 @@ pnpm test:integration   # live contract tests against the SSF API, not part of `
 pnpm build              # static output in build/
 ```
 
+`static/robots.txt` points search engines to `/sitemap.xml`, which the build generates
+(`pnpm generate:sitemap`, run by `prebuild`): the fixed pages, districts, active clubs and the
+groups of ongoing, upcoming and recently updated tournaments. It is not tracked. The script can
+also run on its own (`pnpm generate:sitemap --out <path>`), e.g. daily on the server. If SSF
+does not answer, it leaves the tournaments out rather than failing the build.
+
 ## License
 
 [MIT](LICENSE)

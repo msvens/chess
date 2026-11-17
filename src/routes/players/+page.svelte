@@ -18,6 +18,7 @@
 	import { PlayerService } from '$lib/api';
 	import { language } from '$lib/stores/language.svelte';
 	import { getTranslation } from '$lib/translations';
+	import PageHead from '$lib/components/layout/PageHead.svelte';
 
 	const players = new PlayerService();
 
@@ -75,6 +76,7 @@
 </script>
 
 <PageLayout fullScreen maxWidth="3xl">
+	<PageHead title={t.pages.players.title} description={t.pages.players.subtitle} />
 	<PageTitle title={t.pages.players.title} subtitle={t.pages.players.subtitle} />
 
 	<div class="mb-12 space-y-4">

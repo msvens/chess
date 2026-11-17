@@ -11,6 +11,7 @@
 	import { language } from '$lib/stores/language.svelte';
 	import { getTranslation } from '$lib/translations';
 	import { RatingsService } from '$lib/api';
+	import PageHead from '$lib/components/layout/PageHead.svelte';
 
 	const organizations = getOrganizationsState();
 	const service = new RatingsService();
@@ -29,7 +30,11 @@
 	let org = $derived(t.pages.organizations);
 </script>
 
-<svelte:head><title>{club?.name ?? org.clubNotFound} — msvens chess</title></svelte:head>
+<!-- While the clubs load, the section's name: not "not found", which a crawler could snapshot. -->
+<PageHead
+	title={club?.name ?? (organizations.loading ? org.title : org.clubNotFound)}
+	description={club ? t.seo.club.replace('{club}', club.name) : undefined}
+/>
 
 <PageLayout maxWidth="4xl">
 	{#if organizations.loading}

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { ClubDTO } from '$lib/api';
-import { filterClubs } from './organizations.svelte';
+import { filterClubs } from '../clubFilter';
 
 // Minimal fixtures — only the fields filterClubs actually reads. The real DTOs
 // carry a dozen more, none of which affect the filter.
