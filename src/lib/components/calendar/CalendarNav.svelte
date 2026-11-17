@@ -4,7 +4,7 @@
 	 * Ports `components/calendar/CalendarNav.tsx`.
 	 */
 	import CalendarLegend from './CalendarLegend.svelte';
-	import type { CalendarViewMode } from './calendarPrefs';
+	import type { CalendarDayMode, CalendarViewMode } from './calendarPrefs';
 	import { language } from '$lib/stores/language.svelte';
 	import { getTranslation } from '$lib/translations';
 
@@ -13,6 +13,8 @@
 		title: string;
 		view: CalendarViewMode;
 		onViewChange: (view: CalendarViewMode) => void;
+		dayMode: CalendarDayMode;
+		onDayModeChange: (mode: CalendarDayMode) => void;
 		/** Tournament types present in the data, for the colour key. */
 		legendTypes: number[];
 		canGoPrev: boolean;
@@ -28,6 +30,8 @@
 		title,
 		view,
 		onViewChange,
+		dayMode,
+		onDayModeChange,
 		legendTypes,
 		canGoPrev,
 		canGoNext,
@@ -106,6 +110,15 @@
 		>
 			<option value="week">{cal.views.week}</option>
 			<option value="month">{cal.views.month}</option>
+		</select>
+		<select
+			value={dayMode}
+			onchange={(event) => onDayModeChange(event.currentTarget.value as CalendarDayMode)}
+			aria-label={cal.dayModeLabel}
+			class="rounded-md border border-gray-200 bg-white px-2 py-1 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+		>
+			<option value="played">{cal.dayModes.played}</option>
+			<option value="dates">{cal.dayModes.dates}</option>
 		</select>
 	</div>
 </div>

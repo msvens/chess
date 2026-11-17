@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { TournamentDto } from '$lib/api';
 import { toDayNumber } from '$lib/utils/calendarLayout';
-import { playedDays, playedOn } from '$lib/utils/playedDays';
+import { datedDays, playedDays, playedOn } from '$lib/utils/playedDays';
 
 const INDIVIDUAL = 3;
 const GRAND_PRIX = 7;
@@ -170,5 +170,37 @@ describe('playedOn', () => {
 		const entries = playedOn(events, day('2026-11-17'));
 		expect(entries.map((e) => e.tournament.id)).toEqual([1, 3]);
 		expect(entries[0].groups.map((g) => g.id)).toEqual([10]);
+	});
+});
+
+describe('datedDays, the tournament-dates mode', () => {
+	it('spans a short tournament across all its dates, rounds or not', () => {
+		const event = datedDays(
+			tournament({ start: '2026-11-20', end: '2026-11-22' }, [
+				{ groups: [{ id: 10, rounds: ['2026-11-21'] }, { id: 11 }] }
+			])
+		);
+		expect([...event.days.keys()]).toEqual([
+			day('2026-11-20'),
+			day('2026-11-21'),
+			day('2026-11-22')
+		]);
+		// Every group on every day, so a click lists them all.
+		expect(groupIds(event, '2026-11-20')).toEqual([10, 11]);
+		expect(event.marker).toBe(false);
+	});
+
+	it('marks a longer tournament on its start day only, whatever its rounds say', () => {
+		const event = datedDays(tournament({}, [{ groups: [{ id: 10, rounds: ['2026-11-17'] }] }]));
+		expect([...event.days.keys()]).toEqual([day('2026-09-01')]);
+		expect(event.marker).toBe(true);
+	});
+
+	it('marks a Grand Prix series on its start day, as game days does', () => {
+		const event = datedDays(
+			tournament({ type: GRAND_PRIX, start: '2026-11-20', end: '2026-11-21' })
+		);
+		expect([...event.days.keys()]).toEqual([day('2026-11-20')]);
+		expect(event.marker).toBe(true);
 	});
 });

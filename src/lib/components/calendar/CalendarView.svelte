@@ -12,8 +12,8 @@
 	import CalendarNav from './CalendarNav.svelte';
 	import MonthView from './MonthView.svelte';
 	import WeekView from './WeekView.svelte';
-	import { initialView, saveView } from './calendarPrefs';
-	import type { CalendarViewMode } from './calendarPrefs';
+	import { initialDayMode, initialView, saveDayMode, saveView } from './calendarPrefs';
+	import type { CalendarDayMode, CalendarViewMode } from './calendarPrefs';
 	import type { TournamentDto } from '$lib/api';
 	import {
 		addDays,
@@ -23,7 +23,7 @@
 		getEventDateBounds,
 		toDayNumber
 	} from '$lib/utils/calendarLayout';
-	import { playedDays } from '$lib/utils/playedDays';
+	import { datedDays, playedDays } from '$lib/utils/playedDays';
 	import { getAllTournamentTypes } from '$lib/utils/tournamentFilters';
 	import { language } from '$lib/stores/language.svelte';
 	import { formatDayRange } from '$lib/dateFormat';
@@ -52,6 +52,14 @@
 		saveView(next);
 	}
 
+	/** Game days, or the tournaments' dates as the calendar showed them before. */
+	let dayMode = $state<CalendarDayMode>(initialDayMode());
+
+	function changeDayMode(next: CalendarDayMode) {
+		dayMode = next;
+		saveDayMode(next);
+	}
+
 	function moveTo(next: Date) {
 		anchor = next;
 	}
@@ -63,7 +71,7 @@
 	const weekStart = (date: Date) => addDays(date, -((date.getDay() + 6) % 7));
 	const weekKey = (date: Date) => toDayNumber(weekStart(date));
 
-	let events = $derived(tournaments.map(playedDays));
+	let events = $derived(tournaments.map(dayMode === 'played' ? playedDays : datedDays));
 	let bounds = $derived(getEventDateBounds(events));
 
 	/** Only the types on screen get a colour key entry, in canonical order. */
@@ -110,6 +118,8 @@
 		{title}
 		{view}
 		onViewChange={changeView}
+		{dayMode}
+		onDayModeChange={changeDayMode}
 		{legendTypes}
 		{canGoPrev}
 		{canGoNext}

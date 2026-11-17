@@ -274,6 +274,12 @@ export interface Translations {
 			startDateOnly: string;
 			reversedDates: string;
 			viewLabel: string;
+			/** Names the game-days / tournament-dates control. */
+			dayModeLabel: string;
+			dayModes: {
+				played: string;
+				dates: string;
+			};
 			dayEvents: string;
 			continues: string;
 			dayDetails: {
@@ -1111,6 +1117,11 @@ const translations: Record<Language, Translations> = {
 				startDateOnly: 'Start date only',
 				reversedDates: 'End date is before the start date — shown on the start date',
 				viewLabel: 'View',
+				dayModeLabel: 'Show tournaments on',
+				dayModes: {
+					played: 'Game days',
+					dates: 'Tournament dates'
+				},
 				dayEvents: '{count} events on {date}',
 				continues: 'continues',
 				dayDetails: {
@@ -1923,6 +1934,11 @@ const translations: Record<Language, Translations> = {
 				startDateOnly: 'Endast startdatum',
 				reversedDates: 'Slutdatum är före startdatum — visas på startdatumet',
 				viewLabel: 'Vy',
+				dayModeLabel: 'Visa turneringar på',
+				dayModes: {
+					played: 'Speldagar',
+					dates: 'Turneringsdatum'
+				},
 				dayEvents: '{count} evenemang den {date}',
 				continues: 'fortsätter',
 				dayDetails: {
