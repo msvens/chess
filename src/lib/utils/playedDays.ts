@@ -34,14 +34,20 @@ export interface CalendarEvent {
 	tournament: TournamentDto;
 	/** Day number → the groups playing that day; empty when no group can be named. */
 	days: Map<number, Group[]>;
-	/** Placed on its start day only, so that day is not a claim of play. */
+	/** Its days are markers — the start, and in tournament-dates mode the end — not claims of play. */
 	marker: boolean;
+	/** The day marked as the end, in tournament-dates mode; otherwise null. */
+	endDay: number | null;
 }
 
 /** One tournament on one day, with the groups playing. */
 export interface PlayedEntry {
 	tournament: TournamentDto;
 	groups: Group[];
+	/** The day is the tournament's start marker (a long tournament, a series). */
+	starts?: boolean;
+	/** The day is the tournament's end, marked in tournament-dates mode. */
+	ends?: boolean;
 }
 
 interface DayRange {
@@ -80,7 +86,7 @@ export function playedDays(tournament: TournamentDto): CalendarEvent {
 	const span = parseEventDays(tournament);
 	if (isGrandPrix(tournament.type)) {
 		if (span) add(span.start);
-		return { tournament, days, marker: true };
+		return { tournament, days, marker: true, endDay: null };
 	}
 
 	const tournamentRange = validRange(tournament.start, tournament.end);
@@ -120,34 +126,38 @@ export function playedDays(tournament: TournamentDto): CalendarEvent {
 		played = true;
 	}
 
-	return { tournament, days, marker: !played && days.size > 0 };
+	return { tournament, days, marker: !played && days.size > 0, endDay: null };
 }
 
 /**
- * The calendar's other mode, as it worked before game days: a tournament of up
- * to {@link LONG_EVENT_THRESHOLD} days across all its dates, a longer one (and
- * a Grand Prix series) as a marker on its start day. Round dates are not read;
- * every group is listed on every day, so a click still goes straight to the
- * only group, or lists them.
+ * The calendar's other mode, tournament dates: a tournament of up to
+ * {@link LONG_EVENT_THRESHOLD} days across all its dates; a longer one (and a
+ * Grand Prix series) as a marker on its start day and another on its end day,
+ * so a season-long league shows when it begins and when it finishes. Round
+ * dates are not read; every group is listed on every day, so a click still goes
+ * straight to the only group, or lists them.
  */
 export function datedDays(tournament: TournamentDto): CalendarEvent {
 	const days = new Map<number, Group[]>();
 	const span = parseEventDays(tournament);
-	if (!span) return { tournament, days, marker: false };
+	if (!span) return { tournament, days, marker: false, endDay: null };
 
 	const groups = allGroups(tournament.rootClasses);
 	if (isGrandPrix(tournament.type) || span.end - span.start + 1 > LONG_EVENT_THRESHOLD) {
 		days.set(span.start, []);
-		return { tournament, days, marker: true };
+		if (span.end === span.start) return { tournament, days, marker: true, endDay: null };
+		days.set(span.end, []);
+		return { tournament, days, marker: true, endDay: span.end };
 	}
 	for (let day = span.start; day <= span.end; day++) days.set(day, groups);
-	return { tournament, days, marker: false };
+	return { tournament, days, marker: false, endDay: null };
 }
 
 /** Everything played on a day, each tournament with its groups for that day. */
 export function playedOn(events: CalendarEvent[], day: number): PlayedEntry[] {
-	return events.flatMap(({ tournament, days }) => {
+	return events.flatMap(({ tournament, days, marker, endDay }) => {
 		const groups = days.get(day);
-		return groups ? [{ tournament, groups }] : [];
+		if (!groups) return [];
+		return [{ tournament, groups, starts: marker && endDay !== day, ends: endDay === day }];
 	});
 }

@@ -270,8 +270,10 @@ export interface Translations {
 				latest: string;
 			};
 			moreEvents: string;
-			/** Tooltip on a marker: placed on its start day, not on days it is played. */
-			startDateOnly: string;
+			/** Tooltip on a marker on a tournament's start day. */
+			markerStart: string;
+			/** Tooltip on a marker on a tournament's end day. */
+			markerEnd: string;
 			reversedDates: string;
 			viewLabel: string;
 			/** Names the game-days / tournament-dates control. */
@@ -288,6 +290,10 @@ export interface Translations {
 				type: string;
 				dateRange: string;
 				viewResults: string;
+				/** Beside a tournament on its start-marker date. */
+				startsToday: string;
+				/** Beside a tournament on its end date, in tournament-dates mode. */
+				endsToday: string;
 			};
 		};
 		results: {
@@ -1114,7 +1120,8 @@ const translations: Record<Language, Translations> = {
 					latest: 'Last event'
 				},
 				moreEvents: '+{count} more',
-				startDateOnly: 'Start date only',
+				markerStart: 'Start date',
+				markerEnd: 'End date',
 				reversedDates: 'End date is before the start date — shown on the start date',
 				viewLabel: 'View',
 				dayModeLabel: 'Show tournaments on',
@@ -1129,7 +1136,9 @@ const translations: Record<Language, Translations> = {
 					city: 'City',
 					type: 'Type',
 					dateRange: 'Dates',
-					viewResults: 'View results'
+					viewResults: 'View results',
+					startsToday: 'starts today',
+					endsToday: 'ends today'
 				}
 			},
 			results: {
@@ -1931,7 +1940,8 @@ const translations: Record<Language, Translations> = {
 					latest: 'Sista evenemanget'
 				},
 				moreEvents: '+{count} fler',
-				startDateOnly: 'Endast startdatum',
+				markerStart: 'Startdatum',
+				markerEnd: 'Slutdatum',
 				reversedDates: 'Slutdatum är före startdatum — visas på startdatumet',
 				viewLabel: 'Vy',
 				dayModeLabel: 'Visa turneringar på',
@@ -1946,7 +1956,9 @@ const translations: Record<Language, Translations> = {
 					city: 'Ort',
 					type: 'Typ',
 					dateRange: 'Datum',
-					viewResults: 'Visa resultat'
+					viewResults: 'Visa resultat',
+					startsToday: 'startar idag',
+					endsToday: 'slutar idag'
 				}
 			},
 			results: {

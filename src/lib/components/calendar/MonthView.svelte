@@ -62,7 +62,16 @@
 		const { day, tournamentId, groups } = open;
 		if (tournamentId !== null) {
 			const match = events.find((e) => e.tournament.id === tournamentId);
-			return match ? [{ tournament: match.tournament, groups }] : [];
+			return match
+				? [
+						{
+							tournament: match.tournament,
+							groups,
+							starts: match.marker && match.endDay !== day,
+							ends: match.endDay === day
+						}
+					]
+				: [];
 		}
 		return playedOn(events, day);
 	});

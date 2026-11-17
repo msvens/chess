@@ -35,8 +35,8 @@ export interface PositionedSegment {
 	continuesLeft: boolean;
 	/** Bar continues into the next row (render a ▶ hint). */
 	continuesRight: boolean;
-	/** A start-day marker, not a claim of play: see `playedDays`. */
-	marker: boolean;
+	/** A marker on a tournament's start or end day, not a claim of play: see `playedDays`. */
+	marker: 'start' | 'end' | null;
 	/** The groups playing on the segment's days, in class order. */
 	groups: Group[];
 }
@@ -152,10 +152,27 @@ export function packRow(cells: DayCell[], events: CalendarEvent[]): PackedRow {
 	const rowEnd = cells[cells.length - 1].dayNumber;
 
 	const segments: PositionedSegment[] = [];
-	for (const { tournament, days, marker } of events) {
+	for (const { tournament, days, marker, endDay } of events) {
 		const inRow = [...days.keys()]
 			.filter((d) => d >= rowStart && d <= rowEnd)
 			.sort((a, b) => a - b);
+
+		// Markers stand alone: a short series' start and end must not merge into a bar.
+		if (marker) {
+			for (const day of inRow) {
+				segments.push({
+					tournament,
+					colOffset: day - rowStart,
+					colSpan: 1,
+					laneIndex: 0,
+					continuesLeft: false,
+					continuesRight: false,
+					marker: day === endDay ? 'end' : 'start',
+					groups: days.get(day) ?? []
+				});
+			}
+			continue;
+		}
 
 		let runStart = 0;
 		for (let i = 0; i < inRow.length; i++) {
@@ -171,7 +188,7 @@ export function packRow(cells: DayCell[], events: CalendarEvent[]): PackedRow {
 				laneIndex: 0,
 				continuesLeft: first === rowStart && days.has(rowStart - 1),
 				continuesRight: last === rowEnd && days.has(rowEnd + 1),
-				marker,
+				marker: null,
 				groups
 			});
 			runStart = i + 1;

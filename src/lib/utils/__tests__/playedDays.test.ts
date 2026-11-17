@@ -190,17 +190,32 @@ describe('datedDays, the tournament-dates mode', () => {
 		expect(event.marker).toBe(false);
 	});
 
-	it('marks a longer tournament on its start day only, whatever its rounds say', () => {
+	it('marks a longer tournament on its start and end days, whatever its rounds say', () => {
 		const event = datedDays(tournament({}, [{ groups: [{ id: 10, rounds: ['2026-11-17'] }] }]));
-		expect([...event.days.keys()]).toEqual([day('2026-09-01')]);
+		expect([...event.days.keys()]).toEqual([day('2026-09-01'), day('2026-12-15')]);
 		expect(event.marker).toBe(true);
+		expect(event.endDay).toBe(day('2026-12-15'));
 	});
 
-	it('marks a Grand Prix series on its start day, as game days does', () => {
+	it('marks a Grand Prix series on its start and end days', () => {
 		const event = datedDays(
 			tournament({ type: GRAND_PRIX, start: '2026-11-20', end: '2026-11-21' })
 		);
+		expect([...event.days.keys()]).toEqual([day('2026-11-20'), day('2026-11-21')]);
+		expect(event.endDay).toBe(day('2026-11-21'));
+	});
+
+	it('has no end marker for a one-day series', () => {
+		const event = datedDays(
+			tournament({ type: GRAND_PRIX, start: '2026-11-20', end: '2026-11-20' })
+		);
 		expect([...event.days.keys()]).toEqual([day('2026-11-20')]);
-		expect(event.marker).toBe(true);
+		expect(event.endDay).toBeNull();
+	});
+
+	it('tells the day list which day a tournament ends', () => {
+		const events = [datedDays(tournament({}))];
+		expect(playedOn(events, day('2026-12-15'))[0]).toMatchObject({ starts: false, ends: true });
+		expect(playedOn(events, day('2026-09-01'))[0]).toMatchObject({ starts: true, ends: false });
 	});
 });
