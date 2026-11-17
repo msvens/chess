@@ -1,9 +1,11 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import {
+	initialDayMode,
 	initialTab,
 	initialView,
 	isCalendarTab,
 	isCalendarView,
+	saveDayMode,
 	saveTab,
 	saveView
 } from './calendarPrefs';
@@ -56,5 +58,21 @@ describe('the guards', () => {
 		expect(['week', 'month'].every(isCalendarView)).toBe(true);
 		expect(isCalendarView('day')).toBe(false);
 		expect(isCalendarView(null)).toBe(false);
+	});
+});
+
+describe('the remembered day mode', () => {
+	it('shows game days when nothing is stored', () => {
+		expect(initialDayMode()).toBe('played');
+	});
+
+	it('remembers the tournament dates once chosen', () => {
+		saveDayMode('dates');
+		expect(initialDayMode()).toBe('dates');
+	});
+
+	it('ignores a stored value that is not a mode', () => {
+		localStorage.setItem('calendar-day-mode', 'rounds');
+		expect(initialDayMode()).toBe('played');
 	});
 });

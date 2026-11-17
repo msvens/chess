@@ -123,6 +123,27 @@ export function playedDays(tournament: TournamentDto): CalendarEvent {
 	return { tournament, days, marker: !played && days.size > 0 };
 }
 
+/**
+ * The calendar's other mode, as it worked before game days: a tournament of up
+ * to {@link LONG_EVENT_THRESHOLD} days across all its dates, a longer one (and
+ * a Grand Prix series) as a marker on its start day. Round dates are not read;
+ * every group is listed on every day, so a click still goes straight to the
+ * only group, or lists them.
+ */
+export function datedDays(tournament: TournamentDto): CalendarEvent {
+	const days = new Map<number, Group[]>();
+	const span = parseEventDays(tournament);
+	if (!span) return { tournament, days, marker: false };
+
+	const groups = allGroups(tournament.rootClasses);
+	if (isGrandPrix(tournament.type) || span.end - span.start + 1 > LONG_EVENT_THRESHOLD) {
+		days.set(span.start, []);
+		return { tournament, days, marker: true };
+	}
+	for (let day = span.start; day <= span.end; day++) days.set(day, groups);
+	return { tournament, days, marker: false };
+}
+
 /** Everything played on a day, each tournament with its groups for that day. */
 export function playedOn(events: CalendarEvent[], day: number): PlayedEntry[] {
 	return events.flatMap(({ tournament, days }) => {

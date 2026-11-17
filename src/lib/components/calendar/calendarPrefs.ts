@@ -1,6 +1,7 @@
 /**
- * localStorage-backed preferences for the calendar page: the active tab and the
- * calendar's own week/month view. Ports `components/calendar/calendarPrefs.ts`.
+ * localStorage-backed preferences for the calendar page: the active tab, the
+ * calendar's own week/month view, and whether it places tournaments on their
+ * game days or across their dates. Ports `components/calendar/calendarPrefs.ts`.
  *
  * Not the period last looked at, which the Next app also stored: the calendar
  * opening weeks later on whatever month you left it at was confusing, so it
@@ -14,12 +15,16 @@ import { safeGetItem, safeSetItem } from '$lib/storage';
 
 const TAB_KEY = 'calendar-active-tab';
 const VIEW_KEY = 'calendar-view-mode';
+const DAYS_KEY = 'calendar-day-mode';
 
 export type CalendarTab = 'calendar' | 'list' | 'map';
 export type CalendarViewMode = 'week' | 'month';
+/** `played`: on the days rounds are played. `dates`: across the tournament's dates. */
+export type CalendarDayMode = 'played' | 'dates';
 
 export const CALENDAR_TABS: readonly CalendarTab[] = ['calendar', 'list', 'map'];
 export const CALENDAR_VIEWS: readonly CalendarViewMode[] = ['week', 'month'];
+export const CALENDAR_DAY_MODES: readonly CalendarDayMode[] = ['played', 'dates'];
 
 export function isCalendarTab(value: string | null | undefined): value is CalendarTab {
 	return !!value && (CALENDAR_TABS as readonly string[]).includes(value);
@@ -46,4 +51,18 @@ export function initialView(): CalendarViewMode {
 
 export function saveView(view: CalendarViewMode): void {
 	safeSetItem(VIEW_KEY, view);
+}
+
+export function isCalendarDayMode(value: string | null | undefined): value is CalendarDayMode {
+	return !!value && (CALENDAR_DAY_MODES as readonly string[]).includes(value);
+}
+
+/** Game days unless the visitor last chose the tournaments' dates. */
+export function initialDayMode(): CalendarDayMode {
+	const saved = safeGetItem(DAYS_KEY);
+	return isCalendarDayMode(saved) ? saved : 'played';
+}
+
+export function saveDayMode(mode: CalendarDayMode): void {
+	safeSetItem(DAYS_KEY, mode);
 }

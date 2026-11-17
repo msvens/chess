@@ -71,7 +71,7 @@ describe('which period is shown', () => {
 
 	it('remembers a change of view', async () => {
 		const user = setup([event()]);
-		await user.selectOptions(screen.getByRole('combobox'), 'week');
+		await user.selectOptions(screen.getByRole('combobox', { name: 'Vy' }), 'week');
 		expect(localStorage.getItem('calendar-view-mode')).toBe('week');
 	});
 
@@ -154,5 +154,49 @@ describe('the states with no grid', () => {
 	it('keeps the navigation bar visible either way', () => {
 		setup([], { loading: true });
 		expect(button('Idag')).toBeInTheDocument();
+	});
+});
+
+describe('game days or tournament dates', () => {
+	/** A league over the spring, playing on 10 March. */
+	const league = () =>
+		event({
+			name: 'KM',
+			start: '2026-02-01',
+			end: '2026-04-30',
+			rootClasses: [
+				{
+					classID: 1,
+					className: 'KM',
+					subClasses: [],
+					groups: [{ id: 10, name: 'A', tournamentRounds: [{ roundDate: '2026-03-10' }] }]
+				}
+			] as unknown as TournamentDto['rootClasses']
+		});
+
+	const dayButton = (day: RegExp) => screen.queryByRole('button', { name: day });
+
+	it('shows game days by default: the league on its round day', () => {
+		setup([league()]);
+		expect(dayButton(/1 evenemang den .*10 mars/)).toBeInTheDocument();
+	});
+
+	it('switches to tournament dates, and remembers it', async () => {
+		const user = setup([league()]);
+		await user.selectOptions(
+			screen.getByRole('combobox', { name: 'Visa turneringar på' }),
+			'dates'
+		);
+
+		// Over a week long, so only its start in February is marked; March is empty.
+		expect(dayButton(/evenemang den .*10 mars/)).toBeNull();
+		expect(localStorage.getItem('calendar-day-mode')).toBe('dates');
+	});
+
+	it('opens on the mode chosen last time', () => {
+		localStorage.setItem('calendar-day-mode', 'dates');
+		setup([league()]);
+		expect(screen.getByRole('combobox', { name: 'Visa turneringar på' })).toHaveValue('dates');
+		expect(dayButton(/evenemang den .*10 mars/)).toBeNull();
 	});
 });
