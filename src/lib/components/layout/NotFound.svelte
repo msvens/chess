@@ -6,6 +6,10 @@
 	 *
 	 * Without props it is the generic "we couldn't find the page", linking home;
 	 * a page passes its own title and a nearer link ("back to the standings").
+	 *
+	 * It also tells search engines not to index the address. The site answers
+	 * every path with the app (a 200), so without this a missing player or a
+	 * mistyped URL would be indexed as a real page.
 	 */
 	import Link from '$lib/components/ui/Link.svelte';
 	import { language } from '$lib/stores/language.svelte';
@@ -22,6 +26,10 @@
 
 	let t = $derived(getTranslation(language.current).notFound);
 </script>
+
+<svelte:head>
+	<meta name="robots" content="noindex" />
+</svelte:head>
 
 <div class="text-center">
 	<div class="rounded-lg border border-gray-200 bg-white p-8 dark:border-gray-700 dark:bg-dark-bg">

@@ -16,41 +16,12 @@
  */
 import { getContext, setContext } from 'svelte';
 import type { ClubDTO, DistrictDTO } from '$lib/api';
+import { filterClubs, type ClubFilterOptions } from '$lib/organizations/clubFilter';
 import {
 	createOrganizationLookups,
 	loadOrganizationData,
 	type OrganizationLookups
 } from '$lib/organizations/organizationDataLoader';
-
-export interface ClubFilterOptions {
-	activeOnly?: boolean;
-	hasRatingPlayersOnly?: boolean;
-}
-
-/**
- * Pure club filter, exported for testing.
- *
- * "Active" means the club's MOST RECENT district membership is active — not that any
- * membership is. A club that left its district still carries the old rows, so checking
- * `.some(active)` would keep defunct clubs alive.
- */
-export function filterClubs(clubs: ClubDTO[], options?: ClubFilterOptions): ClubDTO[] {
-	if (!options) return clubs;
-
-	return clubs.filter((club) => {
-		if (options.hasRatingPlayersOnly && club.hasRatingPlayers !== 1) return false;
-
-		if (options.activeOnly) {
-			if (!club.districts || club.districts.length === 0) return false;
-			const mostRecent = club.districts.reduce((latest, current) =>
-				current.year > latest.year ? current : latest
-			);
-			if (mostRecent.active !== 1) return false;
-		}
-
-		return true;
-	});
-}
 
 export class OrganizationsState {
 	districts = $state<DistrictDTO[]>([]);

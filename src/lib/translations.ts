@@ -196,6 +196,25 @@ export interface Translations {
 		toOrganizations: string;
 		toPlayers: string;
 	};
+	/**
+	 * Descriptions for search results, and titles where a page has no heading to
+	 * reuse. Templates take the names a page has loaded, e.g. `{tournament}`.
+	 */
+	seo: {
+		home: string;
+		about: string;
+		calculator: string;
+		/** A group whose name repeats its tournament's, or a one-group tournament. */
+		tournament: string;
+		/** `{group}` in `{tournament}`. */
+		group: string;
+		playerInGroup: string;
+		team: string;
+		performance: string;
+		player: string;
+		club: string;
+		district: string;
+	};
 	pages: {
 		contact: {
 			title: string;
@@ -1041,6 +1060,20 @@ const translations: Record<Language, Translations> = {
 			toOrganizations: 'Go to organizations',
 			toPlayers: 'Search for players'
 		},
+		seo: {
+			home: 'Swedish chess in one place: tournament calendar, live and historical results, player ratings and Elo tools.',
+			about: 'About msvens chess: who is behind the site, the data it uses and how it is built.',
+			calculator:
+				'Calculate Elo rating changes the way FIDE does, for one game or a whole tournament.',
+			tournament: 'Results, standings and pairings for {tournament}.',
+			group: 'Results, standings and pairings for {group} in {tournament}.',
+			playerInGroup: 'Games, results and rating change for {player} in {tournament}.',
+			team: 'Matches and results for {team} in {tournament}.',
+			performance: 'Individual performances in {tournament}.',
+			player: '{player}: FIDE ratings, rating history and tournaments.',
+			club: 'Chess club {club}: club information and rated players.',
+			district: '{district}: clubs and players in the district.'
+		},
 		pages: {
 			contact: {
 				title: 'Feedback',
@@ -1856,6 +1889,20 @@ const translations: Record<Language, Translations> = {
 			toTournament: 'Till turneringen',
 			toOrganizations: 'Till organisationer',
 			toPlayers: 'Sök spelare'
+		},
+		seo: {
+			home: 'Svensk schack på ett ställe: turneringskalender, live- och historiska resultat, spelarrating och Elo-verktyg.',
+			about:
+				'Om msvens chess: vem som står bakom sajten, vilken data den använder och hur den är byggd.',
+			calculator: 'Räkna ut Elo-förändringar som FIDE gör, för ett parti eller en hel turnering.',
+			tournament: 'Resultat, ställning och lottning för {tournament}.',
+			group: 'Resultat, ställning och lottning för {group} i {tournament}.',
+			playerInGroup: 'Partier, resultat och ratingförändring för {player} i {tournament}.',
+			team: 'Matcher och resultat för {team} i {tournament}.',
+			performance: 'Individuella prestationer i {tournament}.',
+			player: '{player}: FIDE-rating, ratinghistorik och turneringar.',
+			club: 'Schackklubben {club}: klubbinformation och ratade spelare.',
+			district: '{district}: klubbar och spelare i distriktet.'
 		},
 		pages: {
 			contact: {

@@ -97,6 +97,16 @@ Club and district data is static JSON loaded once at startup, then queried synch
 **gitignored** — regenerated on deploy. The geocode caches (`geocodes.json`,
 `club-geocodes.json`) **are** tracked: they are expensive to rebuild.
 
+`static/sitemap.xml` is **generated** by `scripts/generate-sitemap.ts` (in `prebuild`, best-effort)
+and gitignored; what goes in is `src/lib/seo/sitemap.ts`. `static/robots.txt` is tracked.
+
+# Page titles
+
+Every page sets its `<title>` and meta description through `PageHead`
+(`$lib/components/layout/PageHead.svelte`), never a hand-written `<svelte:head><title>`. While a page
+loads, its title names the section ("Resultat", "Spelare"), never "not found". `NotFound` adds
+`noindex`, because production answers every path with 200.
+
 # Deployment
 
 Production serves the built static files directly from nginx, which also terminates the

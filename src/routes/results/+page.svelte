@@ -43,6 +43,7 @@
 	import { getTranslation } from '$lib/translations';
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
+	import PageHead from '$lib/components/layout/PageHead.svelte';
 
 	const service = new TournamentService();
 	const initialRange = defaultDateRange();
@@ -163,7 +164,7 @@
 	let visible = $derived(filterByState(afterType, tournamentState));
 </script>
 
-<svelte:head><title>{t.pages.results.title} — msvens chess</title></svelte:head>
+<PageHead title={t.pages.results.title} description={t.pages.results.subtitle} />
 
 <PageLayout maxWidth="4xl">
 	<PageTitle title={t.pages.results.title} subtitle={t.pages.results.subtitle} />

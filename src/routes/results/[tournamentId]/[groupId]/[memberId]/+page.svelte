@@ -45,6 +45,7 @@
 	import { formatApiDayRange } from '$lib/dateFormat';
 	import { localeOf } from '$lib/i18n';
 	import { getTranslation } from '$lib/translations';
+	import PageHead from '$lib/components/layout/PageHead.svelte';
 
 	const results = getGroupResultsState();
 
@@ -331,6 +332,17 @@
 {#snippet blackCell(row: PlayerMatch)}
 	{@render playerLink(row, 'black')}
 {/snippet}
+
+<PageHead
+	title={player && results.tournament
+		? `${formatPlayerName(player.firstName, player.lastName, player.elo?.title)} · ${results.tournament.name}`
+		: t.pages.results.title}
+	description={player && results.tournament
+		? t.seo.playerInGroup
+				.replace('{player}', formatPlayerName(player.firstName, player.lastName, player.elo?.title))
+				.replace('{tournament}', results.tournament.name)
+		: undefined}
+/>
 
 <PageLayout maxWidth="3xl">
 	{#if results.notFound}

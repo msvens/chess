@@ -23,12 +23,13 @@
 		"test:integration": "TZ=Europe/Stockholm vitest run --config vitest.integration.config.ts --retry=2",
 		"translations:check": "tsx scripts/check-translations.ts",
 		"generate:changelog": "tsx scripts/generate-changelog.ts",
+		"generate:sitemap": "tsx scripts/generate-sitemap.ts",
 		"geocode:build": "tsx scripts/build-geocodes.ts",
 		"geocode:clubs": "tsx scripts/geocode-clubs.ts",
 		"data:clubs": "node scripts/fetch-organizations.js",
 		"release": "bash scripts/release.sh",
 		"predev": "node scripts/check-data.js && pnpm generate:changelog",
-		"prebuild": "pnpm generate:changelog"
+		"prebuild": "pnpm generate:changelog && pnpm generate:sitemap"
 	},
 	"dependencies": {
 		"@msvens/schack-se-sdk": "github:msvens/schack-se-sdk#v0.32.0",

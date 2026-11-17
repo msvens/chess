@@ -4,6 +4,7 @@
 	import ContactForm from '$lib/components/contact/ContactForm.svelte';
 	import { language } from '$lib/stores/language.svelte';
 	import { getTranslation } from '$lib/translations';
+	import PageHead from '$lib/components/layout/PageHead.svelte';
 
 	let t = $derived(getTranslation(language.current).pages.contact);
 
@@ -14,6 +15,7 @@
 </script>
 
 <PageLayout maxWidth="3xl">
+	<PageHead title={t.title} description={t.subtitle} />
 	<PageTitle title={t.title} subtitle={t.subtitle} />
 	<div class="bg-white p-8 dark:bg-dark-bg">
 		<ContactForm {endpoint} />

@@ -13,6 +13,7 @@
 	import { IndividualPerformanceState } from '$lib/stores/individualPerformance.svelte';
 	import { language } from '$lib/stores/language.svelte';
 	import { getTranslation } from '$lib/translations';
+	import PageHead from '$lib/components/layout/PageHead.svelte';
 
 	const list = new IndividualPerformanceState();
 
@@ -27,6 +28,13 @@
 		if (validId) list.load(tournamentId);
 	});
 </script>
+
+<PageHead
+	title={list.tournament ? `${ip.title} · ${list.tournament.name}` : ip.title}
+	description={list.tournament
+		? t.seo.performance.replace('{tournament}', list.tournament.name)
+		: undefined}
+/>
 
 <PageLayout fullScreen maxWidth="5xl">
 	{#if !validId || list.notFound}

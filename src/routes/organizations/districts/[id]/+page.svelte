@@ -9,6 +9,7 @@
 	import { language } from '$lib/stores/language.svelte';
 	import { getTranslation } from '$lib/translations';
 	import { RatingsService } from '$lib/api';
+	import PageHead from '$lib/components/layout/PageHead.svelte';
 
 	const organizations = getOrganizationsState();
 	const service = new RatingsService();
@@ -22,7 +23,10 @@
 	let org = $derived(t.pages.organizations);
 </script>
 
-<svelte:head><title>{district?.name ?? org.districts.title} — msvens chess</title></svelte:head>
+<PageHead
+	title={district?.name ?? org.districts.title}
+	description={district ? t.seo.district.replace('{district}', district.name) : undefined}
+/>
 
 {#if organizations.loading}
 	<div class="text-center text-gray-600 dark:text-gray-400">{org.loading}</div>

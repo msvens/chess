@@ -21,6 +21,7 @@
 	import type { FontMode } from '$lib/print/printStyle';
 	import { language } from '$lib/stores/language.svelte';
 	import { getTranslation } from '$lib/translations';
+	import PageHead from '$lib/components/layout/PageHead.svelte';
 
 	let data = $state<PrintData | null>(null);
 	let loading = $state(true);
@@ -89,6 +90,8 @@
 	// The URL names a group this tournament doesn't have: nothing would print.
 	let groupMissing = $derived(data != null && !findTournamentGroup(data.tournament, groupId));
 </script>
+
+<PageHead title={data?.tournament.name} noindex />
 
 <div class="px-4 pt-20 pb-10 print:p-0">
 	{#if loading}

@@ -4,7 +4,13 @@
 	import AboutSv from '$lib/components/about/AboutSv.svelte';
 	import { language } from '$lib/stores/language.svelte';
 	import { theme } from '$lib/stores/theme.svelte';
+	import PageHead from '$lib/components/layout/PageHead.svelte';
+	import { getTranslation } from '$lib/translations';
+
+	let t = $derived(getTranslation(language.current));
 </script>
+
+<PageHead title={t.footer.navigation.about} description={t.seo.about} />
 
 <PageLayout maxWidth="4xl">
 	<div class="bg-white p-8 pt-0 dark:bg-dark-bg">

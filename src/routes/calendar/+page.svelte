@@ -39,6 +39,7 @@
 	import { language } from '$lib/stores/language.svelte';
 	import { getTranslation } from '$lib/translations';
 	import { onMount } from 'svelte';
+	import PageHead from '$lib/components/layout/PageHead.svelte';
 
 	const service = new TournamentService();
 	const organizations = getOrganizationsState();
@@ -132,7 +133,7 @@
 	let districtCounts = $derived(countByDistrict(listed, districtOf));
 </script>
 
-<svelte:head><title>{cal.title} — msvens chess</title></svelte:head>
+<PageHead title={cal.title} description={cal.subtitle} />
 
 <PageLayout maxWidth="4xl">
 	<PageTitle title={cal.title} subtitle={cal.subtitle} />
