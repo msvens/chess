@@ -10,7 +10,7 @@ import {
 	buildWeekRow,
 	getEventDateBounds
 } from '$lib/utils/calendarLayout';
-import { playedDays, type CalendarEvent } from '$lib/utils/playedDays';
+import { datedDays, playedDays, type CalendarEvent } from '$lib/utils/playedDays';
 
 /** Minimal mock — only the fields the layout functions inspect. */
 function makeTournament(overrides: Partial<TournamentDto>): TournamentDto {
@@ -171,7 +171,7 @@ describe('packRow — single week row 2024-06-10..16', () => {
 	it('marks a >7-day event with no round dates on its start day only', () => {
 		const row = packRow(cells, [ev({ start: '2024-06-11', end: '2024-06-30' })]);
 		expect(row.segments).toHaveLength(1);
-		expect(row.segments[0]).toMatchObject({ marker: true, colOffset: 1, colSpan: 1 });
+		expect(row.segments[0]).toMatchObject({ marker: 'start', colOffset: 1, colSpan: 1 });
 	});
 
 	it('does not show such an event on a non-start row', () => {
@@ -307,5 +307,29 @@ describe('getEventDateBounds', () => {
 		])!;
 		expect(bounds.earliest).toEqual(new Date(2024, 5, 5));
 		expect(bounds.latest).toEqual(new Date(2024, 6, 9));
+	});
+});
+
+describe('start and end markers', () => {
+	const cells = buildWeekCells(WEEK_ANCHOR, toDayNumber(WEEK_ANCHOR));
+
+	it('marks a long tournament’s start and end as separate markers', () => {
+		// 2024-05-01 – 2024-06-13, in tournament-dates mode: the end falls on Thursday.
+		const row = packRow(cells, [
+			datedDays(makeTournament({ start: '2024-05-01', end: '2024-06-13' }))
+		]);
+		expect(row.segments).toHaveLength(1);
+		expect(row.segments[0]).toMatchObject({ marker: 'end', colOffset: 3, colSpan: 1 });
+	});
+
+	it('never joins a start and an end on consecutive days into a bar', () => {
+		const series = datedDays(
+			makeTournament({ type: TournamentType.GRAND_PRIX, start: '2024-06-12', end: '2024-06-13' })
+		);
+		const row = packRow(cells, [series]);
+		expect(row.segments.map((seg) => [seg.colOffset, seg.colSpan, seg.marker])).toEqual([
+			[2, 1, 'start'],
+			[3, 1, 'end']
+		]);
 	});
 });

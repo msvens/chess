@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import type { DistrictDTO, TournamentDto } from '$lib/api';
 import { ORGANIZATIONS_STATE_KEY, OrganizationsState } from '$lib/stores/organizations.svelte';
 import { buildMonthRows, toDayNumber } from '$lib/utils/calendarLayout';
-import { playedDays } from '$lib/utils/playedDays';
+import { datedDays, playedDays } from '$lib/utils/playedDays';
 import MonthView from './MonthView.svelte';
 
 const INDIVIDUAL = 3;
@@ -229,5 +229,38 @@ describe('a league on the days it plays', () => {
 		expect(
 			within(screen.getByRole('dialog')).getByRole('link', { name: 'Grupp A' })
 		).toBeInTheDocument();
+	});
+});
+
+describe('tournament dates: start and end markers', () => {
+	/** Like `setup`, but in tournament-dates mode. */
+	function setupDated(tournaments: TournamentDto[]) {
+		const events = tournaments.map(datedDays);
+		render(MonthView, {
+			props: { rows: buildMonthRows(ANCHOR, events, TODAY), events, weekdayLabels: WEEKDAYS },
+			context: new Map([[ORGANIZATIONS_STATE_KEY, new TestOrganizations()]])
+		});
+		return userEvent.setup();
+	}
+
+	it('marks a long tournament’s start with • and its end with ◦', () => {
+		setupDated([event({ name: 'KM', start: '2025-06-02', end: '2025-06-26' })]);
+		const [start, end] = screen.getAllByRole('button', { name: /^.?KM/ });
+		expect(start).toHaveTextContent('•');
+		expect(start.title).toContain('Startdatum');
+		expect(end).toHaveTextContent('◦');
+		expect(end.title).toContain('Slutdatum');
+	});
+
+	it('says in the popover that the tournament starts that day', async () => {
+		const user = setupDated([event({ name: 'KM', start: '2025-06-02', end: '2025-06-26' })]);
+		await user.click(screen.getByRole('button', { name: /1 evenemang den .*2 juni/ }));
+		expect(screen.getByRole('dialog')).toHaveTextContent('startar idag');
+	});
+
+	it('says in the popover that the tournament ends that day', async () => {
+		const user = setupDated([event({ name: 'KM', start: '2025-06-02', end: '2025-06-26' })]);
+		await user.click(screen.getByRole('button', { name: /1 evenemang den .*26 juni/ }));
+		expect(screen.getByRole('dialog')).toHaveTextContent('slutar idag');
 	});
 });

@@ -44,7 +44,8 @@
 	let title = $derived(
 		[
 			segment.tournament.name,
-			segment.marker ? `(${cal.startDateOnly})` : '',
+			segment.marker === 'start' ? `(${cal.markerStart})` : '',
+			segment.marker === 'end' ? `(${cal.markerEnd})` : '',
 			suspect ? `— ${cal.reversedDates}` : ''
 		]
 			.filter(Boolean)
@@ -64,7 +65,8 @@
 
 {#snippet content()}
 	{#if segment.continuesLeft}<span aria-hidden="true" class="shrink-0">◀</span>{/if}
-	{#if segment.marker}<span aria-hidden="true" class="shrink-0 opacity-70">•</span>{/if}
+	{#if segment.marker === 'start'}<span aria-hidden="true" class="shrink-0 opacity-70">•</span>{/if}
+	{#if segment.marker === 'end'}<span aria-hidden="true" class="shrink-0 opacity-70">◦</span>{/if}
 	{#if suspect}
 		<span class="shrink-0 text-amber-600 dark:text-amber-400" aria-hidden="true">⚠</span>
 	{/if}
