@@ -1,14 +1,19 @@
 /**
- * A group's name as a list of groups shows it: with its class when the event
- * has several (`Elit, Grupp 1`), alone when it has one — a one-class event
- * repeats itself if the class name is shown too.
+ * A group's name as a list of groups shows it, by the results page's rule
+ * (a class picker when there are several classes, a group picker only when the
+ * class has several groups):
+ * - one class: the group (`Grupp A`), since the class would repeat the event;
+ * - several classes, one group in this class: the class (`Div 2`), since its
+ *   lone group is usually named like it and Lag-DM would read `Div 2, Div 2`;
+ * - several classes, several groups in this class: both (`Elit, Grupp 1`).
  */
 import { findTournamentGroup, type TournamentClassGroupDto, type TournamentDto } from '$lib/api';
 
 export function groupLabel(tournament: TournamentDto, group: TournamentClassGroupDto): string {
 	const found = findTournamentGroup(tournament, group.id);
 	const className = found?.hasMultipleClasses ? found.parentClass.className : '';
-	return className ? `${className}, ${group.name}` : group.name;
+	if (!className) return group.name;
+	return (found?.parentClass.groups?.length ?? 0) > 1 ? `${className}, ${group.name}` : className;
 }
 
 function countGroups(classes: TournamentDto['rootClasses'] | null | undefined): number {

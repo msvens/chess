@@ -44,14 +44,15 @@ describe('today’s tournaments', () => {
 		expect(screen.getByText('Stockholm')).toBeInTheDocument();
 	});
 
-	it('names the class only when the event has more than one', () => {
-		const event = withClasses(5, 'Rilton Cup', [
-			['Elit', 'Grupp 1'],
-			['Open', 'Grupp 1']
+	it('names a one-group class by the class alone, as the results page does', () => {
+		// Lag-DM's shape: each division a class whose one group is named like it.
+		const event = withClasses(5, 'Lag-DM', [
+			['Div 1', 'Div 1'],
+			['Div 2', 'Div 2']
 		]);
 		setup({ tournaments: [event] });
-		expect(screen.getByRole('link', { name: 'Elit, Grupp 1' })).toBeInTheDocument();
-		expect(screen.getByRole('link', { name: 'Open, Grupp 1' })).toBeInTheDocument();
+		expect(screen.getByRole('link', { name: 'Div 1' })).toBeInTheDocument();
+		expect(screen.getByRole('link', { name: 'Div 2' })).toBeInTheDocument();
 	});
 
 	it('lists up to three groups one per line, with no heading to open', () => {
@@ -61,7 +62,7 @@ describe('today’s tournaments', () => {
 			['Div 6', 'Grupp 1']
 		]);
 		setup({ tournaments: [event] });
-		expect(screen.getByRole('link', { name: 'Div 6, Grupp 1' })).toBeInTheDocument();
+		expect(screen.getByRole('link', { name: 'Div 6' })).toBeInTheDocument();
 		expect(screen.queryByText(/spelar idag/)).toBeNull();
 		expect(document.querySelector('details')).toBeNull();
 	});
@@ -82,7 +83,7 @@ describe('today’s tournaments', () => {
 
 		await userEvent.setup().click(summary);
 		expect(details.open).toBe(true);
-		expect(within(details).getByRole('link', { name: 'Div 4, Grupp 1' })).toHaveAttribute(
+		expect(within(details).getByRole('link', { name: 'Div 4' })).toHaveAttribute(
 			'href',
 			'/results/5/53'
 		);
