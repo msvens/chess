@@ -175,7 +175,14 @@
 					{#if isOpen}
 						<DayEventsPopover
 							date={popoverDate}
-							events={[{ tournament, groups: segment.groups }]}
+							events={[
+								{
+									tournament,
+									groups: segment.groups,
+									starts: segment.marker === 'start',
+									ends: segment.marker === 'end'
+								}
+							]}
 							onClose={() => (open = null)}
 						/>
 					{/if}

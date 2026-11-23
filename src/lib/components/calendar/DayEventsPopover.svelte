@@ -89,7 +89,7 @@
 	</div>
 
 	<ul class="flex max-h-80 flex-col gap-3 overflow-y-auto">
-		{#each events as { tournament, groups } (tournament.id)}
+		{#each events as { tournament, groups, starts, ends } (tournament.id)}
 			<li class="flex gap-2">
 				<span
 					aria-hidden="true"
@@ -99,6 +99,11 @@
 					<Link href="/results/{tournament.id}" class="block truncate text-sm font-medium">
 						{tournament.name}
 					</Link>
+					{#if starts}
+						<p class="text-xs text-gray-600 dark:text-gray-400">• {details.startsToday}</p>
+					{:else if ends}
+						<p class="text-xs text-gray-600 dark:text-gray-400">◦ {details.endsToday}</p>
+					{/if}
 					<dl class="mt-1 space-y-0.5 text-xs text-gray-600 dark:text-gray-400">
 						<div class="flex gap-1">
 							<dt class="shrink-0 font-medium">{details.organizer}:</dt>
