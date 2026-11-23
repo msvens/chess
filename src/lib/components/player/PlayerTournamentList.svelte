@@ -45,12 +45,6 @@
 
 	const scoreHref = (row: TournamentParticipation) =>
 		memberId === null ? groupHref(row) : `${groupHref(row)}/${memberId}`;
-
-	/** A one-class event repeats itself if the class name is shown too. */
-	const classLine = (row: TournamentParticipation) =>
-		row.hasMultipleClasses && row.className
-			? `${row.className}, ${row.groupName}`
-			: row.groupName || '';
 </script>
 
 {#if loading}
@@ -88,7 +82,7 @@
 							<Link href={groupHref(row)} color="inherit">{row.tournament.name}</Link>
 						</h3>
 						<div class="flex flex-wrap gap-x-4 gap-y-0.5 text-xs text-gray-600 dark:text-gray-400">
-							{#if classLine(row)}<span>{classLine(row)}</span>{/if}
+							{#if row.groupLabel}<span>{row.groupLabel}</span>{/if}
 							<span>{formatApiDayRange(row.groupStartDate, row.groupEndDate, locale)}</span>
 							<!-- Desktop only: on a phone the city pushes many rows to a third line. -->
 							{#if row.tournament.city}<span class="hidden md:inline">{row.tournament.city}</span

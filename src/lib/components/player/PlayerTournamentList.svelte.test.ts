@@ -11,11 +11,9 @@ const row = (over: Partial<TournamentParticipation> = {}): TournamentParticipati
 	groupId: 17040,
 	tournament: tournament(),
 	gameCount: 9,
-	groupName: 'Grupp A',
+	groupLabel: 'Grupp A',
 	groupStartDate: '2025-06-27',
 	groupEndDate: '2025-07-06',
-	className: 'Elit',
-	hasMultipleClasses: false,
 	isTeam: false,
 	wins: 5,
 	draws: 3,
@@ -81,15 +79,9 @@ describe('a history row', () => {
 		expect(screen.queryByText(/Poäng:/)).toBeNull();
 	});
 
-	it('names the class only when the event has more than one', () => {
-		render(PlayerTournamentList, { tournaments: [row({ hasMultipleClasses: true })] });
+	it('names the group by its label', () => {
+		render(PlayerTournamentList, { tournaments: [row({ groupLabel: 'Elit, Grupp A' })] });
 		expect(screen.getByText('Elit, Grupp A')).toBeInTheDocument();
-	});
-
-	it('shows the group alone when the class would add nothing', () => {
-		render(PlayerTournamentList, { tournaments: [row()] });
-		expect(screen.getByText('Grupp A')).toBeInTheDocument();
-		expect(screen.queryByText(/Elit,/)).toBeNull();
 	});
 });
 

@@ -43,8 +43,8 @@ const groupA: TestGroup = {
 };
 
 /**
- * A tournament with one class holding one group, which is the ordinary shape.
- * `hasMultipleClasses` is false for it, per the SDK's rule.
+ * A tournament with one class holding one group, which is the ordinary shape:
+ * the group's own name labels it.
  */
 const tournament = (
 	over: Partial<TournamentDto> = {},
@@ -156,10 +156,8 @@ describe('building the history list', () => {
 
 		expect(row).toMatchObject({
 			groupId: 10,
-			groupName: 'Grupp A',
+			groupLabel: 'Grupp A',
 			groupStartDate: '2025-12-27',
-			className: 'Elit',
-			hasMultipleClasses: false,
 			isTeam: false,
 			gameCount: 1,
 			wins: 1
@@ -228,14 +226,14 @@ describe('building the history list', () => {
 		expect(rows).toEqual([]);
 	});
 
-	it('shows the class name only when the event has more than one class', () => {
+	it('labels the group the way lists of groups do', () => {
 		const t = tournament({}, [
 			cls('Elit', [{ id: 10, name: 'A', start: '2025-01-01', end: '2025-01-02' }]),
 			cls('Motion', [{ id: 20, name: 'B', start: '2025-01-01', end: '2025-01-02' }])
 		]);
 		const [row] = buildParticipations([game({ groupiD: 10 })], [], ME, lookup({ 10: t }));
-		expect(row.hasMultipleClasses).toBe(true);
-		expect(row.className).toBe('Elit');
+		// Several classes, one group each: the class names it, as on the results page.
+		expect(row.groupLabel).toBe('Elit');
 	});
 });
 

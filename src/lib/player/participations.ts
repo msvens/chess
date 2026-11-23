@@ -21,18 +21,17 @@ import {
 	type PlayerInfoDto,
 	type TournamentDto
 } from '$lib/api';
+import { groupLabel } from '$lib/components/tournaments/groupLabel';
 
 /** One group this player took part in, with their record in it. */
 export interface TournamentParticipation {
 	groupId: number;
 	tournament: TournamentDto;
 	gameCount: number;
-	groupName: string;
+	/** The group as lists of groups name it: `Grupp A`, `Div 2` or `Elit, Grupp 1`. */
+	groupLabel: string;
 	groupStartDate: string;
 	groupEndDate: string;
-	className: string;
-	/** Whether the class name is worth showing — a one-class event repeats itself. */
-	hasMultipleClasses: boolean;
 	isTeam: boolean;
 	wins: number;
 	draws: number;
@@ -225,11 +224,9 @@ function participation(
 		groupId,
 		tournament,
 		gameCount: record.gameCount,
-		groupName: found?.group.name || '',
+		groupLabel: found ? groupLabel(tournament, found.group) : '',
 		groupStartDate: found?.group.start || tournament.start,
 		groupEndDate: found?.group.end || tournament.end,
-		className: found?.parentClass.className || '',
-		hasMultipleClasses: found?.hasMultipleClasses ?? false,
 		isTeam: isTeamTournament(tournament.type),
 		wins: record.wins,
 		draws: record.draws,
