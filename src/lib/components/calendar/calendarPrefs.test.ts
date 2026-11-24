@@ -54,9 +54,9 @@ describe('the guards', () => {
 		expect(isCalendarTab('')).toBe(false);
 	});
 
-	it('recognises exactly the two views', () => {
-		expect(['week', 'month'].every(isCalendarView)).toBe(true);
-		expect(isCalendarView('day')).toBe(false);
+	it('recognises exactly the three views', () => {
+		expect(['day', 'week', 'month'].every(isCalendarView)).toBe(true);
+		expect(isCalendarView('year')).toBe(false);
 		expect(isCalendarView(null)).toBe(false);
 	});
 });

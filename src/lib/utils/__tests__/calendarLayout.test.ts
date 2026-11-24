@@ -7,6 +7,7 @@ import {
 	buildMonthMatrix,
 	buildWeekCells,
 	packRow,
+	buildDayRow,
 	buildWeekRow,
 	getEventDateBounds
 } from '$lib/utils/calendarLayout';
@@ -241,6 +242,26 @@ describe('buildWeekRow', () => {
 	it('flags an event running past the end of the week', () => {
 		const row = buildWeekRow(WEEK_ANCHOR, [ev({ start: '2024-06-14', end: '2024-06-20' })], today);
 		expect(row.segments[0].continuesRight).toBe(true);
+	});
+});
+
+describe('buildDayRow', () => {
+	const today = toDayNumber(WEEK_ANCHOR);
+
+	it('is one cell, the anchor day', () => {
+		const row = buildDayRow(WEEK_ANCHOR, [], today);
+		expect(row.cells).toHaveLength(1);
+		expect(row.cells[0]).toMatchObject({ dayNumber: today, isToday: true });
+	});
+
+	it('says whether an event runs on from the day before and into the next', () => {
+		const row = buildDayRow(WEEK_ANCHOR, [ev({ start: '2024-06-11', end: '2024-06-13' })], today);
+		expect(row.segments[0]).toMatchObject({ continuesLeft: true, continuesRight: true });
+	});
+
+	it('leaves out what is not played that day', () => {
+		const row = buildDayRow(WEEK_ANCHOR, [league({}, [[10, ['2024-06-11', '2024-06-13']]])], today);
+		expect(row.segments).toEqual([]);
 	});
 });
 

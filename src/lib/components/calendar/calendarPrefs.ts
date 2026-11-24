@@ -1,6 +1,6 @@
 /**
  * localStorage-backed preferences for the calendar page: the active tab, the
- * calendar's own week/month view, and whether it places tournaments on their
+ * calendar's own day/week/month view, and whether it places tournaments on their
  * game days or across their dates. Ports `components/calendar/calendarPrefs.ts`.
  *
  * Not the period last looked at, which the Next app also stored: the calendar
@@ -18,12 +18,12 @@ const VIEW_KEY = 'calendar-view-mode';
 const DAYS_KEY = 'calendar-day-mode';
 
 export type CalendarTab = 'calendar' | 'list' | 'map';
-export type CalendarViewMode = 'week' | 'month';
+export type CalendarViewMode = 'day' | 'week' | 'month';
 /** `played`: on the days rounds are played. `dates`: across the tournament's dates. */
 export type CalendarDayMode = 'played' | 'dates';
 
 export const CALENDAR_TABS: readonly CalendarTab[] = ['calendar', 'list', 'map'];
-export const CALENDAR_VIEWS: readonly CalendarViewMode[] = ['week', 'month'];
+export const CALENDAR_VIEWS: readonly CalendarViewMode[] = ['day', 'week', 'month'];
 export const CALENDAR_DAY_MODES: readonly CalendarDayMode[] = ['played', 'dates'];
 
 export function isCalendarTab(value: string | null | undefined): value is CalendarTab {
