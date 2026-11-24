@@ -93,7 +93,7 @@
 	</div>
 
 	<h2
-		class="order-last w-full truncate text-center text-sm font-semibold text-gray-900 capitalize sm:order-none sm:w-auto sm:flex-1 sm:text-base dark:text-gray-100"
+		class="order-last w-full truncate text-center text-sm font-semibold text-gray-900 first-letter:uppercase sm:order-none sm:w-auto sm:flex-1 sm:text-base dark:text-gray-100"
 	>
 		{title}
 	</h2>
@@ -108,6 +108,7 @@
 			aria-label={cal.viewLabel}
 			class="rounded-md border border-gray-200 bg-white px-2 py-1 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
 		>
+			<option value="day">{cal.views.day}</option>
 			<option value="week">{cal.views.week}</option>
 			<option value="month">{cal.views.month}</option>
 		</select>

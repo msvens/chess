@@ -227,6 +227,19 @@ export function buildMonthRows(
 	return buildMonthMatrix(anchor, todayDayNumber).map((cells) => packRow(cells, events));
 }
 
+/**
+ * One day as a row of one cell: a day's events as segments, so they keep
+ * whether they continue from the day before or into the next, their marker and
+ * their groups.
+ */
+export function buildDayRow(
+	anchor: Date,
+	events: CalendarEvent[],
+	todayDayNumber: number
+): PackedRow {
+	return packRow([makeCell(anchor, anchor.getMonth(), todayDayNumber)], events);
+}
+
 /** Build the single packed row for a week view. */
 export function buildWeekRow(
 	anchor: Date,

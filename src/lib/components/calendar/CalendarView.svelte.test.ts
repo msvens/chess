@@ -200,3 +200,78 @@ describe('game days or tournament dates', () => {
 		expect(dayButton(/evenemang den .*10 mars/)).toBeNull();
 	});
 });
+
+describe('the agenda layout', () => {
+	const AGENDA = { layouts: { mobile: 'agenda', desktop: 'agenda' } };
+	const pick = (name: RegExp) => screen.getByRole('button', { name });
+
+	it('opens on today, with today’s events listed below', () => {
+		setup([event({ start: '2026-03-15', end: '2026-03-15' })], AGENDA);
+		expect(pick(/15 mars/)).toHaveAttribute('aria-pressed', 'true');
+		expect(screen.getByRole('button', { name: 'Rilton Cup' })).toBeInTheDocument();
+	});
+
+	it('lists the day you pick', async () => {
+		const user = setup([event()], AGENDA);
+		expect(screen.getByText('Inga tävlingar denna dag')).toBeInTheDocument();
+
+		await user.click(pick(/evenemang den .*11 mars/));
+		expect(screen.getByText(/onsdag 11 mars/i)).toBeInTheDocument();
+		expect(screen.getByRole('button', { name: 'Rilton Cup' })).toBeInTheDocument();
+	});
+
+	it('moves a month to its first day', async () => {
+		const user = setup([event({ start: '2026-04-20', end: '2026-04-20' })], AGENDA);
+		await user.click(button('Nästa'));
+		expect(title()).toMatch(/april 2026/);
+		expect(pick(/ 1 april/)).toHaveAttribute('aria-pressed', 'true');
+	});
+
+	it('moves a week strip seven days at a time', async () => {
+		localStorage.setItem('calendar-view-mode', 'week');
+		const user = setup([event({ start: '2026-03-22', end: '2026-03-22' })], AGENDA);
+		expect(screen.getAllByRole('button', { pressed: false })).toHaveLength(6);
+
+		await user.click(button('Nästa'));
+		expect(pick(/22 mars/)).toHaveAttribute('aria-pressed', 'true');
+	});
+
+	it('leaves the grid to the other breakpoint', () => {
+		setup([event()], { layouts: { mobile: 'agenda', desktop: 'grid' } });
+		// jsdom matches no media query, so this is the desktop: the grid, no picker.
+		expect(screen.queryByRole('button', { pressed: true })).toBeNull();
+	});
+});
+
+describe('the day view', () => {
+	const toDay = async (user: ReturnType<typeof userEvent.setup>) =>
+		user.selectOptions(screen.getByRole('combobox', { name: 'Vy' }), 'day');
+
+	it('shows one day, named in full', async () => {
+		const user = setup([event({ start: '2026-03-15', end: '2026-03-15' })]);
+		await toDay(user);
+		expect(title()).toMatch(/söndag 15 mars 2026/i);
+		expect(screen.getByRole('button', { name: 'Rilton Cup' })).toBeInTheDocument();
+		expect(localStorage.getItem('calendar-view-mode')).toBe('day');
+	});
+
+	it('steps a day at a time, up to the last event', async () => {
+		const user = setup([event({ start: '2026-03-10', end: '2026-03-16' })]);
+		await toDay(user);
+		await user.click(button('Nästa'));
+		expect(title()).toMatch(/16 mars/);
+		expect(button('Nästa')).toBeDisabled();
+
+		await user.click(button('Föregående'));
+		expect(title()).toMatch(/15 mars/);
+	});
+
+	it('is the same in the agenda layout: no picker', async () => {
+		localStorage.setItem('calendar-view-mode', 'day');
+		setup([event({ start: '2026-03-15', end: '2026-03-15' })], {
+			layouts: { mobile: 'agenda', desktop: 'agenda' }
+		});
+		expect(screen.queryByRole('button', { pressed: true })).toBeNull();
+		expect(screen.getByRole('button', { name: 'Rilton Cup' })).toBeInTheDocument();
+	});
+});

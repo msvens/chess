@@ -269,6 +269,7 @@ export interface Translations {
 				map: string;
 			};
 			views: {
+				day: string;
 				week: string;
 				month: string;
 			};
@@ -302,6 +303,10 @@ export interface Translations {
 				dates: string;
 			};
 			dayEvents: string;
+			/** A day with nothing on it, in the day view and below the agenda picker. */
+			emptyDay: string;
+			/** Folds a tournament's groups away on a day with many playing. */
+			groupsPlaying: string;
 			continues: string;
 			dayDetails: {
 				organizer: string;
@@ -1133,6 +1138,7 @@ const translations: Record<Language, Translations> = {
 					map: 'Map'
 				},
 				views: {
+					day: 'Day',
 					week: 'Week',
 					month: 'Month'
 				},
@@ -1163,6 +1169,8 @@ const translations: Record<Language, Translations> = {
 					dates: 'Tournament dates'
 				},
 				dayEvents: '{count} events on {date}',
+				emptyDay: 'No tournaments this day',
+				groupsPlaying: '{count} groups playing',
 				continues: 'continues',
 				dayDetails: {
 					organizer: 'Organizer',
@@ -1967,6 +1975,7 @@ const translations: Record<Language, Translations> = {
 					map: 'Karta'
 				},
 				views: {
+					day: 'Dag',
 					week: 'Vecka',
 					month: 'Månad'
 				},
@@ -1997,6 +2006,8 @@ const translations: Record<Language, Translations> = {
 					dates: 'Turneringsdatum'
 				},
 				dayEvents: '{count} evenemang den {date}',
+				emptyDay: 'Inga tävlingar denna dag',
+				groupsPlaying: '{count} grupper spelar',
 				continues: 'fortsätter',
 				dayDetails: {
 					organizer: 'Arrangör',
