@@ -247,8 +247,6 @@ export interface Translations {
 			subtitle: string;
 			loadError: string;
 			empty: string;
-			/** The fold-out line over a tournament's many groups; `{count}` is the number. */
-			groupsPlaying: string;
 		};
 		calendar: {
 			title: string;
@@ -1116,8 +1114,7 @@ const translations: Record<Language, Translations> = {
 				title: 'Today',
 				subtitle: 'Tournaments being played today.',
 				loadError: 'Failed to load tournaments',
-				empty: 'No tournaments found for today.',
-				groupsPlaying: '{count} groups playing today'
+				empty: 'No tournaments found for today.'
 			},
 			calendar: {
 				title: 'Tournament Calendar',
@@ -1952,8 +1949,7 @@ const translations: Record<Language, Translations> = {
 				title: 'Idag',
 				subtitle: 'Turneringar som spelas idag.',
 				loadError: 'Kunde inte ladda turneringar',
-				empty: 'Inga turneringar hittades för idag.',
-				groupsPlaying: '{count} grupper spelar idag'
+				empty: 'Inga turneringar hittades för idag.'
 			},
 			calendar: {
 				title: 'Turneringskalender',

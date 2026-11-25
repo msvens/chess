@@ -26,7 +26,6 @@
 	import {
 		addDays,
 		addMonths,
-		buildDayRow,
 		buildMonthMatrix,
 		buildMonthRows,
 		buildWeekCells,
@@ -34,7 +33,7 @@
 		getEventDateBounds,
 		toDayNumber
 	} from '$lib/utils/calendarLayout';
-	import { datedDays, playedDays } from '$lib/utils/playedDays';
+	import { datedDays, playedDays, playedOn } from '$lib/utils/playedDays';
 	import { getAllTournamentTypes } from '$lib/utils/tournamentFilters';
 	import { language } from '$lib/stores/language.svelte';
 	import { formatDayRange } from '$lib/dateFormat';
@@ -125,7 +124,8 @@
 				: [buildWeekCells(anchor, todayDayNumber)]
 			: []
 	);
-	let dayRow = $derived(grid ? null : buildDayRow(anchor, events, todayDayNumber));
+	/** The anchor day's entries, for the day view and the list below the agenda picker. */
+	let dayEntries = $derived(grid ? null : playedOn(events, toDayNumber(anchor)));
 
 	let dayFormat = $derived(
 		new Intl.DateTimeFormat(locale, {
@@ -182,7 +182,7 @@
 		</div>
 	{:else if error}
 		<div class="py-12 text-center text-red-600 dark:text-red-400">{error}</div>
-	{:else if agenda && dayRow}
+	{:else if agenda && dayEntries}
 		<AgendaPicker
 			rows={pickerRows}
 			{events}
@@ -195,9 +195,9 @@
 		>
 			{dayFormat.format(anchor)}
 		</p>
-		<DayView row={dayRow} />
-	{:else if dayRow}
-		<DayView row={dayRow} />
+		<DayView entries={dayEntries} />
+	{:else if dayEntries}
+		<DayView entries={dayEntries} />
 	{:else if view === 'month'}
 		<MonthView rows={monthRows} {events} {weekdayLabels} />
 	{:else if weekRow}

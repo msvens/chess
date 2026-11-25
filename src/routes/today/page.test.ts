@@ -16,7 +16,16 @@ const INDIVIDUAL = 3;
 const GRAND_PRIX = 7;
 
 const tournament = (id: number, name: string, type = INDIVIDUAL, orgNumber = 1) =>
-	({ id, name, type, orgType: 1, orgNumber, groupsToday: [] }) as unknown as TournamentToday;
+	({
+		id,
+		name,
+		type,
+		start: '2026-11-25',
+		end: '2026-11-25',
+		orgType: 1,
+		orgNumber,
+		groupsToday: []
+	}) as unknown as TournamentToday;
 
 /** Organizers resolved to districts from a table, as in the calendar's page test. */
 class TestOrganizations extends OrganizationsState {
@@ -52,14 +61,18 @@ const districtTrigger = () => screen.getByRole('button', { expanded: false });
 beforeEach(() => getTournamentsToday.mockReset());
 
 describe('the today page', () => {
-	it('lists what is being played, without Grand Prix series', async () => {
+	it('lists what is on, a Grand Prix series starting today included, as the calendar does', async () => {
 		getTournamentsToday.mockResolvedValue({
 			status: 200,
-			data: [tournament(1, 'Farsta JGP'), tournament(2, 'Grand Prix-serien', GRAND_PRIX)]
+			data: [
+				tournament(1, 'Farsta JGP'),
+				{ ...tournament(2, 'Grand Prix-serien', GRAND_PRIX), marker: 'starts' }
+			]
 		});
 		setup();
 		expect(await screen.findByRole('link', { name: 'Farsta JGP' })).toBeInTheDocument();
-		expect(screen.queryByText('Grand Prix-serien')).toBeNull();
+		const series = screen.getByRole('link', { name: 'Grand Prix-serien' }).closest('li')!;
+		expect(series).toHaveTextContent('• startar idag');
 	});
 
 	it('shows every district by default, and narrows to the one picked', async () => {

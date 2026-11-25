@@ -13,12 +13,7 @@
 		districtsOf,
 		filterByDistrict
 	} from '$lib/components/calendar/tournamentDistricts';
-	import {
-		getTournamentsToday,
-		isGrandPrix,
-		TournamentService,
-		type TournamentToday
-	} from '$lib/api';
+	import { getTournamentsToday, TournamentService, type TournamentToday } from '$lib/api';
 	import { getOrganizationsState } from '$lib/stores/organizations.svelte';
 	import { language } from '$lib/stores/language.svelte';
 	import { getTranslation } from '$lib/translations';
@@ -46,7 +41,9 @@
 	let shown = $derived(
 		filterByDistrict(tournaments, districtOf, districtId).map((tournament) => ({
 			tournament,
-			groups: tournament.groupsToday.map(({ group }) => group)
+			groups: tournament.groupsToday.map(({ group }) => group),
+			starts: tournament.marker === 'starts',
+			ends: tournament.marker === 'ends'
 		}))
 	);
 	let districtCounts = $derived(countByDistrict(tournaments, districtOf));
@@ -59,8 +56,9 @@
 			if (cancelled) return;
 
 			if (response.status === 200 && response.data) {
-				// A series has no results, and its round dates don't reflect play.
-				tournaments = response.data.filter((tournament) => !isGrandPrix(tournament.type));
+				// Grand Prix series included: the SDK only lists one on its start or
+				// end, as a marker, the same as the calendar shows it.
+				tournaments = response.data;
 			} else {
 				failed = true;
 			}

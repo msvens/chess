@@ -43,7 +43,8 @@ function setup(tournaments: TournamentDto[], props: Record<string, unknown> = {}
 	return userEvent.setup();
 }
 
-const title = () => screen.getByRole('heading').textContent?.trim();
+/** The nav's title; the day list's tournament names are headings too, one level down. */
+const title = () => screen.getByRole('heading', { level: 2 }).textContent?.trim();
 const button = (name: string) => screen.getByRole('button', { name });
 
 // "Today" is mid-March 2026 for every test; only Date is faked, so user-event's

@@ -7,7 +7,6 @@ import {
 	buildMonthMatrix,
 	buildWeekCells,
 	packRow,
-	buildDayRow,
 	buildWeekRow,
 	getEventDateBounds
 } from '$lib/utils/calendarLayout';
@@ -245,26 +244,6 @@ describe('buildWeekRow', () => {
 	});
 });
 
-describe('buildDayRow', () => {
-	const today = toDayNumber(WEEK_ANCHOR);
-
-	it('is one cell, the anchor day', () => {
-		const row = buildDayRow(WEEK_ANCHOR, [], today);
-		expect(row.cells).toHaveLength(1);
-		expect(row.cells[0]).toMatchObject({ dayNumber: today, isToday: true });
-	});
-
-	it('says whether an event runs on from the day before and into the next', () => {
-		const row = buildDayRow(WEEK_ANCHOR, [ev({ start: '2024-06-11', end: '2024-06-13' })], today);
-		expect(row.segments[0]).toMatchObject({ continuesLeft: true, continuesRight: true });
-	});
-
-	it('leaves out what is not played that day', () => {
-		const row = buildDayRow(WEEK_ANCHOR, [league({}, [[10, ['2024-06-11', '2024-06-13']]])], today);
-		expect(row.segments).toEqual([]);
-	});
-});
-
 describe('a tournament on the days it is played', () => {
 	const cells = buildWeekCells(WEEK_ANCHOR, toDayNumber(WEEK_ANCHOR));
 
@@ -390,13 +369,13 @@ describe('the order within a row', () => {
 		]);
 	});
 
-	it('draws tournaments across several days first, then single days', () => {
+	it('places a bar by its name too, with no band for tournaments across several days', () => {
 		const row = packRow(cells, [
 			named(1, 'Allsvenskan träff', '2024-06-12'),
 			named(2, 'Västerås Open', '2024-06-11', '2024-06-13'),
 			named(3, 'Bromma Blixt', '2024-06-12')
 		]);
-		expect(onDay(row, 2)).toEqual(['Västerås Open', 'Allsvenskan träff', 'Bromma Blixt']);
+		expect(onDay(row, 2)).toEqual(['Allsvenskan träff', 'Bromma Blixt', 'Västerås Open']);
 	});
 
 	it('keeps a bar in one lane across the row', () => {
