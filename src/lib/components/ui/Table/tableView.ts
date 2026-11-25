@@ -19,7 +19,11 @@ export function sortRows<T>(rows: T[], columns: TableColumn<T>[], sort: TableSor
 	const column = columns.find((c) => c.id === sort.columnId);
 	if (!column?.sortValue) return rows;
 	const get = column.sortValue;
+	const { compare } = column;
 	// Copy before sorting — the caller's array is not ours to reorder.
+	if (compare) {
+		return [...rows].sort((a, b) => (sort.direction === 'asc' ? compare(a, b) : compare(b, a)));
+	}
 	return [...rows].sort((a, b) => {
 		const av = get(a);
 		const bv = get(b);

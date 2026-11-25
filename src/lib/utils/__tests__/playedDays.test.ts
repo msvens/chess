@@ -136,6 +136,22 @@ describe('playedOn', () => {
 	});
 });
 
+describe('playedOn, in order', () => {
+	it('lists a day A–Z, whatever order the coming list had', () => {
+		const on = (id: number, name: string) =>
+			playedDays(tournament({ id, name, start: '2026-11-17', end: '2026-11-17' }));
+		const entries = playedOn(
+			[on(1, 'Örebro Open'), on(2, 'Alingsås Snabb'), on(3, 'Zebra Cup')],
+			day('2026-11-17')
+		);
+		expect(entries.map((e) => e.tournament.name)).toEqual([
+			'Alingsås Snabb',
+			'Zebra Cup',
+			'Örebro Open'
+		]);
+	});
+});
+
 describe('datedDays, the tournament-dates mode', () => {
 	it('spans a short tournament across all its dates, rounds or not', () => {
 		const event = datedDays(

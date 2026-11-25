@@ -9,7 +9,7 @@
 	import Link from '$lib/components/ui/Link.svelte';
 	import { groupLabel } from '$lib/components/tournaments/groupLabel';
 	import type { PlayedEntry } from '$lib/utils/playedDays';
-	import { localeOf } from '$lib/i18n';
+	import { byName } from '$lib/utils/nameOrder';
 	import { getOrganizationsState } from '$lib/stores/organizations.svelte';
 	import { language } from '$lib/stores/language.svelte';
 	import { getTranslation } from '$lib/translations';
@@ -30,11 +30,7 @@
 	let translation = $derived(getTranslation(language.current));
 	let t = $derived(translation.pages.today);
 
-	let sorted = $derived(
-		[...tournaments].sort((a, b) =>
-			a.tournament.name.localeCompare(b.tournament.name, localeOf(language.current))
-		)
-	);
+	let sorted = $derived([...tournaments].sort((a, b) => byName(a.tournament, b.tournament)));
 </script>
 
 {#snippet groupList(tournament: PlayedEntry['tournament'], groups: PlayedEntry['groups'])}

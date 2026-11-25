@@ -58,6 +58,12 @@ export interface TableColumn<T> {
 	 * Presence of this is what marks a column sortable.
 	 */
 	sortValue?: (row: T) => string | number;
+	/**
+	 * Orders two rows ascending, in place of comparing their `sortValue`s: for
+	 * text that plain `<` gets wrong, such as Swedish names (Ä before Å).
+	 * `sortValue` still marks the column sortable.
+	 */
+	compare?: (a: T, b: T) => number;
 }
 
 export interface PaginationLabels {

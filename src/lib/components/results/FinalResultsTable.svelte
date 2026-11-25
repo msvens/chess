@@ -19,6 +19,7 @@
 	import { formatQualityPoints } from '$lib/results/formatResult';
 	import { language } from '$lib/stores/language.svelte';
 	import { getTranslation } from '$lib/translations';
+	import { compareNames } from '$lib/utils/nameOrder';
 
 	interface FinalResultsTableProps {
 		results: TournamentEndResultDto[];
@@ -59,6 +60,9 @@
 
 	const idOf = (row: TournamentEndResultDto) => row.playerInfo?.id ?? row.contenderId;
 	const rankOf = (row: TournamentEndResultDto) => subsetRank?.get(idOf(row));
+	/** The name as it sorts: surname first, so a column of names reads like a register. */
+	const surnameFirst = (row: TournamentEndResultDto) =>
+		row.playerInfo ? `${row.playerInfo.lastName} ${row.playerInfo.firstName}` : '';
 
 	let allColumns = $derived<TableColumn<TournamentEndResultDto>[]>([
 		{
@@ -89,8 +93,8 @@
 							row.playerInfo.elo?.title
 						)
 					: t.unknownPlayer,
-			sortValue: (row) =>
-				row.playerInfo ? `${row.playerInfo.lastName} ${row.playerInfo.firstName}`.toLowerCase() : ''
+			sortValue: surnameFirst,
+			compare: (a, b) => compareNames(surnameFirst(a), surnameFirst(b))
 		},
 		{
 			id: 'club',
@@ -99,7 +103,8 @@
 			// Club names are long and the least important column on a phone; cut them
 			// with an ellipsis rather than let them push the score columns off-screen.
 			cellClassName: 'max-w-[5.5rem] sm:max-w-none truncate sm:whitespace-normal',
-			sortValue: (row) => (row.playerInfo?.club || '').toLowerCase()
+			sortValue: (row) => row.playerInfo?.club || '',
+			compare: (a, b) => compareNames(a.playerInfo?.club || '', b.playerInfo?.club || '')
 		},
 		{
 			id: 'ranking',

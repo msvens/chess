@@ -17,6 +17,7 @@
 	import type { RoundStandingRow } from '$lib/api';
 	import { language } from '$lib/stores/language.svelte';
 	import { getTranslation } from '$lib/translations';
+	import { compareNames } from '$lib/utils/nameOrder';
 
 	interface TeamRoundStandingsTableProps {
 		/** Rows for one round, already sorted best-first by the SDK. */
@@ -58,7 +59,8 @@
 			id: 'team',
 			header: labels.team,
 			accessor: teamNameOf,
-			sortValue: (row) => teamNameOf(row).toLowerCase()
+			sortValue: teamNameOf,
+			compare: (a, b) => compareNames(teamNameOf(a), teamNameOf(b))
 		},
 		{
 			id: 'sp',

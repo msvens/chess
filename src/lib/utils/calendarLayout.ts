@@ -8,6 +8,7 @@
  */
 import { parseLocalDate, type TournamentDto } from '$lib/api';
 import type { CalendarEvent, Group } from './playedDays';
+import { byName } from './nameOrder';
 
 /** Max lanes (stacked bars) rendered per day cell in month view before "+N more". */
 export const MONTH_MAX_LANES = 3;
@@ -144,9 +145,8 @@ export function buildWeekCells(anchor: Date, todayDayNumber: number): DayCell[] 
  * A tournament is drawn on the days it is played (`playedDays`): each run of
  * consecutive played days in this row becomes one bar, so a weekend open is a
  * bar and a weekly league is a chip on each evening it plays. A start or end
- * marker is always a segment of its own. Overlapping
- * segments are greedily assigned to lanes (left-to-right by start column) so
- * they stack vertically.
+ * marker is always a segment of its own. Overlapping segments stack in lanes:
+ * bars across several days first, then single days, each A–Z.
  */
 export function packRow(cells: DayCell[], events: CalendarEvent[]): PackedRow {
 	const rowStart = cells[0].dayNumber;
@@ -197,27 +197,31 @@ export function packRow(cells: DayCell[], events: CalendarEvent[]): PackedRow {
 		}
 	}
 
-	// Greedy lane packing: sort by start column, longer spans first on ties.
-	segments.sort((a, b) => a.colOffset - b.colOffset || b.colSpan - a.colSpan);
-	const laneEndCol: number[] = []; // last occupied column per lane
+	// Lanes are handed out in reading order: tournaments drawn across several
+	// days first, then single days (league evenings, one-day events, markers),
+	// each A–Z. A segment takes the topmost lane free on all its columns, so a
+	// bar keeps one lane across the row and a day's single entries read A–Z
+	// from the top. A single entry can take a free lane above a bar, on a day
+	// that bar's lane-mates don't cover: compact rows beat a strict band.
+	const spans = (seg: PositionedSegment) =>
+		seg.colSpan > 1 || seg.continuesLeft || seg.continuesRight;
+	segments.sort(
+		(a, b) =>
+			Number(spans(b)) - Number(spans(a)) ||
+			byName(a.tournament, b.tournament) ||
+			a.colOffset - b.colOffset
+	);
+	const taken: boolean[][] = []; // lane → column → occupied
 	for (const seg of segments) {
-		const endCol = seg.colOffset + seg.colSpan - 1;
-		let placed = false;
-		for (let lane = 0; lane < laneEndCol.length; lane++) {
-			if (laneEndCol[lane] < seg.colOffset) {
-				seg.laneIndex = lane;
-				laneEndCol[lane] = endCol;
-				placed = true;
-				break;
-			}
-		}
-		if (!placed) {
-			seg.laneIndex = laneEndCol.length;
-			laneEndCol.push(endCol);
-		}
+		const columns = Array.from({ length: seg.colSpan }, (_, i) => seg.colOffset + i);
+		let lane = 0;
+		while (lane < taken.length && columns.some((col) => taken[lane][col])) lane++;
+		if (lane === taken.length) taken.push(cells.map(() => false));
+		for (const col of columns) taken[lane][col] = true;
+		seg.laneIndex = lane;
 	}
 
-	return { cells, segments, maxLanes: laneEndCol.length };
+	return { cells, segments, maxLanes: taken.length };
 }
 
 /** Build all 6 packed rows for a month view. */

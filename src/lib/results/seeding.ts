@@ -17,6 +17,7 @@
  * self-consistent: those groups show `-` in the Rating column for everyone too.
  */
 import { getPlayerRatingByAlgorithm, type TournamentEndResultDto } from '$lib/api';
+import { compareNames } from '$lib/utils/nameOrder';
 
 const lastNameOf = (row: TournamentEndResultDto) => row.playerInfo?.lastName ?? '';
 
@@ -36,8 +37,8 @@ export function seedOrder<T extends TournamentEndResultDto>(
 	return [...rows].sort((a, b) => {
 		const byRating = ratingOf(b) - ratingOf(a);
 		if (byRating !== 0) return byRating;
-		// Swedish collation, because these are Swedish start lists: å/ä/ö sort
-		// after z, as they do on the official page.
-		return lastNameOf(a).localeCompare(lastNameOf(b), 'sv');
+		// The app's one name order: Swedish, so å/ä/ö sort after z, as they do on
+		// the official page.
+		return compareNames(lastNameOf(a), lastNameOf(b));
 	});
 }

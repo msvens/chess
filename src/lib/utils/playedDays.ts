@@ -20,6 +20,7 @@ import {
 	type TournamentDto
 } from '$lib/api';
 import { parseEventDays, toDayNumber } from './calendarLayout';
+import { byName } from './nameOrder';
 
 export type Group = TournamentClassGroupDto;
 
@@ -91,12 +92,14 @@ export function datedDays(tournament: TournamentDto): CalendarEvent {
 	return { tournament, days, markers };
 }
 
-/** Everything on a day, each tournament with its groups for that day. */
+/** Everything on a day, each tournament with its groups for that day, A–Z. */
 export function playedOn(events: CalendarEvent[], day: number): PlayedEntry[] {
-	return events.flatMap(({ tournament, days, markers }) => {
-		const groups = days.get(day);
-		if (!groups) return [];
-		const marker = markers.get(day);
-		return [{ tournament, groups, starts: marker === 'start', ends: marker === 'end' }];
-	});
+	return events
+		.flatMap(({ tournament, days, markers }) => {
+			const groups = days.get(day);
+			if (!groups) return [];
+			const marker = markers.get(day);
+			return [{ tournament, groups, starts: marker === 'start', ends: marker === 'end' }];
+		})
+		.sort((a, b) => byName(a.tournament, b.tournament));
 }

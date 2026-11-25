@@ -360,3 +360,64 @@ describe('start and end markers', () => {
 		]);
 	});
 });
+
+describe('the order within a row', () => {
+	// Mon 10 – Sun 16 June 2024.
+	const cells = buildWeekCells(WEEK_ANCHOR, toDayNumber(WEEK_ANCHOR));
+	const named = (id: number, name: string, start: string, end = start) =>
+		ev({ id, name, start, end });
+	/** The names on a day, top lane first. */
+	const onDay = (row: ReturnType<typeof packRow>, col: number) =>
+		row.segments
+			.filter((s) => s.colOffset <= col && col < s.colOffset + s.colSpan)
+			.sort((a, b) => a.laneIndex - b.laneIndex)
+			.map((s) => s.tournament.name);
+
+	it('puts a day’s single entries A–Z, Swedish style: Å Ä Ö after Z', () => {
+		const row = packRow(cells, [
+			named(1, 'Örebro Open', '2024-06-12'),
+			named(2, 'Borås KM', '2024-06-12'),
+			named(3, 'Zebra Cup', '2024-06-12'),
+			named(4, 'Åtvidaberg Blixt', '2024-06-12'),
+			named(5, 'Alingsås Snabb', '2024-06-12')
+		]);
+		expect(onDay(row, 2)).toEqual([
+			'Alingsås Snabb',
+			'Borås KM',
+			'Zebra Cup',
+			'Åtvidaberg Blixt',
+			'Örebro Open'
+		]);
+	});
+
+	it('draws tournaments across several days first, then single days', () => {
+		const row = packRow(cells, [
+			named(1, 'Allsvenskan träff', '2024-06-12'),
+			named(2, 'Västerås Open', '2024-06-11', '2024-06-13'),
+			named(3, 'Bromma Blixt', '2024-06-12')
+		]);
+		expect(onDay(row, 2)).toEqual(['Västerås Open', 'Allsvenskan träff', 'Bromma Blixt']);
+	});
+
+	it('keeps a bar in one lane across the row', () => {
+		const row = packRow(cells, [
+			named(1, 'Zebra Cup', '2024-06-10', '2024-06-14'),
+			named(2, 'Alfa Open', '2024-06-12', '2024-06-16')
+		]);
+		const lanes = row.segments.map((s) => [s.tournament.name, s.laneIndex]);
+		expect(lanes).toEqual([
+			['Alfa Open', 0],
+			['Zebra Cup', 1]
+		]);
+		expect(row.maxLanes).toBe(2);
+	});
+
+	it('fills a lane a bar leaves free, keeping rows compact', () => {
+		// The bar holds lane 0 Tue–Thu only, so Monday's entry takes lane 0 too.
+		const row = packRow(cells, [
+			named(1, 'Västerås Open', '2024-06-11', '2024-06-13'),
+			named(2, 'Bromma Blixt', '2024-06-10')
+		]);
+		expect(row.segments.every((s) => s.laneIndex === 0)).toBe(true);
+	});
+});

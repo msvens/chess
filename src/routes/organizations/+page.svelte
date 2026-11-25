@@ -22,6 +22,7 @@
 	import { getTranslation } from '$lib/translations';
 	import type { SelectableListItem } from '$lib/components/ui/listItems';
 	import PageHead from '$lib/components/layout/PageHead.svelte';
+	import { compareNames } from '$lib/utils/nameOrder';
 
 	const organizations = getOrganizationsState();
 
@@ -49,7 +50,7 @@
 
 	let districtItems = $derived<SelectableListItem[]>(
 		[...organizations.districts]
-			.sort((a, b) => a.name.localeCompare(b.name, 'sv'))
+			.sort((a, b) => compareNames(a.name, b.name))
 			.map((d) => ({ id: d.id, label: d.name, subtitle: d.city || undefined }))
 	);
 

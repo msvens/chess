@@ -3,23 +3,19 @@
 	 * One day's events: the day view, and the list below the agenda layout's
 	 * picker.
 	 *
-	 * - Wide screens: the week view's cards at full width. A card opens the day's
-	 *   popover, which names the groups playing; one tap never jumps past them.
-	 * - Small screens: a plain list, coloured only by a dot as in the colour key,
-	 *   with the groups playing listed on each row, as `/today` lists them: up to
-	 *   {@link LISTED_GROUPS} one per line, more folded away behind a count. A
-	 *   popover from a list is cramped on a phone, and a stack of coloured cards
-	 *   is loud.
+	 * A plain list at every width: the calendar has no hours, so a day is a list
+	 * of tournaments, not a timetable of coloured blocks. Colour is only a dot,
+	 * as in the colour key. Each row lists the groups playing, as `/today` does:
+	 * up to {@link LISTED_GROUPS} one per line, more folded away behind a count.
 	 *
 	 * No ◀ ▶ as in the week grid: a day has no edge to run off, and the dates
 	 * line already says when the tournament runs.
 	 */
-	import { MediaQuery } from 'svelte/reactivity';
 	import Link from '$lib/components/ui/Link.svelte';
 	import type { PackedRow, PositionedSegment } from '$lib/utils/calendarLayout';
+	import { byName } from '$lib/utils/nameOrder';
 	import { groupLabel } from '$lib/components/tournaments/groupLabel';
-	import { barClasses, swatchClasses } from './calendarColors';
-	import DayEventsPopover from './DayEventsPopover.svelte';
+	import { swatchClasses } from './calendarColors';
 	import { formatEventRange, hasReversedDates, typeLabel } from './eventLabels';
 	import { getOrganizationsState } from '$lib/stores/organizations.svelte';
 	import { language } from '$lib/stores/language.svelte';
@@ -34,22 +30,17 @@
 	let { row }: DayViewProps = $props();
 
 	const organizations = getOrganizationsState();
-	// The app's mobile breakpoint. Per component, never module-level.
-	const mobile = new MediaQuery('(max-width: 767px)');
 
 	let t = $derived(getTranslation(language.current));
 	let cal = $derived(t.pages.calendar);
 	let typeLabels = $derived(t.components.tournamentTypeFilter);
 	let locale = $derived(localeOf(language.current));
 
-	let segments = $derived([...row.segments].sort((a, b) => a.laneIndex - b.laneIndex));
-	let date = $derived(row.cells[0].date);
+	/** A–Z, plain: a list draws nothing across days, so there is no band to keep. */
+	let segments = $derived([...row.segments].sort((a, b) => byName(a.tournament, b.tournament)));
 
 	/** Up to this many groups are listed as they are; more fold away. */
 	const LISTED_GROUPS = 3;
-
-	/** The card whose popover is open, by tournament. */
-	let open = $state<number | null>(null);
 
 	const meta = (city: string | undefined, type: number) =>
 		[city, typeLabel(type, typeLabels)].filter(Boolean).join(' · ');
@@ -61,7 +52,7 @@
 {#snippet warning()}
 	<!-- Shown as entered, and marked: the app cannot know which date is wrong. -->
 	<span
-		class="pointer-events-auto shrink-0 text-amber-600 dark:text-amber-400"
+		class="shrink-0 text-amber-600 dark:text-amber-400"
 		title={cal.reversedDates}
 		aria-label={cal.reversedDates}>⚠</span
 	>
@@ -89,7 +80,7 @@
 
 {#if segments.length === 0}
 	<p class="py-8 text-center text-sm text-gray-500 dark:text-gray-400">{cal.emptyDay}</p>
-{:else if mobile.current}
+{:else}
 	<ul
 		class="divide-y divide-gray-200 border-y border-gray-200 dark:divide-gray-700 dark:border-gray-700"
 	>
@@ -122,56 +113,6 @@
 						<div class="mt-1 text-xs">{@render groupList(segment)}</div>
 					{/if}
 				</div>
-			</li>
-		{/each}
-	</ul>
-{:else}
-	<ul class="flex flex-col gap-2">
-		{#each segments as segment (segment.tournament.id)}
-			{@const tournament = segment.tournament}
-			{@const line = meta(tournament.city, tournament.type)}
-			<li
-				style={open === tournament.id ? 'z-index: 20;' : ''}
-				class="relative rounded-md border px-3 py-2 transition-opacity hover:opacity-90 {barClasses(
-					tournament.type
-				)}"
-			>
-				<!-- The opener sits behind the content rather than around it, so the
-				     warning's tooltip on top still takes the pointer. -->
-				<button
-					type="button"
-					onclick={() => (open = tournament.id)}
-					aria-label={tournament.name}
-					class="absolute inset-0 z-0 cursor-pointer rounded-md"
-				></button>
-
-				<div class="pointer-events-none relative z-10">
-					<div class="flex items-start gap-1 text-sm leading-snug font-semibold">
-						{#if hasReversedDates(tournament)}{@render warning()}{/if}
-						<span class="text-blue-600 underline dark:text-blue-400">{tournament.name}</span>
-					</div>
-					<div class="mt-0.5">{@render markerLine(segment)}</div>
-					<div class="mt-0.5 space-y-0.5 text-xs leading-tight">
-						{#if line}<p class="opacity-80">{line}</p>{/if}
-						<p class="opacity-75">{organizer(segment)}</p>
-						<p class="opacity-70">{formatEventRange(tournament, locale)}</p>
-					</div>
-				</div>
-
-				{#if open === tournament.id}
-					<DayEventsPopover
-						{date}
-						events={[
-							{
-								tournament,
-								groups: segment.groups,
-								starts: segment.marker === 'start',
-								ends: segment.marker === 'end'
-							}
-						]}
-						onClose={() => (open = null)}
-					/>
-				{/if}
 			</li>
 		{/each}
 	</ul>
