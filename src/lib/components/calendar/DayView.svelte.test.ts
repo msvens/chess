@@ -1,6 +1,5 @@
 import { render, screen, within } from '@testing-library/svelte';
-import userEvent from '@testing-library/user-event';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import type { DistrictDTO, TournamentDto } from '$lib/api';
 import { ORGANIZATIONS_STATE_KEY, OrganizationsState } from '$lib/stores/organizations.svelte';
 import { buildDayRow, toDayNumber } from '$lib/utils/calendarLayout';
@@ -63,29 +62,27 @@ function setup(tournaments: TournamentDto[], mode: 'played' | 'dates' = 'played'
 		props: { row: buildDayRow(DAY, events, toDayNumber(DAY)) },
 		context: new Map([[ORGANIZATIONS_STATE_KEY, new TestOrganizations()]])
 	});
-	return userEvent.setup();
 }
 
-/** Below the app's mobile breakpoint, until the test ends. */
-function onPhone() {
-	const desktop = window.matchMedia;
-	vi.spyOn(window, 'matchMedia').mockImplementation((query) => ({
-		...desktop(query),
-		matches: query === '(max-width: 767px)'
-	}));
-}
-afterEach(() => vi.restoreAllMocks());
-
-const twoGroups = () =>
-	withGroups({}, [
-		[10, 'Grupp A'],
-		[11, 'Grupp B']
-	]);
+const row = (name: string) => screen.getByRole('link', { name }).closest('li')!;
 
 describe('a day', () => {
 	it('says so when nothing is on', () => {
 		setup([]);
 		expect(screen.getByText('Inga tävlingar denna dag')).toBeInTheDocument();
+	});
+
+	it('is a plain list: no coloured cards, only a dot', () => {
+		setup([event()]);
+		expect(screen.queryByRole('button', { name: 'Rilton Cup' })).toBeNull();
+		expect(row('Rilton Cup').className).not.toMatch(/bg-emerald/);
+	});
+
+	it('puts city, type and organiser on one line, then the dates', () => {
+		setup([event()]);
+		const rilton = row('Rilton Cup');
+		expect(within(rilton).getByText('Stockholm · Individuell · Wasa SK')).toBeInTheDocument();
+		expect(within(rilton).getByText(/10.*12 juni/)).toBeInTheDocument();
 	});
 
 	it('has no ◀ ▶: the dates say how long a tournament runs', () => {
@@ -95,75 +92,20 @@ describe('a day', () => {
 	});
 });
 
-describe('on a wide screen: cards', () => {
-	const card = (name: string) => screen.getByRole('button', { name }).closest('li')!;
-
-	it('shows each tournament with its city, type, organiser and dates', () => {
-		setup([event()]);
-		const rilton = card('Rilton Cup');
-		expect(within(rilton).getByText(/Stockholm/)).toBeInTheDocument();
-		expect(within(rilton).getByText('Wasa SK')).toBeInTheDocument();
-		expect(within(rilton).getByText(/10.*12 juni/)).toBeInTheDocument();
-	});
-
-	it('opens the popover with the groups playing, never jumping past them', async () => {
-		const user = setup([withGroups({}, [[10, 'Grupp A']])]);
-		expect(screen.queryByRole('link', { name: 'Grupp A' })).toBeNull();
-
-		await user.click(screen.getByRole('button', { name: 'Rilton Cup' }));
-		const popover = screen.getByRole('dialog');
-		expect(within(popover).getByRole('link', { name: 'Grupp A' })).toHaveAttribute(
-			'href',
-			'/results/1/10'
-		);
-	});
-
-	it('says a tournament starts today, in tournament-dates mode', () => {
-		// Over a week long, so only its start and end are marked.
-		setup([event({ name: 'Långlopp', start: '2025-06-11', end: '2025-06-30' })], 'dates');
-		expect(within(card('Långlopp')).getByText('• startar idag')).toBeInTheDocument();
-	});
-
-	it('says a tournament ends today', () => {
-		setup([event({ name: 'Långlopp', start: '2025-05-20', end: '2025-06-11' })], 'dates');
-		expect(within(card('Långlopp')).getByText('◦ slutar idag')).toBeInTheDocument();
-	});
-});
-
-describe('on a phone: a plain list', () => {
-	const row = (name: string) => screen.getByRole('link', { name }).closest('li')!;
-
-	it('has no coloured cards, only a dot', () => {
-		onPhone();
-		setup([event()]);
-		expect(screen.queryByRole('button', { name: 'Rilton Cup' })).toBeNull();
-		expect(row('Rilton Cup').className).not.toMatch(/bg-emerald/);
-	});
-
-	it('puts city, type and organiser on one line, then the dates', () => {
-		onPhone();
-		setup([event()]);
-		const rilton = row('Rilton Cup');
-		expect(within(rilton).getByText('Stockholm · Individuell · Wasa SK')).toBeInTheDocument();
-		expect(within(rilton).getByText(/10.*12 juni/)).toBeInTheDocument();
-	});
-
-	it('links the tournament and lists the groups playing, without a tap', () => {
-		onPhone();
-		setup([twoGroups()]);
+describe('the groups playing', () => {
+	it('links the tournament and lists the groups, without a tap', () => {
+		setup([
+			withGroups({}, [
+				[10, 'Grupp A'],
+				[11, 'Grupp B']
+			])
+		]);
 		expect(screen.getByRole('link', { name: 'Rilton Cup' })).toHaveAttribute('href', '/results/1');
 		expect(screen.getByRole('link', { name: 'Grupp A' })).toHaveAttribute('href', '/results/1/10');
 		expect(screen.getByRole('link', { name: 'Grupp B' })).toHaveAttribute('href', '/results/1/11');
 	});
 
-	it('says a tournament starts today', () => {
-		onPhone();
-		setup([event({ name: 'Långlopp', start: '2025-06-11', end: '2025-06-30' })], 'dates');
-		expect(within(row('Långlopp')).getByText('• startar idag')).toBeInTheDocument();
-	});
-
 	it('folds more than three groups away behind a count, closed at first', () => {
-		onPhone();
 		setup([
 			withGroups(
 				{},
@@ -175,7 +117,6 @@ describe('on a phone: a plain list', () => {
 	});
 
 	it('lists three groups as they are', () => {
-		onPhone();
 		setup([
 			withGroups(
 				{},
@@ -184,5 +125,18 @@ describe('on a phone: a plain list', () => {
 		]);
 		expect(screen.queryByText(/grupper spelar/)).toBeNull();
 		expect(screen.getByRole('link', { name: 'Grupp 3' })).toBeInTheDocument();
+	});
+});
+
+describe('markers in tournament-dates mode', () => {
+	it('says a tournament starts today', () => {
+		// Over a week long, so only its start and end are marked.
+		setup([event({ name: 'Långlopp', start: '2025-06-11', end: '2025-06-30' })], 'dates');
+		expect(within(row('Långlopp')).getByText('• startar idag')).toBeInTheDocument();
+	});
+
+	it('says a tournament ends today', () => {
+		setup([event({ name: 'Långlopp', start: '2025-05-20', end: '2025-06-11' })], 'dates');
+		expect(within(row('Långlopp')).getByText('◦ slutar idag')).toBeInTheDocument();
 	});
 });

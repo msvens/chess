@@ -208,7 +208,7 @@ describe('the agenda layout', () => {
 	it('opens on today, with today’s events listed below', () => {
 		setup([event({ start: '2026-03-15', end: '2026-03-15' })], AGENDA);
 		expect(pick(/15 mars/)).toHaveAttribute('aria-pressed', 'true');
-		expect(screen.getByRole('button', { name: 'Rilton Cup' })).toBeInTheDocument();
+		expect(screen.getByRole('link', { name: 'Rilton Cup' })).toBeInTheDocument();
 	});
 
 	it('lists the day you pick', async () => {
@@ -217,7 +217,7 @@ describe('the agenda layout', () => {
 
 		await user.click(pick(/evenemang den .*11 mars/));
 		expect(screen.getByText(/onsdag 11 mars/i)).toBeInTheDocument();
-		expect(screen.getByRole('button', { name: 'Rilton Cup' })).toBeInTheDocument();
+		expect(screen.getByRole('link', { name: 'Rilton Cup' })).toBeInTheDocument();
 	});
 
 	it('moves a month to its first day', async () => {
@@ -251,7 +251,7 @@ describe('the day view', () => {
 		const user = setup([event({ start: '2026-03-15', end: '2026-03-15' })]);
 		await toDay(user);
 		expect(title()).toMatch(/söndag 15 mars 2026/i);
-		expect(screen.getByRole('button', { name: 'Rilton Cup' })).toBeInTheDocument();
+		expect(screen.getByRole('link', { name: 'Rilton Cup' })).toBeInTheDocument();
 		expect(localStorage.getItem('calendar-view-mode')).toBe('day');
 	});
 
@@ -272,6 +272,6 @@ describe('the day view', () => {
 			layouts: { mobile: 'agenda', desktop: 'agenda' }
 		});
 		expect(screen.queryByRole('button', { pressed: true })).toBeNull();
-		expect(screen.getByRole('button', { name: 'Rilton Cup' })).toBeInTheDocument();
+		expect(screen.getByRole('link', { name: 'Rilton Cup' })).toBeInTheDocument();
 	});
 });
