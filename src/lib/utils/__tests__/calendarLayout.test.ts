@@ -319,15 +319,21 @@ describe('getEventDateBounds', () => {
 		expect(getEventDateBounds([])).toBeNull();
 	});
 
-	it('spans the first and last day anything is played', () => {
+	it('spans the first and last day anything is on the calendar', () => {
 		const bounds = getEventDateBounds([
 			ev({ start: '2024-06-20', end: '2024-06-20' }),
-			ev({ start: '2024-06-05', end: '2024-06-05' }),
-			// Started in May, plays into July: the bounds follow the rounds.
-			league({ start: '2024-05-01', end: '2024-07-31' }, [[10, ['2024-06-12', '2024-07-09']]])
+			ev({ start: '2024-06-05', end: '2024-06-05' })
 		])!;
 		expect(bounds.earliest).toEqual(new Date(2024, 5, 5));
-		expect(bounds.latest).toEqual(new Date(2024, 6, 9));
+		expect(bounds.latest).toEqual(new Date(2024, 5, 20));
+	});
+
+	it('reaches a long league’s start and end markers, not only its rounds', () => {
+		const bounds = getEventDateBounds([
+			league({ start: '2024-05-01', end: '2024-07-31' }, [[10, ['2024-06-12', '2024-07-09']]])
+		])!;
+		expect(bounds.earliest).toEqual(new Date(2024, 4, 1));
+		expect(bounds.latest).toEqual(new Date(2024, 6, 31));
 	});
 });
 

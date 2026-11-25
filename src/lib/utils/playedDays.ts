@@ -1,25 +1,19 @@
 /**
- * The days a tournament is played, and which of its groups play on each.
+ * The days a tournament is on the calendar, and which of its groups play on each.
  *
- * Read straight from what the coming list returns: every group carries its
- * rounds with a `roundDate`, so a weekly league is placed on the evenings it
- * plays rather than only on the day it started. The calendar reads this;
- * `/today` reads the SDK's `getTournamentsToday`, a subset of the same coming
- * list under the SDK's own per-day rule. The two can differ at the edges until
- * the SDK exposes that rule for any day and this file gives way to it.
- *
- * The rules, in order:
- * 1. A group plays on each day it has a round dated. A round outside the
- *    group's own dates, or the tournament's, is an organiser's typo and is
- *    ignored — unless that range is itself reversed, when it says nothing.
- * 2. A group with no usable round dates plays every day of its own range, or
- *    of the tournament's when it has none; so does a tournament with no groups.
- * 3. That fallback over more than {@link LONG_EVENT_THRESHOLD} days, and a
- *    Grand Prix series always (its round dates don't reflect play), shows on
- *    the start day only, as a marker.
+ * Two modes:
+ * - Game days (`playedDays`): the SDK's `getTournamentPlayDays`, the same rule
+ *   `getTournamentsToday` applies for today, so today's square and `/today`
+ *   agree by construction. A weekly league sits on the evenings it plays; a
+ *   long tournament also gets start and end markers on days it doesn't play.
+ *   The rules are the SDK's; read them there rather than restating them here.
+ * - Tournament dates (`datedDays`): the tournament's own start–end, as the
+ *   calendar showed it before game days. Presentation, so it stays here.
  */
 import {
+	getTournamentPlayDays,
 	isGrandPrix,
+	LONG_TOURNAMENT_DAYS,
 	parseLocalDate,
 	type TournamentClassDto,
 	type TournamentClassGroupDto,
@@ -27,139 +21,82 @@ import {
 } from '$lib/api';
 import { parseEventDays, toDayNumber } from './calendarLayout';
 
-/** A date range longer than this, with no round dates, shows on its start day only. */
-export const LONG_EVENT_THRESHOLD = 7;
-
 export type Group = TournamentClassGroupDto;
+
+/** A day that is only a tournament's start or end, not a day of play. */
+export type Marker = 'start' | 'end';
 
 export interface CalendarEvent {
 	tournament: TournamentDto;
-	/** Day number → the groups playing that day; empty when no group can be named. */
+	/** Day number → the groups listed that day; can be empty (a Grand Prix series). */
 	days: Map<number, Group[]>;
-	/** Its days are markers — the start, and in tournament-dates mode the end — not claims of play. */
-	marker: boolean;
-	/** The day marked as the end, in tournament-dates mode; otherwise null. */
-	endDay: number | null;
+	/** The days among `days` that are markers rather than days of play. */
+	markers: Map<number, Marker>;
 }
 
 /** One tournament on one day, with the groups playing. */
 export interface PlayedEntry {
 	tournament: TournamentDto;
 	groups: Group[];
-	/** The day is the tournament's start marker (a long tournament, a series). */
+	/** The day is only the tournament's start (a long tournament, a series). */
 	starts?: boolean;
-	/** The day is the tournament's end, marked in tournament-dates mode. */
+	/** The day is only the tournament's end. */
 	ends?: boolean;
 }
-
-interface DayRange {
-	start: number;
-	end: number;
-}
-
-function dayOf(value: string | null | undefined): number | null {
-	if (!value) return null;
-	const day = toDayNumber(parseLocalDate(value.slice(0, 10)));
-	return Number.isNaN(day) ? null : day;
-}
-
-/** A range to check dates against, or null when it is missing or reversed. */
-function validRange(start: string | null | undefined, end: string | null | undefined) {
-	const from = dayOf(start);
-	const to = dayOf(end);
-	return from !== null && to !== null && from <= to ? { start: from, end: to } : null;
-}
-
-const inside = (day: number, range: DayRange | null) =>
-	range === null || (day >= range.start && day <= range.end);
 
 function allGroups(classes: TournamentClassDto[] | null | undefined): Group[] {
 	return (classes ?? []).flatMap((c) => [...(c.groups ?? []), ...allGroups(c.subClasses)]);
 }
 
+/** Game days, by the SDK's rule. */
 export function playedDays(tournament: TournamentDto): CalendarEvent {
 	const days = new Map<number, Group[]>();
-	const add = (day: number, group?: Group) => {
-		const groups = days.get(day) ?? [];
-		if (group && !groups.includes(group)) groups.push(group);
-		days.set(day, groups);
-	};
-
-	const span = parseEventDays(tournament);
-	if (isGrandPrix(tournament.type)) {
-		if (span) add(span.start);
-		return { tournament, days, marker: true, endDay: null };
+	const markers = new Map<number, Marker>();
+	for (const { date, groups, marker } of getTournamentPlayDays(tournament)) {
+		const day = toDayNumber(parseLocalDate(date));
+		days.set(
+			day,
+			groups.map(({ group }) => group)
+		);
+		if (marker) markers.set(day, marker === 'starts' ? 'start' : 'end');
 	}
-
-	const tournamentRange = validRange(tournament.start, tournament.end);
-	const groups = allGroups(tournament.rootClasses);
-	const undated: Group[] = [];
-	// Set by anything that is a real claim of play: a round, or a short range.
-	let played = false;
-
-	for (const group of groups) {
-		const groupRange = validRange(group.start, group.end);
-		const roundDays = (group.tournamentRounds ?? [])
-			.map((round) => dayOf(round.roundDate))
-			.filter(
-				(day): day is number =>
-					day !== null && inside(day, groupRange) && inside(day, tournamentRange)
-			);
-		if (roundDays.length === 0) {
-			undated.push(group);
-			continue;
-		}
-		for (const day of roundDays) add(day, group);
-		played = true;
-	}
-
-	const fallbacks: { range: DayRange | null; group?: Group }[] =
-		groups.length === 0
-			? [{ range: span }]
-			: undated.map((group) => ({ range: validRange(group.start, group.end) ?? span, group }));
-
-	for (const { range, group } of fallbacks) {
-		if (!range) continue;
-		if (range.end - range.start + 1 > LONG_EVENT_THRESHOLD) {
-			add(range.start, group);
-			continue;
-		}
-		for (let day = range.start; day <= range.end; day++) add(day, group);
-		played = true;
-	}
-
-	return { tournament, days, marker: !played && days.size > 0, endDay: null };
+	return { tournament, days, markers };
 }
 
 /**
  * The calendar's other mode, tournament dates: a tournament of up to
- * {@link LONG_EVENT_THRESHOLD} days across all its dates; a longer one (and a
+ * {@link LONG_TOURNAMENT_DAYS} days across all its dates; a longer one (and a
  * Grand Prix series) as a marker on its start day and another on its end day,
  * so a season-long league shows when it begins and when it finishes. Round
- * dates are not read; every group is listed on every day, so a click still goes
- * straight to the only group, or lists them.
+ * dates are not read; every group is listed on every day, so the popover still
+ * lists them.
  */
 export function datedDays(tournament: TournamentDto): CalendarEvent {
 	const days = new Map<number, Group[]>();
+	const markers = new Map<number, Marker>();
 	const span = parseEventDays(tournament);
-	if (!span) return { tournament, days, marker: false, endDay: null };
+	if (!span) return { tournament, days, markers };
 
 	const groups = allGroups(tournament.rootClasses);
-	if (isGrandPrix(tournament.type) || span.end - span.start + 1 > LONG_EVENT_THRESHOLD) {
+	if (isGrandPrix(tournament.type) || span.end - span.start + 1 > LONG_TOURNAMENT_DAYS) {
 		days.set(span.start, []);
-		if (span.end === span.start) return { tournament, days, marker: true, endDay: null };
-		days.set(span.end, []);
-		return { tournament, days, marker: true, endDay: span.end };
+		markers.set(span.start, 'start');
+		if (span.end !== span.start) {
+			days.set(span.end, []);
+			markers.set(span.end, 'end');
+		}
+		return { tournament, days, markers };
 	}
 	for (let day = span.start; day <= span.end; day++) days.set(day, groups);
-	return { tournament, days, marker: false, endDay: null };
+	return { tournament, days, markers };
 }
 
-/** Everything played on a day, each tournament with its groups for that day. */
+/** Everything on a day, each tournament with its groups for that day. */
 export function playedOn(events: CalendarEvent[], day: number): PlayedEntry[] {
-	return events.flatMap(({ tournament, days, marker, endDay }) => {
+	return events.flatMap(({ tournament, days, markers }) => {
 		const groups = days.get(day);
 		if (!groups) return [];
-		return [{ tournament, groups, starts: marker && endDay !== day, ends: endDay === day }];
+		const marker = markers.get(day);
+		return [{ tournament, groups, starts: marker === 'start', ends: marker === 'end' }];
 	});
 }

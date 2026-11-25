@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import type { DistrictDTO, TournamentDto } from '$lib/api';
 import { ORGANIZATIONS_STATE_KEY, OrganizationsState } from '$lib/stores/organizations.svelte';
 import { buildWeekRow, toDayNumber } from '$lib/utils/calendarLayout';
-import { playedDays } from '$lib/utils/playedDays';
+import { datedDays, playedDays } from '$lib/utils/playedDays';
 import WeekView from './WeekView.svelte';
 
 const INDIVIDUAL = 3;
@@ -42,10 +42,11 @@ class TestOrganizations extends OrganizationsState {
 
 const WEEKDAYS = ['mån', 'tis', 'ons', 'tors', 'fre', 'lör', 'sön'];
 
-function setup(tournaments: TournamentDto[]) {
+/** Game days by default; `datedDays` for the tournament-dates mode. */
+function setup(tournaments: TournamentDto[], toDays = playedDays) {
 	render(WeekView, {
 		props: {
-			row: buildWeekRow(ANCHOR, tournaments.map(playedDays), TODAY),
+			row: buildWeekRow(ANCHOR, tournaments.map(toDays), TODAY),
 			weekdayLabels: WEEKDAYS
 		},
 		context: new Map([[ORGANIZATIONS_STATE_KEY, new TestOrganizations()]])
@@ -117,14 +118,21 @@ describe('opening a card', () => {
 });
 
 describe('dates the organiser got wrong', () => {
-	it('marks the card and says why', () => {
+	// Reversed dates give the SDK no days to play, so game days leave the
+	// tournament out, as `/today` does; tournament dates show it, marked.
+	it('leaves it out of game days, as /today does', () => {
 		setup([event({ name: 'LASK OPEN', start: '2025-06-10', end: '2025-06-02' })]);
+		expect(screen.queryByText(/LASK OPEN/)).toBeNull();
+	});
+
+	it('marks the card and says why', () => {
+		setup([event({ name: 'LASK OPEN', start: '2025-06-10', end: '2025-06-02' })], datedDays);
 		const warning = screen.getByLabelText('Slutdatum är före startdatum — visas på startdatumet');
 		expect(warning).toHaveTextContent('⚠');
 	});
 
 	it('still prints the range as entered', () => {
-		setup([event({ name: 'LASK OPEN', start: '2025-06-10', end: '2025-06-02' })]);
+		setup([event({ name: 'LASK OPEN', start: '2025-06-10', end: '2025-06-02' })], datedDays);
 		expect(screen.getByText('10 juni – 2 juni')).toBeInTheDocument();
 	});
 

@@ -143,7 +143,8 @@ export function buildWeekCells(anchor: Date, todayDayNumber: number): DayCell[] 
  *
  * A tournament is drawn on the days it is played (`playedDays`): each run of
  * consecutive played days in this row becomes one bar, so a weekend open is a
- * bar and a weekly league is a chip on each evening it plays. Overlapping
+ * bar and a weekly league is a chip on each evening it plays. A start or end
+ * marker is always a segment of its own. Overlapping
  * segments are greedily assigned to lanes (left-to-right by start column) so
  * they stack vertically.
  */
@@ -152,42 +153,43 @@ export function packRow(cells: DayCell[], events: CalendarEvent[]): PackedRow {
 	const rowEnd = cells[cells.length - 1].dayNumber;
 
 	const segments: PositionedSegment[] = [];
-	for (const { tournament, days, marker, endDay } of events) {
+	for (const { tournament, days, markers } of events) {
 		const inRow = [...days.keys()]
 			.filter((d) => d >= rowStart && d <= rowEnd)
 			.sort((a, b) => a - b);
 
-		// Markers stand alone: a short series' start and end must not merge into a bar.
-		if (marker) {
-			for (const day of inRow) {
-				segments.push({
-					tournament,
-					colOffset: day - rowStart,
-					colSpan: 1,
-					laneIndex: 0,
-					continuesLeft: false,
-					continuesRight: false,
-					marker: day === endDay ? 'end' : 'start',
-					groups: days.get(day) ?? []
-				});
-			}
-			continue;
+		// Markers stand alone: a start or end marker never merges into a bar.
+		for (const day of inRow) {
+			const marker = markers.get(day);
+			if (!marker) continue;
+			segments.push({
+				tournament,
+				colOffset: day - rowStart,
+				colSpan: 1,
+				laneIndex: 0,
+				continuesLeft: false,
+				continuesRight: false,
+				marker,
+				groups: days.get(day) ?? []
+			});
 		}
 
+		const isPlayed = (day: number) => days.has(day) && !markers.has(day);
+		const played = inRow.filter(isPlayed);
 		let runStart = 0;
-		for (let i = 0; i < inRow.length; i++) {
+		for (let i = 0; i < played.length; i++) {
 			// Close the run at the last day, or where the next day is not the one after.
-			if (i < inRow.length - 1 && inRow[i + 1] === inRow[i] + 1) continue;
-			const first = inRow[runStart];
-			const last = inRow[i];
-			const groups = [...new Set(inRow.slice(runStart, i + 1).flatMap((d) => days.get(d) ?? []))];
+			if (i < played.length - 1 && played[i + 1] === played[i] + 1) continue;
+			const first = played[runStart];
+			const last = played[i];
+			const groups = [...new Set(played.slice(runStart, i + 1).flatMap((d) => days.get(d) ?? []))];
 			segments.push({
 				tournament,
 				colOffset: first - rowStart,
 				colSpan: last - first + 1,
 				laneIndex: 0,
-				continuesLeft: first === rowStart && days.has(rowStart - 1),
-				continuesRight: last === rowEnd && days.has(rowEnd + 1),
+				continuesLeft: first === rowStart && isPlayed(rowStart - 1),
+				continuesRight: last === rowEnd && isPlayed(rowEnd + 1),
 				marker: null,
 				groups
 			});
@@ -250,9 +252,10 @@ export function buildWeekRow(
 }
 
 /**
- * The first and last day anything is played, as local-midnight Dates. Used to
- * bound navigation and to jump to the first or last event — so a league that
- * started in September but plays into May lets you page to May.
+ * The first and last day anything is on the calendar (a day of play or a start
+ * or end marker), as local-midnight Dates. Used to bound navigation and to jump
+ * to the first or last event — so a league running September to May lets you
+ * page from its start to its end.
  */
 export function getEventDateBounds(
 	events: CalendarEvent[]

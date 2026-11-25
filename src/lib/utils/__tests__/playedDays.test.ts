@@ -52,124 +52,87 @@ const day = (iso: string) => toDayNumber(new Date(`${iso}T12:00:00`));
 const groupIds = (event: ReturnType<typeof playedDays>, iso: string) =>
 	event.days.get(day(iso))?.map((g) => g.id);
 
-describe('a group with round dates', () => {
-	it('plays on each of them, and on no other day', () => {
+const markerOf = (event: ReturnType<typeof playedDays>, iso: string) => event.markers.get(day(iso));
+
+/*
+ * The game-days rule itself is the SDK's (`getTournamentPlayDays`) and is tested
+ * there. These check the adapter: dates become day numbers, groups come through
+ * in order, and markers land on the right days.
+ */
+describe('playedDays, by the SDK’s rule', () => {
+	it('puts a league on its round days, with the groups playing each', () => {
 		const event = playedDays(
-			tournament({}, [{ groups: [{ id: 10, rounds: ['2026-11-17', '2026-11-24'] }] }])
+			tournament({ start: '2026-11-17', end: '2026-11-24' }, [
+				{ groups: [{ id: 10, rounds: ['2026-11-17', '2026-11-24'] }] },
+				{ groups: [{ id: 20, rounds: ['2026-11-24'] }] }
+			])
 		);
-		expect([...event.days.keys()]).toEqual([day('2026-11-17'), day('2026-11-24')]);
 		expect(groupIds(event, '2026-11-17')).toEqual([10]);
-		expect(event.marker).toBe(false);
+		expect(groupIds(event, '2026-11-24')).toEqual([10, 20]);
+		expect(event.markers.size).toBe(0);
 	});
 
-	it('names every group playing on a day, subclasses included, in class order', () => {
+	it('marks a long league’s start and end when it does not play on them', () => {
+		const event = playedDays(tournament({}, [{ groups: [{ id: 10, rounds: ['2026-11-17'] }] }]));
+		expect([...event.days.keys()]).toEqual([
+			day('2026-09-01'),
+			day('2026-11-17'),
+			day('2026-12-15')
+		]);
+		expect(markerOf(event, '2026-09-01')).toBe('start');
+		expect(markerOf(event, '2026-11-17')).toBeUndefined();
+		expect(markerOf(event, '2026-12-15')).toBe('end');
+	});
+
+	it('ignores a round dated after the tournament ends', () => {
+		// Juniorallsvenskan 2026's div II, dated a day late by the organiser.
 		const event = playedDays(
-			tournament({}, [
-				{
-					groups: [{ id: 10, rounds: ['2026-11-17'] }],
-					subClasses: [{ groups: [{ id: 11, rounds: ['2026-11-17'] }] }]
-				},
+			tournament({ start: '2026-11-27', end: '2026-11-29' }, [
 				{
 					groups: [
-						{ id: 20, rounds: ['2026-11-17'] },
-						{ id: 21, rounds: ['2026-11-18'] }
+						{ id: 10, rounds: ['2026-11-29', '2026-11-30'], start: '2026-11-28', end: '2026-11-30' }
 					]
 				}
 			])
 		);
-		expect(groupIds(event, '2026-11-17')).toEqual([10, 11, 20]);
-		expect(groupIds(event, '2026-11-18')).toEqual([21]);
+		expect(event.days.has(day('2026-11-30'))).toBe(false);
+		expect(groupIds(event, '2026-11-29')).toEqual([10]);
 	});
 
-	it('ignores a round dated outside the tournament', () => {
-		const event = playedDays(
-			tournament({}, [{ groups: [{ id: 10, rounds: ['2025-11-17', '2026-11-17'] }] }])
-		);
-		expect([...event.days.keys()]).toEqual([day('2026-11-17')]);
-	});
-
-	it('ignores a round dated outside its own group', () => {
-		const event = playedDays(
-			tournament({}, [
-				{
-					groups: [
-						{ id: 10, start: '2026-11-01', end: '2026-11-30', rounds: ['2026-10-06', '2026-11-17'] }
-					]
-				}
-			])
-		);
-		expect([...event.days.keys()]).toEqual([day('2026-11-17')]);
-	});
-
-	it('does not filter by a range that is reversed, since it says nothing', () => {
-		const event = playedDays(
-			tournament({ start: '2026-12-15', end: '2026-09-01' }, [
-				{ groups: [{ id: 10, rounds: ['2026-11-17'] }] }
-			])
-		);
-		expect(groupIds(event, '2026-11-17')).toEqual([10]);
-	});
-});
-
-describe('without round dates', () => {
-	it('plays every day of the group’s own short range', () => {
-		const event = playedDays(
-			tournament({}, [{ groups: [{ id: 10, start: '2026-11-21', end: '2026-11-22' }] }])
-		);
-		expect([...event.days.keys()]).toEqual([day('2026-11-21'), day('2026-11-22')]);
-		expect(groupIds(event, '2026-11-22')).toEqual([10]);
-		expect(event.marker).toBe(false);
-	});
-
-	it('falls back to the tournament’s range when the group has none', () => {
-		const event = playedDays(
-			tournament({ start: '2026-11-21', end: '2026-11-22' }, [{ groups: [{ id: 10 }] }])
-		);
-		expect(groupIds(event, '2026-11-21')).toEqual([10]);
-		expect(groupIds(event, '2026-11-22')).toEqual([10]);
-	});
-
-	it('uses the tournament’s own dates when it has no groups', () => {
-		const event = playedDays(tournament({ start: '2026-11-21', end: '2026-11-23' }));
-		expect(event.days.size).toBe(3);
-		expect(event.days.get(day('2026-11-22'))).toEqual([]);
-	});
-
-	it('marks a long range on its start day only, rather than painting the season', () => {
-		const event = playedDays(tournament({}, [{ groups: [{ id: 10 }] }]));
-		expect([...event.days.keys()]).toEqual([day('2026-09-01')]);
-		expect(event.marker).toBe(true);
-	});
-
-	it('is not a marker when other groups have real round days', () => {
-		const event = playedDays(
-			tournament({}, [{ groups: [{ id: 10 }, { id: 11, rounds: ['2026-11-17'] }] }])
-		);
-		expect(event.marker).toBe(false);
-		expect(groupIds(event, '2026-11-17')).toEqual([11]);
-	});
-});
-
-describe('a Grand Prix series', () => {
-	it('is a marker on its start day, whatever its rounds say', () => {
+	it('gives a Grand Prix series start and end markers, and no groups', () => {
 		const event = playedDays(
 			tournament({ type: GRAND_PRIX }, [{ groups: [{ id: 10, rounds: ['2026-11-17'] }] }])
 		);
-		expect([...event.days.keys()]).toEqual([day('2026-09-01')]);
-		expect(event.marker).toBe(true);
+		expect([...event.days.keys()]).toEqual([day('2026-09-01'), day('2026-12-15')]);
+		expect(groupIds(event, '2026-09-01')).toEqual([]);
+		expect(markerOf(event, '2026-12-15')).toBe('end');
 	});
 });
 
 describe('playedOn', () => {
-	it('lists the tournaments played on a day, each with its groups for that day', () => {
+	it('lists the tournaments on a day, each with its groups for that day', () => {
 		const events = [
-			playedDays(tournament({ id: 1 }, [{ groups: [{ id: 10, rounds: ['2026-11-17'] }] }])),
-			playedDays(tournament({ id: 2 }, [{ groups: [{ id: 20, rounds: ['2026-11-18'] }] }])),
-			playedDays(tournament({ id: 3, start: '2026-11-16', end: '2026-11-18' }))
+			playedDays(
+				tournament({ id: 1, start: '2026-11-17', end: '2026-11-18' }, [
+					{ groups: [{ id: 10, rounds: ['2026-11-17'] }] }
+				])
+			),
+			playedDays(
+				tournament({ id: 2, start: '2026-11-18', end: '2026-11-18' }, [
+					{ groups: [{ id: 20, rounds: ['2026-11-18'] }] }
+				])
+			)
 		];
 		const entries = playedOn(events, day('2026-11-17'));
-		expect(entries.map((e) => e.tournament.id)).toEqual([1, 3]);
+		expect(entries.map((e) => e.tournament.id)).toEqual([1]);
 		expect(entries[0].groups.map((g) => g.id)).toEqual([10]);
+	});
+
+	it('says which day is only a start or an end', () => {
+		const events = [playedDays(tournament({}, [{ groups: [{ id: 10, rounds: ['2026-11-17'] }] }]))];
+		expect(playedOn(events, day('2026-09-01'))[0]).toMatchObject({ starts: true, ends: false });
+		expect(playedOn(events, day('2026-11-17'))[0]).toMatchObject({ starts: false, ends: false });
+		expect(playedOn(events, day('2026-12-15'))[0]).toMatchObject({ starts: false, ends: true });
 	});
 });
 
@@ -187,14 +150,14 @@ describe('datedDays, the tournament-dates mode', () => {
 		]);
 		// Every group on every day, so a click lists them all.
 		expect(groupIds(event, '2026-11-20')).toEqual([10, 11]);
-		expect(event.marker).toBe(false);
+		expect(event.markers.size).toBe(0);
 	});
 
 	it('marks a longer tournament on its start and end days, whatever its rounds say', () => {
 		const event = datedDays(tournament({}, [{ groups: [{ id: 10, rounds: ['2026-11-17'] }] }]));
 		expect([...event.days.keys()]).toEqual([day('2026-09-01'), day('2026-12-15')]);
-		expect(event.marker).toBe(true);
-		expect(event.endDay).toBe(day('2026-12-15'));
+		expect(markerOf(event, '2026-09-01')).toBe('start');
+		expect(markerOf(event, '2026-12-15')).toBe('end');
 	});
 
 	it('marks a Grand Prix series on its start and end days', () => {
@@ -202,7 +165,7 @@ describe('datedDays, the tournament-dates mode', () => {
 			tournament({ type: GRAND_PRIX, start: '2026-11-20', end: '2026-11-21' })
 		);
 		expect([...event.days.keys()]).toEqual([day('2026-11-20'), day('2026-11-21')]);
-		expect(event.endDay).toBe(day('2026-11-21'));
+		expect(markerOf(event, '2026-11-21')).toBe('end');
 	});
 
 	it('has no end marker for a one-day series', () => {
@@ -210,12 +173,6 @@ describe('datedDays, the tournament-dates mode', () => {
 			tournament({ type: GRAND_PRIX, start: '2026-11-20', end: '2026-11-20' })
 		);
 		expect([...event.days.keys()]).toEqual([day('2026-11-20')]);
-		expect(event.endDay).toBeNull();
-	});
-
-	it('tells the day list which day a tournament ends', () => {
-		const events = [datedDays(tournament({}))];
-		expect(playedOn(events, day('2026-12-15'))[0]).toMatchObject({ starts: false, ends: true });
-		expect(playedOn(events, day('2026-09-01'))[0]).toMatchObject({ starts: true, ends: false });
+		expect(markerOf(event, '2026-11-20')).toBe('start');
 	});
 });

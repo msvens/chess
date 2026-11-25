@@ -63,8 +63,9 @@ class TestOrganizations extends OrganizationsState {
 
 const WEEKDAYS = ['mån', 'tis', 'ons', 'tors', 'fre', 'lör', 'sön'];
 
-function setup(tournaments: TournamentDto[]) {
-	const events = tournaments.map(playedDays);
+/** Game days by default; `datedDays` for the tournament-dates mode. */
+function setup(tournaments: TournamentDto[], toDays = playedDays) {
+	const events = tournaments.map(toDays);
 	render(MonthView, {
 		props: {
 			rows: buildMonthRows(ANCHOR, events, TODAY),
@@ -88,11 +89,12 @@ describe('the grid', () => {
 		expect(screen.getByRole('button', { name: /SM 2025/ })).toBeInTheDocument();
 	});
 
-	it('marks a long event with no round dates with a dot rather than spanning it', () => {
-		// Over a week and nothing to place it by, so `playedDays` makes it a
-		// start-day marker.
+	it('marks a long event with no round dates on its start and end, rather than spanning it', () => {
+		// Over a week and nothing to place it by, so the SDK gives it only markers.
 		setup([event({ start: '2025-06-02', end: '2025-06-20' })]);
-		expect(screen.getByRole('button', { name: /Rilton Cup/ })).toHaveTextContent('•');
+		const [start, end] = screen.getAllByRole('button', { name: /Rilton Cup/ });
+		expect(start).toHaveTextContent('•');
+		expect(end).toHaveTextContent('◦');
 	});
 });
 
@@ -167,17 +169,27 @@ describe('more events than lanes', () => {
 });
 
 describe('dates the organiser got wrong', () => {
+	// Reversed dates give the SDK no days to play, so game days leave the
+	// tournament out, as `/today` does; tournament dates show it, marked.
+	it('leaves it out of game days, as /today does', () => {
+		setup([event({ name: 'LASK OPEN', start: '2025-06-10', end: '2025-06-02' })]);
+		expect(screen.queryByText(/LASK OPEN/)).toBeNull();
+	});
+
 	it('marks the bar, so where it sits reads as a guess', async () => {
 		// LASK OPEN 2026's shape: end before start. The layout engine draws it on
 		// the start date; the app must not present that as fact.
-		setup([event({ name: 'LASK OPEN', start: '2025-06-10', end: '2025-06-02' })]);
+		setup([event({ name: 'LASK OPEN', start: '2025-06-10', end: '2025-06-02' })], datedDays);
 		const bar = screen.getByRole('button', { name: /LASK OPEN/ });
 		expect(bar).toHaveTextContent('⚠');
 		expect(bar.title).toContain('Slutdatum är före startdatum');
 	});
 
 	it('marks the range in the popover too, without repairing it', async () => {
-		const user = setup([event({ name: 'LASK OPEN', start: '2025-06-10', end: '2025-06-02' })]);
+		const user = setup(
+			[event({ name: 'LASK OPEN', start: '2025-06-10', end: '2025-06-02' })],
+			datedDays
+		);
 		await user.click(screen.getByRole('button', { name: /^LASK OPEN/ }));
 
 		const popover = screen.getByRole('dialog');
@@ -192,15 +204,23 @@ describe('dates the organiser got wrong', () => {
 });
 
 describe('a league on the days it plays', () => {
-	it('shows on each round day, not on its start date', () => {
+	/** The league's bars on days it plays, leaving out its start and end markers. */
+	const played = (role: 'link' | 'button') =>
+		screen.getAllByRole(role, { name: /KM/ }).filter((bar) => !/[•◦]/.test(bar.textContent ?? ''));
+
+	it('shows on each round day, and on its start and end only as markers', () => {
 		setup([league([[10, 'Grupp A', ['2025-06-03', '2025-06-10']]])]);
-		expect(screen.getAllByRole('link', { name: /KM/ })).toHaveLength(2);
-		expect(screen.queryByRole('button', { name: /evenemang den .*2 juni/ })).toBeNull();
+		expect(played('link')).toHaveLength(2);
+		const markers = screen
+			.getAllByRole('link', { name: /KM/ })
+			.filter((bar) => /[•◦]/.test(bar.textContent ?? ''));
+		expect(markers).toHaveLength(2);
 	});
 
 	it('links straight to the group when only one plays that day', () => {
 		setup([league([[10, 'Grupp A', ['2025-06-10']]])]);
-		expect(screen.getByRole('link', { name: /KM/ })).toHaveAttribute('href', '/results/1/10');
+		const [bar] = played('link');
+		expect(bar).toHaveAttribute('href', '/results/1/10');
 	});
 
 	it('opens the groups playing when there are several', async () => {
@@ -211,7 +231,7 @@ describe('a league on the days it plays', () => {
 				[12, 'Grupp C', ['2025-06-12']]
 			])
 		]);
-		await user.click(screen.getByRole('button', { name: /^KM/ }));
+		await user.click(played('button')[0]);
 
 		const popover = screen.getByRole('dialog');
 		expect(within(popover).getByRole('link', { name: 'Grupp A' })).toHaveAttribute(

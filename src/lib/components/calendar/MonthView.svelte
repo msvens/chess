@@ -67,8 +67,8 @@
 						{
 							tournament: match.tournament,
 							groups,
-							starts: match.marker && match.endDay !== day,
-							ends: match.endDay === day
+							starts: match.markers.get(day) === 'start',
+							ends: match.markers.get(day) === 'end'
 						}
 					]
 				: [];
