@@ -3,8 +3,10 @@
  *
  * Read straight from what the coming list returns: every group carries its
  * rounds with a `roundDate`, so a weekly league is placed on the evenings it
- * plays rather than only on the day it started. Both the calendar and `/today`
- * read this, which is what keeps today's square and `/today` in agreement.
+ * plays rather than only on the day it started. The calendar reads this;
+ * `/today` reads the SDK's `getTournamentsToday`, a subset of the same coming
+ * list under the SDK's own per-day rule. The two can differ at the edges until
+ * the SDK exposes that rule for any day and this file gives way to it.
  *
  * The rules, in order:
  * 1. A group plays on each day it has a round dated. A round outside the
