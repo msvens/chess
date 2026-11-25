@@ -23,6 +23,7 @@
 	import { formatQualityPoints } from '$lib/results/formatResult';
 	import { language } from '$lib/stores/language.svelte';
 	import { getTranslation } from '$lib/translations';
+	import { compareNames } from '$lib/utils/nameOrder';
 
 	interface RoundStandingsTableProps {
 		/** Rows for one round, already sorted best-first by the SDK. */
@@ -60,6 +61,11 @@
 	let labels = $derived(t.finalResultsTable);
 
 	const playerOf = (row: RoundStandingRow) => playerMap.get(row.contenderId);
+	/** The name as it sorts: surname first, so a column of names reads like a register. */
+	const surnameFirst = (row: RoundStandingRow) => {
+		const player = playerOf(row);
+		return player ? `${player.lastName} ${player.firstName}` : '';
+	};
 	const ratingOf = (row: RoundStandingRow) =>
 		getPlayerRatingByAlgorithm(playerOf(row)?.elo, rankingAlgorithm);
 
@@ -86,17 +92,16 @@
 					? formatPlayerName(player.firstName, player.lastName, player.elo?.title)
 					: t.unknownPlayer;
 			},
-			sortValue: (row) => {
-				const player = playerOf(row);
-				return player ? `${player.lastName} ${player.firstName}`.toLowerCase() : '';
-			}
+			sortValue: surnameFirst,
+			compare: (a, b) => compareNames(surnameFirst(a), surnameFirst(b))
 		},
 		{
 			id: 'club',
 			header: labels.club,
 			accessor: (row) => playerOf(row)?.club || '-',
 			cellClassName: 'max-w-[5.5rem] sm:max-w-none truncate sm:whitespace-normal',
-			sortValue: (row) => (playerOf(row)?.club || '').toLowerCase()
+			sortValue: (row) => playerOf(row)?.club || '',
+			compare: (a, b) => compareNames(playerOf(a)?.club || '', playerOf(b)?.club || '')
 		},
 		{
 			id: 'ranking',

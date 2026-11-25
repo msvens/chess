@@ -20,7 +20,7 @@ import {
 	type TournamentDto
 } from '$lib/api';
 import { parseEventDays, toDayNumber } from './calendarLayout';
-import { byName } from './tournamentOrder';
+import { byName } from './nameOrder';
 
 export type Group = TournamentClassGroupDto;
 

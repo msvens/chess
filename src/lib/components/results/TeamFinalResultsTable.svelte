@@ -17,6 +17,7 @@
 	import { teamNameOrId } from '$lib/results/teamNames';
 	import { language } from '$lib/stores/language.svelte';
 	import { getTranslation } from '$lib/translations';
+	import { compareNames } from '$lib/utils/nameOrder';
 
 	interface TeamFinalResultsTableProps {
 		results: TeamTournamentEndResultDto[];
@@ -60,7 +61,12 @@
 			id: 'team',
 			header: labels.team,
 			accessor: (row) => formatTeamName(row.contenderId, row.teamNumber),
-			sortValue: (row) => formatTeamName(row.contenderId, row.teamNumber).toLowerCase()
+			sortValue: (row) => formatTeamName(row.contenderId, row.teamNumber),
+			compare: (a, b) =>
+				compareNames(
+					formatTeamName(a.contenderId, a.teamNumber),
+					formatTeamName(b.contenderId, b.teamNumber)
+				)
 		},
 		{
 			id: 'sp',

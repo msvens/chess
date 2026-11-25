@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { byName, compareNames } from '$lib/utils/tournamentOrder';
+import { byName, compareNames } from '$lib/utils/nameOrder';
 
 describe('the one A–Z', () => {
 	it('puts Å, Ä, Ö after Z, in that order', () => {

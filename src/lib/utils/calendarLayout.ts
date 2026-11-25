@@ -8,7 +8,7 @@
  */
 import { parseLocalDate, type TournamentDto } from '$lib/api';
 import type { CalendarEvent, Group } from './playedDays';
-import { byName } from './tournamentOrder';
+import { byName } from './nameOrder';
 
 /** Max lanes (stacked bars) rendered per day cell in month view before "+N more". */
 export const MONTH_MAX_LANES = 3;

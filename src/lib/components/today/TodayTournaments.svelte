@@ -9,7 +9,7 @@
 	import Link from '$lib/components/ui/Link.svelte';
 	import { groupLabel } from '$lib/components/tournaments/groupLabel';
 	import type { PlayedEntry } from '$lib/utils/playedDays';
-	import { byName } from '$lib/utils/tournamentOrder';
+	import { byName } from '$lib/utils/nameOrder';
 	import { getOrganizationsState } from '$lib/stores/organizations.svelte';
 	import { language } from '$lib/stores/language.svelte';
 	import { getTranslation } from '$lib/translations';

@@ -12,7 +12,7 @@
 	import { getOrganizationsState } from '$lib/stores/organizations.svelte';
 	import { language } from '$lib/stores/language.svelte';
 	import { getTranslation } from '$lib/translations';
-	import { compareNames } from '$lib/utils/tournamentOrder';
+	import { compareNames } from '$lib/utils/nameOrder';
 	import { toTournamentRows, type TournamentRow } from './tournamentRows';
 
 	interface TournamentListProps {

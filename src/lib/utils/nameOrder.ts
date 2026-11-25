@@ -1,6 +1,7 @@
 /**
- * The one A–Z for tournament and club names across the app: the calendar, the
- * day list, `/today` and the List tab all sort with it.
+ * The one A–Z for names across the app: tournaments (calendar, day list,
+ * `/today`, the List tab), players and clubs in the results tables, teams,
+ * districts, and the seeding's tie-break.
  *
  * Swedish collation whatever the interface language, since the names are
  * Swedish: Å, Ä, Ö after Z and in that order, case ignored. Plain `<` on the

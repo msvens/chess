@@ -13,7 +13,7 @@
 	 */
 	import Link from '$lib/components/ui/Link.svelte';
 	import type { PackedRow, PositionedSegment } from '$lib/utils/calendarLayout';
-	import { byName } from '$lib/utils/tournamentOrder';
+	import { byName } from '$lib/utils/nameOrder';
 	import { groupLabel } from '$lib/components/tournaments/groupLabel';
 	import { swatchClasses } from './calendarColors';
 	import { formatEventRange, hasReversedDates, typeLabel } from './eventLabels';
