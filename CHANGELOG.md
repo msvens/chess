@@ -6,6 +6,29 @@ All notable changes to msvens chess will be documented in this file.
 
 ---
 
+## [2.3.0] - 2026-11-25
+
+### Added
+
+- A day view in the calendar: one day's tournaments as a list, each with the groups playing it
+- On a phone, the calendar opens as an agenda: a month or week of day numbers with a dot for each type of tournament played, and the chosen day's tournaments below
+- A choice beside Week/Month between "Game days" and "Tournament dates". Tournament dates shows a tournament of up to a week across its dates, and a longer one as markers on its start and end days. The choice is remembered
+- An estimated rating for the current month on a player's page, per time control, from the rated games reported so far, with the groups it rests on
+- Each FIDE rating on a player's page shows its own K-factor beside it, instead of one K on a row of its own
+- Pages have their own titles and descriptions, and the site has a sitemap, so search engines can find tournaments, clubs and districts
+
+### Changed
+
+- Today shows the same list as the calendar's day view, and includes Grand Prix series on their start and end days, as the calendar does
+- When many groups play, as in Allsvenskan, Today and the day view list three and fold the rest behind a count
+- Names sort A–Z the Swedish way everywhere, Å, Ä, Ö after Z: the calendar, Today, the List tab, and results and team tables. Before, Ä sometimes came before Å
+- In the calendar, a long league also shows markers on its start and end days, alongside the evenings it plays
+- A class with a single group is labelled by the class alone, e.g. "Div 2" instead of "Div 2, Div 2", in the calendar, Today and a player's tournament list
+- Week and day titles keep Swedish month names lowercase
+- Tournaments ending today are always in Today, so the note that one might be missing is gone
+
+---
+
 ## [2.2.0] - 2026-11-15
 
 ### Added
