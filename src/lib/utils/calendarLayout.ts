@@ -145,8 +145,8 @@ export function buildWeekCells(anchor: Date, todayDayNumber: number): DayCell[] 
  * A tournament is drawn on the days it is played (`playedDays`): each run of
  * consecutive played days in this row becomes one bar, so a weekend open is a
  * bar and a weekly league is a chip on each evening it plays. A start or end
- * marker is always a segment of its own. Overlapping segments stack in lanes:
- * bars across several days first, then single days, each A–Z.
+ * marker is always a segment of its own. Overlapping segments stack in lanes,
+ * A–Z, each in the topmost lane free on all its days.
  */
 export function packRow(cells: DayCell[], events: CalendarEvent[]): PackedRow {
 	const rowStart = cells[0].dayNumber;
@@ -197,20 +197,13 @@ export function packRow(cells: DayCell[], events: CalendarEvent[]): PackedRow {
 		}
 	}
 
-	// Lanes are handed out in reading order: tournaments drawn across several
-	// days first, then single days (league evenings, one-day events, markers),
-	// each A–Z. A segment takes the topmost lane free on all its columns, so a
-	// bar keeps one lane across the row and a day's single entries read A–Z
-	// from the top. A single entry can take a free lane above a bar, on a day
-	// that bar's lane-mates don't cover: compact rows beat a strict band.
-	const spans = (seg: PositionedSegment) =>
-		seg.colSpan > 1 || seg.continuesLeft || seg.continuesRight;
-	segments.sort(
-		(a, b) =>
-			Number(spans(b)) - Number(spans(a)) ||
-			byName(a.tournament, b.tournament) ||
-			a.colOffset - b.colOffset
-	);
+	// Lanes are handed out A–Z, each segment taking the topmost lane free on all
+	// its columns. One rule: a day's single entries read A–Z from the top, and a
+	// bar keeps one lane across the row, near where its name falls among the
+	// tournaments on its first day. No order can be exact for a bar, which has
+	// one height but several days; a band of bars first was tried and read as a
+	// mix once single entries filled the gaps between them.
+	segments.sort((a, b) => byName(a.tournament, b.tournament) || a.colOffset - b.colOffset);
 	const taken: boolean[][] = []; // lane → column → occupied
 	for (const seg of segments) {
 		const columns = Array.from({ length: seg.colSpan }, (_, i) => seg.colOffset + i);
@@ -231,19 +224,6 @@ export function buildMonthRows(
 	todayDayNumber: number
 ): PackedRow[] {
 	return buildMonthMatrix(anchor, todayDayNumber).map((cells) => packRow(cells, events));
-}
-
-/**
- * One day as a row of one cell: a day's events as segments, so they keep
- * whether they continue from the day before or into the next, their marker and
- * their groups.
- */
-export function buildDayRow(
-	anchor: Date,
-	events: CalendarEvent[],
-	todayDayNumber: number
-): PackedRow {
-	return packRow([makeCell(anchor, anchor.getMonth(), todayDayNumber)], events);
 }
 
 /** Build the single packed row for a week view. */

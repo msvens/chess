@@ -1,5 +1,4 @@
-import { render, screen, within } from '@testing-library/svelte';
-import userEvent from '@testing-library/user-event';
+import { render, screen } from '@testing-library/svelte';
 import { describe, expect, it } from 'vitest';
 import type { TournamentDto } from '$lib/api';
 import type { PlayedEntry } from '$lib/utils/playedDays';
@@ -17,6 +16,8 @@ const withClasses = (id: number, name: string, classes: [className: string, grou
 		tournament: {
 			id,
 			name,
+			start: '2026-11-25',
+			end: '2026-11-25',
 			city: 'Stockholm',
 			orgType: 1,
 			orgNumber: 1,
@@ -36,67 +37,20 @@ function setup(props: { tournaments: PlayedEntry[]; loading?: boolean; error?: s
 	});
 }
 
+/*
+ * The rows themselves are the calendar's day list, tested in `DayView`. What is
+ * this component's own: the states around it, and that it is that list.
+ */
 describe('today’s tournaments', () => {
-	it('links the tournament and the groups playing', () => {
-		setup({ tournaments: [tournament(5, 'Farsta JGP', 'Klass F')] });
-		expect(screen.getByRole('link', { name: 'Farsta JGP' })).toHaveAttribute('href', '/results/5');
-		expect(screen.getByRole('link', { name: 'Klass F' })).toHaveAttribute('href', '/results/5/50');
-		expect(screen.getByText('Stockholm')).toBeInTheDocument();
+	it('is the calendar’s day list: the tournament as a heading, its groups as links', () => {
+		setup({ tournaments: [tournament(5, 'Farsta JGP', 'Grupp A')] });
+		expect(screen.getByRole('heading', { name: 'Farsta JGP' })).toBeInTheDocument();
+		expect(screen.getByRole('link', { name: 'Grupp A' })).toHaveAttribute('href', '/results/5/50');
 	});
 
-	it('names a one-group class by the class alone, as the results page does', () => {
-		// Lag-DM's shape: each division a class whose one group is named like it.
-		const event = withClasses(5, 'Lag-DM', [
-			['Div 1', 'Div 1'],
-			['Div 2', 'Div 2']
-		]);
-		setup({ tournaments: [event] });
-		expect(screen.getByRole('link', { name: 'Div 1' })).toBeInTheDocument();
-		expect(screen.getByRole('link', { name: 'Div 2' })).toBeInTheDocument();
-	});
-
-	it('lists up to three groups one per line, with no heading to open', () => {
-		const event = withClasses(5, 'Stockholmsserien', [
-			['Div 4', 'Grupp 1'],
-			['Div 5', 'Grupp 1'],
-			['Div 6', 'Grupp 1']
-		]);
-		setup({ tournaments: [event] });
-		expect(screen.getByRole('link', { name: 'Div 6' })).toBeInTheDocument();
-		expect(screen.queryByText(/spelar idag/)).toBeNull();
-		expect(document.querySelector('details')).toBeNull();
-	});
-
-	it('folds more than three groups away behind a count, closed at first', async () => {
-		const event = withClasses(
-			5,
-			'Allsvenskan',
-			[1, 2, 3, 4].map((n) => [`Div ${n}`, 'Grupp 1'] as [string, string])
-		);
-		setup({ tournaments: [event] });
-
-		const summary = screen.getByText('4 grupper spelar idag');
-		const details = summary.closest('details')!;
-		expect(details.open).toBe(false);
-		// The tournament itself stays a plain link above it.
-		expect(screen.getByRole('link', { name: 'Allsvenskan' })).toHaveAttribute('href', '/results/5');
-
-		await userEvent.setup().click(summary);
-		expect(details.open).toBe(true);
-		expect(within(details).getByRole('link', { name: 'Div 4' })).toHaveAttribute(
-			'href',
-			'/results/5/53'
-		);
-	});
-
-	it('shows only the tournament link when no group can be placed today', () => {
-		setup({ tournaments: [tournament(5, 'Farsta JGP')] });
-		expect(screen.getAllByRole('link')).toHaveLength(1);
-	});
-
-	it('sorts by name', () => {
+	it('sorts by name, Swedish style', () => {
 		setup({ tournaments: [tournament(1, 'Örebro Open'), tournament(2, 'Aros Cup')] });
-		expect(screen.getAllByRole('link').map((link) => link.textContent)).toEqual([
+		expect(screen.getAllByRole('heading').map((h) => h.textContent?.trim())).toEqual([
 			'Aros Cup',
 			'Örebro Open'
 		]);

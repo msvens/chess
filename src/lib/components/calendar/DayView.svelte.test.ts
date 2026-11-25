@@ -2,8 +2,8 @@ import { render, screen, within } from '@testing-library/svelte';
 import { describe, expect, it } from 'vitest';
 import type { DistrictDTO, TournamentDto } from '$lib/api';
 import { ORGANIZATIONS_STATE_KEY, OrganizationsState } from '$lib/stores/organizations.svelte';
-import { buildDayRow, toDayNumber } from '$lib/utils/calendarLayout';
-import { datedDays, playedDays } from '$lib/utils/playedDays';
+import { toDayNumber } from '$lib/utils/calendarLayout';
+import { datedDays, playedDays, playedOn } from '$lib/utils/playedDays';
 import DayView from './DayView.svelte';
 
 const INDIVIDUAL = 3;
@@ -56,10 +56,16 @@ class TestOrganizations extends OrganizationsState {
 	}
 }
 
+class UnknownOrganizer extends TestOrganizations {
+	getOrganizerName(): string {
+		return '-';
+	}
+}
+
 function setup(tournaments: TournamentDto[], mode: 'played' | 'dates' = 'played') {
 	const events = tournaments.map(mode === 'played' ? playedDays : datedDays);
 	render(DayView, {
-		props: { row: buildDayRow(DAY, events, toDayNumber(DAY)) },
+		props: { entries: playedOn(events, toDayNumber(DAY)) },
 		context: new Map([[ORGANIZATIONS_STATE_KEY, new TestOrganizations()]])
 	});
 }
@@ -95,6 +101,14 @@ describe('a day', () => {
 			.getAllByRole('listitem')
 			.map((li) => li.querySelector('a')?.textContent?.trim());
 		expect(names).toEqual(['Alingsås Snabb', 'Västerås Open', 'Örebro Open']);
+	});
+
+	it('leaves out an organiser it cannot name, rather than printing a dash', () => {
+		render(DayView, {
+			props: { entries: playedOn([playedDays(event())], toDayNumber(DAY)) },
+			context: new Map([[ORGANIZATIONS_STATE_KEY, new UnknownOrganizer()]])
+		});
+		expect(within(row('Rilton Cup')).getByText('Stockholm · Individuell')).toBeInTheDocument();
 	});
 
 	it('has no ◀ ▶: the dates say how long a tournament runs', () => {
