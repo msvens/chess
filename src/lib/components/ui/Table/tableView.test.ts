@@ -47,6 +47,27 @@ describe('nextSort', () => {
 });
 
 describe('sortRows', () => {
+	it('orders by a column’s own compare when it has one, both ways', () => {
+		const swedish = [
+			{ id: 1, name: 'Ärla', rating: null },
+			{ id: 2, name: 'Åby', rating: null },
+			{ id: 3, name: 'Zebra', rating: null }
+		];
+		const byCollation: TableColumn<Row>[] = [
+			{
+				id: 'name',
+				header: 'Name',
+				accessor: 'name',
+				sortValue: (r) => r.name,
+				compare: (a, b) => a.name.localeCompare(b.name, 'sv')
+			}
+		];
+		const asc = sortRows(swedish, byCollation, { columnId: 'name', direction: 'asc' });
+		expect(asc.map((r) => r.name)).toEqual(['Zebra', 'Åby', 'Ärla']);
+		const desc = sortRows(swedish, byCollation, { columnId: 'name', direction: 'desc' });
+		expect(desc.map((r) => r.name)).toEqual(['Ärla', 'Åby', 'Zebra']);
+	});
+
 	it('returns the original order when unsorted', () => {
 		expect(sortRows(rows, columns, null)).toBe(rows);
 	});

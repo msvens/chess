@@ -85,6 +85,18 @@ describe('a day', () => {
 		expect(within(rilton).getByText(/10.*12 juni/)).toBeInTheDocument();
 	});
 
+	it('lists A–Z, a tournament across several days included', () => {
+		setup([
+			event({ id: 1, name: 'Örebro Open', start: '2025-06-11', end: '2025-06-11' }),
+			event({ id: 2, name: 'Västerås Open', start: '2025-06-10', end: '2025-06-12' }),
+			event({ id: 3, name: 'Alingsås Snabb', start: '2025-06-11', end: '2025-06-11' })
+		]);
+		const names = screen
+			.getAllByRole('listitem')
+			.map((li) => li.querySelector('a')?.textContent?.trim());
+		expect(names).toEqual(['Alingsås Snabb', 'Västerås Open', 'Örebro Open']);
+	});
+
 	it('has no ◀ ▶: the dates say how long a tournament runs', () => {
 		setup([event()]);
 		expect(screen.queryByText('◀')).toBeNull();

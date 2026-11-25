@@ -13,6 +13,7 @@
 	 */
 	import Link from '$lib/components/ui/Link.svelte';
 	import type { PackedRow, PositionedSegment } from '$lib/utils/calendarLayout';
+	import { byName } from '$lib/utils/tournamentOrder';
 	import { groupLabel } from '$lib/components/tournaments/groupLabel';
 	import { swatchClasses } from './calendarColors';
 	import { formatEventRange, hasReversedDates, typeLabel } from './eventLabels';
@@ -35,7 +36,8 @@
 	let typeLabels = $derived(t.components.tournamentTypeFilter);
 	let locale = $derived(localeOf(language.current));
 
-	let segments = $derived([...row.segments].sort((a, b) => a.laneIndex - b.laneIndex));
+	/** A–Z, plain: a list draws nothing across days, so there is no band to keep. */
+	let segments = $derived([...row.segments].sort((a, b) => byName(a.tournament, b.tournament)));
 
 	/** Up to this many groups are listed as they are; more fold away. */
 	const LISTED_GROUPS = 3;

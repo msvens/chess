@@ -12,6 +12,7 @@
 	import { getOrganizationsState } from '$lib/stores/organizations.svelte';
 	import { language } from '$lib/stores/language.svelte';
 	import { getTranslation } from '$lib/translations';
+	import { compareNames } from '$lib/utils/tournamentOrder';
 	import { toTournamentRows, type TournamentRow } from './tournamentRows';
 
 	interface TournamentListProps {
@@ -44,13 +45,15 @@
 			id: 'name',
 			header: labels.tournament,
 			cell: nameCell,
-			sortValue: (row) => row.name.toLowerCase()
+			sortValue: (row) => row.name,
+			compare: (a, b) => compareNames(a.name, b.name)
 		},
 		{
 			id: 'club',
 			header: labels.organizer,
 			accessor: 'club',
-			sortValue: (row) => row.club.toLowerCase()
+			sortValue: (row) => row.club,
+			compare: (a, b) => compareNames(a.club, b.club)
 		},
 		{ id: 'start', header: labels.start, accessor: 'start', sortValue: (row) => row.start },
 		{ id: 'end', header: labels.end, accessor: 'end', sortValue: (row) => row.end },
