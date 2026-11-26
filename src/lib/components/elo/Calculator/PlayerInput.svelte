@@ -8,6 +8,7 @@
 	 * shown for the chosen Elo type is derived here and in the parent from the
 	 * same `selectedRating`, so switching type never has to refetch or re-sync.
 	 */
+	import ChipGroup from '$lib/components/ui/ChipGroup.svelte';
 	import TextField from '$lib/components/ui/TextField.svelte';
 	import TextFieldWithButton from '$lib/components/ui/TextFieldWithButton.svelte';
 	import PlayerSearchInput from '$lib/components/player/PlayerSearchInput.svelte';
@@ -96,11 +97,6 @@
 		});
 	});
 
-	const tabClasses = {
-		selected: 'bg-gray-200 font-medium text-gray-900 dark:bg-gray-700 dark:text-gray-200',
-		idle: 'text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800'
-	} as const;
-
 	/**
 	 * Carry the rating on show into the manual field, but drop everything else
 	 * the lookup brought: the profile K and, above all, a FIDE birth year, which
@@ -169,19 +165,12 @@
 		<p class="text-sm font-medium text-blue-600 dark:text-blue-400">{selection.lookedUp.name}</p>
 	{/if}
 
-	<div class="flex flex-wrap gap-1" role="group" aria-label={calc.inputMode}>
-		{#each INPUT_MODES as mode (mode)}
-			<button
-				type="button"
-				onclick={() => switchMode(mode)}
-				class="rounded px-2.5 py-1 text-xs transition-colors {inputMode === mode
-					? tabClasses.selected
-					: tabClasses.idle}"
-			>
-				{modeLabels[mode]}
-			</button>
-		{/each}
-	</div>
+	<ChipGroup
+		items={INPUT_MODES.map((mode) => ({ id: mode, label: modeLabels[mode] }))}
+		selectedId={inputMode}
+		onSelect={switchMode}
+		label={calc.inputMode}
+	/>
 
 	{#if inputMode === 'manual'}
 		<TextField
@@ -248,20 +237,12 @@
 		</div>
 	{:else if inputMode === 'topPlayer'}
 		<div class="space-y-2">
-			<div class="flex flex-wrap gap-1" role="group" aria-label={calc.topList}>
-				{#each TOP_LISTS as list (list)}
-					<button
-						type="button"
-						onclick={() => (topList = list)}
-						aria-pressed={topList === list}
-						class="rounded px-2.5 py-1 text-xs transition-colors {topList === list
-							? tabClasses.selected
-							: tabClasses.idle}"
-					>
-						{topListLabels[list]}
-					</button>
-				{/each}
-			</div>
+			<ChipGroup
+				items={TOP_LISTS.map((list) => ({ id: list, label: topListLabels[list] }))}
+				selectedId={topList}
+				onSelect={(list) => (topList = list)}
+				label={calc.topList}
+			/>
 			{#if topPlayersLoading}
 				<p class="text-sm text-gray-500 dark:text-gray-400">{calc.loadingTopPlayers}</p>
 			{:else}
@@ -269,7 +250,7 @@
 					bind:value={topPlayerId}
 					onchange={chooseTopPlayer}
 					aria-label={calc.topPlayers}
-					class="w-full rounded border border-gray-300 bg-transparent px-3 py-1.5 text-sm text-gray-900 hover:border-gray-900 focus:border-blue-500 focus:outline-none dark:border-gray-600 dark:text-gray-200 dark:hover:border-white"
+					class="w-full rounded border border-gray-300 bg-transparent px-3 py-1.5 text-xs text-gray-900 hover:border-gray-900 focus:border-blue-500 focus:outline-none md:text-sm dark:border-gray-600 dark:text-gray-200 dark:hover:border-white"
 				>
 					<option value="">{calc.selectTopPlayer}</option>
 					{#each topPlayers as player (player.fideId)}

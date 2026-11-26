@@ -8,6 +8,7 @@
 	 * re-derived it in a render-time "previous Elo type" comparison; deriving it
 	 * makes that hack, and the state it guarded, unnecessary.
 	 */
+	import ChipGroup from '$lib/components/ui/ChipGroup.svelte';
 	import TextField from '$lib/components/ui/TextField.svelte';
 	import Toggle from '$lib/components/ui/Toggle.svelte';
 	import PlayerInput from './PlayerInput.svelte';
@@ -121,25 +122,8 @@
 		};
 	});
 
-	const pillClasses = {
-		selected: 'bg-gray-200 font-medium text-gray-900 dark:bg-gray-700 dark:text-gray-200',
-		idle: 'text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800'
-	} as const;
-
 	const signed = (change: number) => `${change >= 0 ? '+' : ''}${change.toFixed(1)}`;
 </script>
-
-{#snippet pill(label: string, selected: boolean, select: () => void)}
-	<button
-		type="button"
-		onclick={select}
-		class="rounded px-3 py-1 text-sm transition-colors {selected
-			? pillClasses.selected
-			: pillClasses.idle}"
-	>
-		{label}
-	</button>
-{/snippet}
 
 <div class="mb-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
 	<PlayerInput
@@ -161,31 +145,36 @@
 <div class="mb-6 space-y-2">
 	<div class="flex items-center gap-2">
 		<span class="w-16 flex-shrink-0 text-xs text-gray-500 dark:text-gray-400">{calc.eloType}:</span>
-		<div class="flex gap-1" role="group" aria-label={calc.eloType}>
-			{#each ELO_TYPES as type (type)}
-				{@render pill(eloTypeLabels[type], eloType === type, () => (eloType = type))}
-			{/each}
-		</div>
+		<ChipGroup
+			items={ELO_TYPES.map((type) => ({ id: type, label: eloTypeLabels[type] }))}
+			selectedId={eloType}
+			onSelect={(type) => (eloType = type)}
+			label={calc.eloType}
+		/>
 	</div>
 
 	<div class="flex items-center gap-2">
 		<span class="w-16 flex-shrink-0 text-xs text-gray-500 dark:text-gray-400">{calc.result}:</span>
-		<div class="flex gap-1" role="group" aria-label={calc.result}>
-			{#each GAME_RESULTS as outcomeOption (outcomeOption)}
-				{@render pill(
-					resultLabels[outcomeOption],
-					result === outcomeOption,
-					() => (result = outcomeOption)
-				)}
-			{/each}
-		</div>
+		<ChipGroup
+			items={GAME_RESULTS.map((outcome) => ({ id: outcome, label: resultLabels[outcome] }))}
+			selectedId={result}
+			onSelect={(outcome) => (result = outcome)}
+			label={calc.result}
+		/>
 	</div>
 
 	<div class="flex items-center gap-2">
 		<span class="w-16 flex-shrink-0 text-xs text-gray-500 dark:text-gray-400">{calc.kFactor}:</span>
-		<div class="flex items-center gap-1" role="group" aria-label={calc.kFactor}>
-			{@render pill(calc.auto, kFactorMode === 'auto', () => (kFactorMode = 'auto'))}
-			{@render pill(calc.manual, kFactorMode === 'manual', () => (kFactorMode = 'manual'))}
+		<div class="flex items-center gap-1">
+			<ChipGroup
+				items={[
+					{ id: 'auto', label: calc.auto },
+					{ id: 'manual', label: calc.manual }
+				]}
+				selectedId={kFactorMode}
+				onSelect={(mode) => (kFactorMode = mode)}
+				label={calc.kFactor}
+			/>
 			{#if kFactorMode === 'manual'}
 				<div class="ml-2 flex gap-2">
 					<TextField
