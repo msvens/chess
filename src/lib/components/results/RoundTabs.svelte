@@ -47,7 +47,7 @@
 			type="button"
 			onclick={() => onSelect(round)}
 			aria-current={active ? 'true' : undefined}
-			class="flex-shrink-0 px-4 py-2 text-sm font-medium whitespace-nowrap transition-colors {active
+			class="flex-shrink-0 px-4 py-2 text-xs font-medium whitespace-nowrap transition-colors md:text-sm {active
 				? 'border-b-2 border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400'
 				: 'text-gray-600 dark:text-gray-400'}"
 		>
