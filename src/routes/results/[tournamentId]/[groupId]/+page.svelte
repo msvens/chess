@@ -17,6 +17,7 @@
 	import { page } from '$app/state';
 	import NotFound from '$lib/components/layout/NotFound.svelte';
 	import PageLayout from '$lib/components/layout/PageLayout.svelte';
+	import SidebarLayout from '$lib/components/layout/SidebarLayout.svelte';
 	import Badge, { type BadgeColor } from '$lib/components/ui/Badge.svelte';
 	import Link from '$lib/components/ui/Link.svelte';
 	import SelectableList from '$lib/components/ui/SelectableList.svelte';
@@ -159,6 +160,10 @@
 	let selectedClass = $derived(findClassForGroup(allClasses, groupId));
 	let hasMultipleClasses = $derived(allClasses.length > 1);
 	let hasMultipleGroups = $derived((selectedClass?.groups?.length ?? 0) > 1);
+	/** Every class is a single group (Lag-DM's divisions): the classes are the list to pick from. */
+	let oneGroupPerClass = $derived(allClasses.every((cls) => (cls.groups?.length ?? 0) <= 1));
+	/** Something to pick between, so the class/group navigation shows at all. */
+	let showGroupNav = $derived(hasMultipleClasses || hasMultipleGroups);
 	let showPerformanceLink = $derived(
 		results.tournament !== null && hasIndividualPerformance(results.tournament)
 	);
@@ -495,6 +500,85 @@
 	<h3 class="mb-2 text-lg font-semibold text-gray-900 dark:text-gray-200 {extraClass}">{text}</h3>
 {/snippet}
 
+{#snippet groupSidebar()}
+	<!-- Headings are rendered here rather than through SelectableList's own
+	     `title`, whose vertical variant wraps them in the list's padding and
+	     drops them out of line with the standings heading beside it. -->
+	<div class="space-y-4">
+		{#if hasMultipleClasses && oneGroupPerClass}
+			<!-- Nothing to pick below a class, so the classes are listed out, as the
+			     groups are otherwise. -->
+			<div>
+				{@render sidebarHeading(tr.classes, 'px-2')}
+				<SelectableList
+					items={classItems}
+					selectedId={selectedClass?.classID ?? null}
+					onSelect={selectClass}
+					variant="vertical"
+					showTitle={false}
+					placeholder={t.components.selectableList.selectPlaceholder}
+					class="-mt-2"
+				/>
+			</div>
+		{:else if hasMultipleClasses}
+			<div>
+				{@render sidebarHeading(tr.classes)}
+				<SelectableList
+					items={classItems}
+					selectedId={selectedClass?.classID ?? null}
+					onSelect={selectClass}
+					variant="dropdown"
+					showTitle={false}
+					placeholder={t.components.selectableList.selectPlaceholder}
+				/>
+			</div>
+		{/if}
+		{#if hasMultipleGroups}
+			<div>
+				{@render sidebarHeading(tr.groups, 'px-2')}
+				<SelectableList
+					items={groupItems}
+					selectedId={groupId}
+					onSelect={(id) => goto(`/results/${tournamentId}/${id}`)}
+					variant="vertical"
+					showTitle={false}
+					placeholder={t.components.selectableList.selectPlaceholder}
+					class="-mt-2"
+				/>
+			</div>
+		{/if}
+	</div>
+{/snippet}
+
+{#snippet groupNarrow()}
+	<div class="space-y-2">
+		{#if hasMultipleClasses}
+			<SelectableList
+				items={classItems}
+				selectedId={selectedClass?.classID ?? null}
+				onSelect={selectClass}
+				title={tr.classes}
+				variant="dropdown"
+				density="compact"
+				transparent
+				placeholder={t.components.selectableList.selectPlaceholder}
+			/>
+		{/if}
+		{#if hasMultipleGroups}
+			<SelectableList
+				items={groupItems}
+				selectedId={groupId}
+				onSelect={(id) => goto(`/results/${tournamentId}/${id}`)}
+				title={tr.groups}
+				variant="dropdown"
+				density="compact"
+				transparent
+				placeholder={t.components.selectableList.selectPlaceholder}
+			/>
+		{/if}
+	</div>
+{/snippet}
+
 <PageHead title={headTitle} description={headDescription} />
 
 <PageLayout fullScreen maxWidth="5xl">
@@ -563,70 +647,14 @@
 			{/if}
 		</div>
 
-		<div class="flex flex-col gap-4 lg:flex-row lg:gap-6">
-			{#if hasMultipleClasses || hasMultipleGroups}
-				<!-- Headings are rendered here rather than through SelectableList's own
-				     `title`, whose vertical variant wraps them in the list's padding and
-				     drops them out of line with the standings heading beside it. -->
-				<div class="hidden w-56 flex-shrink-0 space-y-4 lg:block">
-					{#if hasMultipleClasses}
-						<div>
-							{@render sidebarHeading(tr.classes)}
-							<SelectableList
-								items={classItems}
-								selectedId={selectedClass?.classID ?? null}
-								onSelect={selectClass}
-								variant="dropdown"
-								showTitle={false}
-								placeholder={t.components.selectableList.selectPlaceholder}
-							/>
-						</div>
-					{/if}
-					{#if hasMultipleGroups}
-						<div>
-							{@render sidebarHeading(tr.groups, 'px-2')}
-							<SelectableList
-								items={groupItems}
-								selectedId={groupId}
-								onSelect={(id) => goto(`/results/${tournamentId}/${id}`)}
-								variant="vertical"
-								showTitle={false}
-								placeholder={t.components.selectableList.selectPlaceholder}
-								class="-mt-2"
-							/>
-						</div>
-					{/if}
-				</div>
-			{/if}
-
-			<div class="min-w-0 flex-1 lg:pr-2">
-				<div class="mb-4 space-y-2 lg:hidden">
-					{#if hasMultipleClasses}
-						<SelectableList
-							items={classItems}
-							selectedId={selectedClass?.classID ?? null}
-							onSelect={selectClass}
-							title={tr.classes}
-							variant="dropdown"
-							density="compact"
-							transparent
-							placeholder={t.components.selectableList.selectPlaceholder}
-						/>
-					{/if}
-					{#if hasMultipleGroups}
-						<SelectableList
-							items={groupItems}
-							selectedId={groupId}
-							onSelect={(id) => goto(`/results/${tournamentId}/${id}`)}
-							title={tr.groups}
-							variant="dropdown"
-							density="compact"
-							transparent
-							placeholder={t.components.selectableList.selectPlaceholder}
-						/>
-					{/if}
-				</div>
-
+		<!-- Classes and groups beside the standings on wide screens, as dropdowns
+		     above them on narrow ones. -->
+		<SidebarLayout
+			breakpoint="md"
+			sidebar={showGroupNav ? groupSidebar : undefined}
+			narrow={showGroupNav ? groupNarrow : undefined}
+		>
+			<div class="md:pr-2">
 				{#if !results.group}
 					<!-- The URL names a group this tournament doesn't have; the
 					     picker above still lists the real ones. -->
@@ -931,6 +959,6 @@
 					{/if}
 				{/if}
 			</div>
-		</div>
+		</SidebarLayout>
 	{/if}
 </PageLayout>
