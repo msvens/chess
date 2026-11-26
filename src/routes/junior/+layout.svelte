@@ -7,6 +7,7 @@
 	import type { Snippet } from 'svelte';
 	import { goto } from '$app/navigation';
 	import PageLayout from '$lib/components/layout/PageLayout.svelte';
+	import SidebarLayout from '$lib/components/layout/SidebarLayout.svelte';
 	import SelectableList from '$lib/components/ui/SelectableList.svelte';
 	import { language } from '$lib/stores/language.svelte';
 	import { getTranslation } from '$lib/translations';
@@ -20,31 +21,25 @@
 </script>
 
 <PageLayout maxWidth="5xl">
-	<div class="mb-6 lg:hidden">
-		<SelectableList
-			variant="dropdown"
-			{items}
-			selectedId="stockholms-jgp"
-			onSelect={() => goto(STOCKHOLMS_JGP)}
-			placeholder={t.pages.junior.navigation.stockholmsJgp}
-		/>
-	</div>
-
-	<div class="flex flex-row gap-8">
-		<div class="hidden w-56 flex-shrink-0 lg:block">
-			<div class="sticky top-24">
-				<SelectableList
-					variant="vertical"
-					{items}
-					selectedId="stockholms-jgp"
-					onSelect={() => goto(STOCKHOLMS_JGP)}
-					placeholder={t.pages.junior.navigation.stockholmsJgp}
-				/>
-			</div>
-		</div>
-
-		<div class="min-w-0 flex-1">
-			{@render children()}
-		</div>
-	</div>
+	<SidebarLayout sticky>
+		{#snippet sidebar()}
+			<SelectableList
+				variant="vertical"
+				{items}
+				selectedId="stockholms-jgp"
+				onSelect={() => goto(STOCKHOLMS_JGP)}
+				placeholder={t.pages.junior.navigation.stockholmsJgp}
+			/>
+		{/snippet}
+		{#snippet narrow()}
+			<SelectableList
+				variant="dropdown"
+				{items}
+				selectedId="stockholms-jgp"
+				onSelect={() => goto(STOCKHOLMS_JGP)}
+				placeholder={t.pages.junior.navigation.stockholmsJgp}
+			/>
+		{/snippet}
+		{@render children()}
+	</SidebarLayout>
 </PageLayout>

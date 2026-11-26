@@ -117,6 +117,8 @@
 	};
 
 	let d = $derived(densityClasses[effectiveDensity]);
+	// Only an explicit compact: a long list would otherwise turn small on its own.
+	let verticalText = $derived(density === 'compact' ? 'text-xs' : 'text-sm');
 	// Phones get small text and a tighter trigger whatever the density, so a
 	// dropdown sits level with the small buttons, toggles and fields beside it.
 	let fontSize = $derived(mobile.current ? 'text-xs' : d.fontSize);
@@ -169,6 +171,9 @@
 	</button>
 {/snippet}
 
+<!-- The vertical list is a sidebar, shown on wide screens only, so it has room
+     for text-sm; `density="compact"`, given explicitly, makes it text-xs for long
+     names in a narrow column. Its group headings stay small, as labels. -->
 {#snippet verticalOption(item: SelectableListItem, padding: string)}
 	{@const selected = item.id === selectedId}
 	<button
@@ -176,7 +181,7 @@
 		aria-selected={selected}
 		onclick={() => select(item.id)}
 		title={item.tooltip}
-		class="w-full rounded text-left text-xs transition-colors hover:bg-gray-100 dark:hover:bg-gray-800 {padding} {selected
+		class="w-full rounded text-left transition-colors hover:bg-gray-100 {verticalText} dark:hover:bg-gray-800 {padding} {selected
 			? 'bg-gray-100 font-medium text-gray-900 dark:bg-gray-800 dark:text-gray-200'
 			: 'text-gray-600 dark:text-gray-400'}"
 	>

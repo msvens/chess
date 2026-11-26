@@ -103,6 +103,25 @@ describe('SelectableList — dropdown', () => {
 });
 
 describe('SelectableList — vertical', () => {
+	it('reads text-sm, or text-xs when compact is asked for', () => {
+		const { unmount } = render(SelectableList, {
+			props: { items, selectedId: 'b', onSelect: vi.fn(), placeholder: 'Välj...' }
+		});
+		expect(screen.getAllByRole('option')[0]).toHaveClass('text-sm');
+		unmount();
+
+		render(SelectableList, {
+			props: {
+				items,
+				selectedId: 'b',
+				onSelect: vi.fn(),
+				placeholder: 'Välj...',
+				density: 'compact'
+			}
+		});
+		expect(screen.getAllByRole('option')[0]).toHaveClass('text-xs');
+	});
+
 	it('renders every option inline, with no trigger', () => {
 		const onSelect = vi.fn();
 		render(SelectableList, {
