@@ -12,7 +12,6 @@ async function choose(user: ReturnType<typeof userEvent.setup>, control: string,
 }
 
 const INDIVIDUAL = 3;
-const GRAND_PRIX = 7;
 
 const event = (over: Partial<TournamentDto> = {}): TournamentDto =>
 	({
@@ -132,13 +131,13 @@ describe('how far you can navigate', () => {
 });
 
 describe('the colour key', () => {
-	it('lists only the types on screen', async () => {
-		const user = setup([event({ id: 1, type: INDIVIDUAL }), event({ id: 2, type: GRAND_PRIX })]);
+	it('lists every type, not only those on screen', async () => {
+		const user = setup([event({ id: 1, type: INDIVIDUAL })]);
 		await user.click(button('Färger'));
 
-		expect(screen.getByText('Individuell')).toBeInTheDocument();
+		expect(screen.getAllByText('Individuell').length).toBeGreaterThan(0);
 		expect(screen.getByText('Grand Prix')).toBeInTheDocument();
-		expect(screen.queryByText('Allsvenskan')).toBeNull();
+		expect(screen.getByText('Allsvenskan')).toBeInTheDocument();
 	});
 
 	it('is not offered when there is nothing to key', () => {

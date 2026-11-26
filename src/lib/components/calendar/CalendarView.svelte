@@ -95,11 +95,8 @@
 	let events = $derived(tournaments.map(dayMode === 'played' ? playedDays : datedDays));
 	let bounds = $derived(getEventDateBounds(events));
 
-	/** Only the types on screen get a colour key entry, in canonical order. */
-	let legendTypes = $derived.by(() => {
-		const present = new Set(tournaments.map((tournament) => tournament.type));
-		return getAllTournamentTypes().filter((type) => present.has(type));
-	});
+	/** Every type in the colour key, so it reads the same whatever is on screen; none with nothing to key. */
+	let legendTypes = $derived(tournaments.length > 0 ? getAllTournamentTypes() : []);
 
 	/** Mon–Sun, taken from a date known to be a Monday. */
 	let weekdayLabels = $derived.by(() => {
