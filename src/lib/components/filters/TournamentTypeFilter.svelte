@@ -14,8 +14,6 @@
 		variant?: 'dropdown' | 'vertical';
 		density?: ListDensity;
 		transparent?: boolean;
-		/** Small text on phones, as in the calendar nav below the filters. */
-		smallOnMobile?: boolean;
 		showLabel?: boolean;
 	}
 
@@ -26,7 +24,6 @@
 		variant = 'dropdown',
 		density,
 		transparent = false,
-		smallOnMobile = false,
 		showLabel = true
 	}: Props = $props();
 
@@ -43,5 +40,4 @@
 	{variant}
 	{density}
 	{transparent}
-	{smallOnMobile}
 />

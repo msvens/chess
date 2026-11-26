@@ -34,8 +34,6 @@
 		densityThresholds?: ListDensityThresholds;
 		/** Softens the dropdown's background, for use over a map or image. */
 		transparent?: boolean;
-		/** Small text and a tighter trigger on phones, to sit in a row of small buttons. */
-		smallOnMobile?: boolean;
 	}
 
 	let {
@@ -49,8 +47,7 @@
 		variant = 'vertical',
 		density,
 		densityThresholds = DEFAULT_LIST_THRESHOLDS,
-		transparent = false,
-		smallOnMobile = false
+		transparent = false
 	}: SelectableListProps = $props();
 
 	let open = $state(false);
@@ -120,10 +117,11 @@
 	};
 
 	let d = $derived(densityClasses[effectiveDensity]);
-	let small = $derived(smallOnMobile && mobile.current);
-	let fontSize = $derived(small ? 'text-xs' : d.fontSize);
-	let triggerPadding = $derived(small ? 'px-2 py-1.5' : d.triggerPadding);
-	let chevron = $derived(small ? 'ml-1 h-4 w-4' : 'ml-2 h-5 w-5');
+	// Phones get small text and a tighter trigger whatever the density, so a
+	// dropdown sits level with the small buttons, toggles and fields beside it.
+	let fontSize = $derived(mobile.current ? 'text-xs' : d.fontSize);
+	let triggerPadding = $derived(mobile.current ? 'px-2 py-1.5' : d.triggerPadding);
+	let chevron = $derived(mobile.current ? 'ml-1 h-4 w-4' : 'ml-2 h-5 w-5');
 
 	let triggerBg = $derived(
 		transparent
@@ -204,9 +202,7 @@
 				onclick={() => (open = !open)}
 				aria-expanded={open}
 				aria-haspopup="listbox"
-				class="flex w-full items-center justify-between border border-gray-200 text-left shadow-lg transition-colors dark:border-gray-700 {triggerPadding} {d.lineHeight} {triggerBg} {open
-					? 'rounded-t-lg border-b-0'
-					: 'rounded-lg'}"
+				class="flex w-full items-center justify-between border border-gray-200 text-left shadow-lg transition-colors dark:border-gray-700 {triggerPadding} {d.lineHeight} {triggerBg} rounded-lg"
 			>
 				<div class="min-w-0 flex-1">
 					<div class="truncate font-medium text-gray-900 dark:text-gray-200 {fontSize}">
@@ -224,7 +220,7 @@
 
 			{#if open}
 				<div
-					class="absolute top-full left-0 z-50 w-max max-w-[min(24rem,calc(100vw-1.5rem))] min-w-full overflow-hidden rounded-b-lg border border-t-0 border-gray-200 shadow-lg dark:border-gray-700 {listBg}"
+					class="absolute top-full left-0 z-50 mt-2 w-max max-w-[min(24rem,calc(100vw-1.5rem))] min-w-full overflow-hidden rounded-lg border border-gray-200 shadow-lg dark:border-gray-700 {listBg}"
 				>
 					<!--
 						flex-col, not a plain block: <button> is inline-block by default, and

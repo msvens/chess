@@ -180,7 +180,7 @@ describe('SelectableList — grouped items', () => {
 	});
 });
 
-describe('SelectableList — smallOnMobile', () => {
+describe('SelectableList — text size', () => {
 	const phone = (matches: boolean) =>
 		vi.spyOn(window, 'matchMedia').mockImplementation(
 			(query: string) =>
@@ -198,16 +198,16 @@ describe('SelectableList — smallOnMobile', () => {
 
 	const triggerText = () => screen.getByRole('button').querySelector('.truncate')!;
 
-	it('uses small text on a phone', () => {
+	it('uses small text on a phone, whatever the density', () => {
 		phone(true);
-		renderDropdown({ density: 'compact', smallOnMobile: true });
+		renderDropdown({ density: 'comfortable' });
 		expect(triggerText()).toHaveClass('text-xs');
 		vi.restoreAllMocks();
 	});
 
-	it("keeps the density's text on a wider screen, or when not asked", () => {
+	it("keeps the density's text on a wider screen", () => {
 		phone(false);
-		renderDropdown({ density: 'compact', smallOnMobile: true });
+		renderDropdown({ density: 'compact' });
 		expect(triggerText()).toHaveClass('text-sm');
 		vi.restoreAllMocks();
 	});
