@@ -25,6 +25,8 @@
 		onAutoChange: (value: boolean) => void;
 		allGroups: boolean;
 		onAllGroupsChange: (value: boolean) => void;
+		qrSheet: boolean;
+		onQrSheetChange: (value: boolean) => void;
 		classOptions: { id: number; label: string; firstGroupId: number }[];
 		currentClassId: number | null;
 		groupOptions: { id: number; label: string }[];
@@ -42,6 +44,8 @@
 		onAutoChange,
 		allGroups,
 		onAllGroupsChange,
+		qrSheet,
+		onQrSheetChange,
 		classOptions,
 		currentClassId,
 		groupOptions,
@@ -152,6 +156,7 @@
 			{/each}
 		</div>
 		<Toggle checked={auto} onChange={onAutoChange} label={print.autoFit} />
+		<Toggle checked={qrSheet} onChange={onQrSheetChange} label={print.qrSheet} />
 
 		<Button
 			variant="contained"

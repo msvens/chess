@@ -1,12 +1,13 @@
 <script lang="ts">
 	/**
 	 * The print document: every target group yields a pairing sheet and then a
-	 * standings sheet, each self-contained.
+	 * standings sheet, each self-contained, and a QR code sheet when asked for.
 	 * Ports `components/print/PrintableTournament.tsx`.
 	 *
 	 * Always light, whatever the app's theme — this is paper.
 	 */
 	import PairingSheet from './PairingSheet.svelte';
+	import QrSheet from './QrSheet.svelte';
 	import StandingsSheet from './StandingsSheet.svelte';
 	import TeamPairingSheet from './TeamPairingSheet.svelte';
 	import TeamStandingsSheet from './TeamStandingsSheet.svelte';
@@ -22,9 +23,11 @@
 		round: number;
 		fontMode: FontMode;
 		auto: boolean;
+		/** Adds a sheet with a QR code to each group's page, to put up in the hall. */
+		qrSheet?: boolean;
 	}
 
-	let { data, round, fontMode, auto }: PrintableTournamentProps = $props();
+	let { data, round, fontMode, auto, qrSheet = false }: PrintableTournamentProps = $props();
 
 	let t = $derived(getTranslation(language.current).pages.tournamentResults);
 
@@ -110,6 +113,10 @@
 				{sheetHeader}
 				{groupSuffix}
 			/>
+		{/if}
+
+		{#if qrSheet}
+			<QrSheet path="/results/{data.tournament.id}/{group.group.id}" {sheetHeader} {groupSuffix} />
 		{/if}
 	{/each}
 </div>

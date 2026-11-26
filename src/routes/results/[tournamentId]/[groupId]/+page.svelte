@@ -26,6 +26,7 @@
 	import type { SelectableListItem } from '$lib/components/ui/listItems';
 	import ExternalResultsNotice from '$lib/components/results/ExternalResultsNotice.svelte';
 	import FinalResultsTable from '$lib/components/results/FinalResultsTable.svelte';
+	import GroupQrCode from '$lib/components/results/GroupQrCode.svelte';
 	import LiveUpdatesToggle from '$lib/components/results/LiveUpdatesToggle.svelte';
 	import PrizeCategoryFilter from '$lib/components/results/PrizeCategoryFilter.svelte';
 	import RegistrationTable from '$lib/components/results/RegistrationTable.svelte';
@@ -92,6 +93,9 @@
 	let t = $derived(getTranslation(language.current));
 	let tr = $derived(t.pages.tournamentResults);
 	let nf = $derived(t.notFound);
+
+	/** The corner QR code, for a screen in the hall; off until asked for, never remembered. */
+	let showQr = $state(false);
 	let resultLabels = $derived(getResultLabels(t));
 	let locale = $derived(localeOf(language.current));
 
@@ -512,34 +516,50 @@
 			<div class="text-center text-lg text-gray-600 dark:text-gray-400">{tr.notFound}</div>
 		{/if}
 	{:else}
-		<div class="mb-6">
-			<h1 class="mb-2 text-2xl font-light text-gray-900 md:text-3xl dark:text-gray-200">
-				{results.tournament.name}
-			</h1>
-			<div class="flex flex-wrap gap-4 text-sm text-gray-600 dark:text-gray-400">
-				<span>{results.tournament.start} - {results.tournament.end}</span>
-				{#if results.tournament.city}<span>{results.tournament.city}</span>{/if}
-			</div>
-			<!-- A series has nothing here to print or rank. -->
-			{#if !results.isSeries}
-				<div class="mt-3 flex flex-wrap gap-4 text-sm">
-					<a
-						href="/print/{tournamentId}/{groupId}"
-						target="_blank"
-						rel="noopener noreferrer"
-						class="text-blue-600 hover:underline dark:text-blue-400"
-					>
-						{tr.print.printThisGroup}
-					</a>
-					{#if showPerformanceLink}
+		<!-- The QR code sits in the flow, beside the heading: it pushes the
+		     standings down rather than covering any of them. -->
+		<div class="mb-6 flex items-start justify-between gap-6">
+			<div class="min-w-0">
+				<h1 class="mb-2 text-2xl font-light text-gray-900 md:text-3xl dark:text-gray-200">
+					{results.tournament.name}
+				</h1>
+				<div class="flex flex-wrap gap-4 text-sm text-gray-600 dark:text-gray-400">
+					<span>{results.tournament.start} - {results.tournament.end}</span>
+					{#if results.tournament.city}<span>{results.tournament.city}</span>{/if}
+				</div>
+				<!-- A series has nothing here to print or rank. -->
+				{#if !results.isSeries}
+					<div class="mt-3 flex flex-wrap gap-4 text-sm">
 						<a
-							href="/results/{tournamentId}/performance"
+							href="/print/{tournamentId}/{groupId}"
+							target="_blank"
+							rel="noopener noreferrer"
 							class="text-blue-600 hover:underline dark:text-blue-400"
 						>
-							{tr.individualPerformance.link}
+							{tr.print.printThisGroup}
 						</a>
-					{/if}
-				</div>
+						<!-- Not on phones: there, sharing the link beats showing a code. -->
+						<button
+							type="button"
+							onclick={() => (showQr = !showQr)}
+							aria-pressed={showQr}
+							class="hidden text-blue-600 hover:underline md:inline dark:text-blue-400"
+						>
+							{showQr ? tr.qrCode.hide : tr.qrCode.show}
+						</button>
+						{#if showPerformanceLink}
+							<a
+								href="/results/{tournamentId}/performance"
+								class="text-blue-600 hover:underline dark:text-blue-400"
+							>
+								{tr.individualPerformance.link}
+							</a>
+						{/if}
+					</div>
+				{/if}
+			</div>
+			{#if showQr && !results.isSeries}
+				<GroupQrCode path="/results/{tournamentId}/{groupId}" />
 			{/if}
 		</div>
 
