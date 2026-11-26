@@ -4,6 +4,7 @@
 	 * Ports `components/calendar/CalendarNav.tsx`.
 	 */
 	import CalendarLegend from './CalendarLegend.svelte';
+	import SelectableList from '$lib/components/ui/SelectableList.svelte';
 	import type { CalendarDayMode, CalendarViewMode } from './calendarPrefs';
 	import { language } from '$lib/stores/language.svelte';
 	import { getTranslation } from '$lib/translations';
@@ -44,6 +45,12 @@
 
 	let cal = $derived(getTranslation(language.current).pages.calendar);
 	let nav = $derived(cal.nav);
+	let viewItems = $derived(
+		(['day', 'week', 'month'] as const).map((id) => ({ id, label: cal.views[id] }))
+	);
+	let dayModeItems = $derived(
+		(['played', 'dates'] as const).map((id) => ({ id, label: cal.dayModes[id] }))
+	);
 
 	const iconButton =
 		'flex h-8 w-8 items-center justify-center rounded-md border border-gray-200 text-gray-600 transition-colors hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-40 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800';
@@ -98,28 +105,33 @@
 		{title}
 	</h2>
 
-	<div class="flex shrink-0 items-center gap-1.5">
+	<div class="flex flex-wrap items-center gap-1.5">
 		<CalendarLegend types={legendTypes} />
-		<!-- The React version labelled this "Month" — one of its own two options,
-		     rather than a description of the control. -->
-		<select
-			value={view}
-			onchange={(event) => onViewChange(event.currentTarget.value as CalendarViewMode)}
-			aria-label={cal.viewLabel}
-			class="rounded-md border border-gray-200 bg-white px-2 py-1 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
-		>
-			<option value="day">{cal.views.day}</option>
-			<option value="week">{cal.views.week}</option>
-			<option value="month">{cal.views.month}</option>
-		</select>
-		<select
-			value={dayMode}
-			onchange={(event) => onDayModeChange(event.currentTarget.value as CalendarDayMode)}
-			aria-label={cal.dayModeLabel}
-			class="rounded-md border border-gray-200 bg-white px-2 py-1 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
-		>
-			<option value="played">{cal.dayModes.played}</option>
-			<option value="dates">{cal.dayModes.dates}</option>
-		</select>
+		<!-- The same dropdown as the filters above. Each sits in a labelled group:
+		     the trigger's own name is the choice on show, not what it chooses. -->
+		<div role="group" aria-label={cal.viewLabel} class="w-fit">
+			<SelectableList
+				items={viewItems}
+				selectedId={view}
+				onSelect={(id) => onViewChange(id as CalendarViewMode)}
+				placeholder={cal.viewLabel}
+				variant="dropdown"
+				density="compact"
+				transparent
+				smallOnMobile
+			/>
+		</div>
+		<div role="group" aria-label={cal.dayModeLabel} class="w-fit">
+			<SelectableList
+				items={dayModeItems}
+				selectedId={dayMode}
+				onSelect={(id) => onDayModeChange(id as CalendarDayMode)}
+				placeholder={cal.dayModeLabel}
+				variant="dropdown"
+				density="compact"
+				transparent
+				smallOnMobile
+			/>
+		</div>
 	</div>
 </div>

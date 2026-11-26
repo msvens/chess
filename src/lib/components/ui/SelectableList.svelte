@@ -34,6 +34,8 @@
 		densityThresholds?: ListDensityThresholds;
 		/** Softens the dropdown's background, for use over a map or image. */
 		transparent?: boolean;
+		/** Small text and a tighter trigger on phones, to sit in a row of small buttons. */
+		smallOnMobile?: boolean;
 	}
 
 	let {
@@ -47,7 +49,8 @@
 		variant = 'vertical',
 		density,
 		densityThresholds = DEFAULT_LIST_THRESHOLDS,
-		transparent = false
+		transparent = false,
+		smallOnMobile = false
 	}: SelectableListProps = $props();
 
 	let open = $state(false);
@@ -117,6 +120,10 @@
 	};
 
 	let d = $derived(densityClasses[effectiveDensity]);
+	let small = $derived(smallOnMobile && mobile.current);
+	let fontSize = $derived(small ? 'text-xs' : d.fontSize);
+	let triggerPadding = $derived(small ? 'px-2 py-1.5' : d.triggerPadding);
+	let chevron = $derived(small ? 'ml-1 h-4 w-4' : 'ml-2 h-5 w-5');
 
 	let triggerBg = $derived(
 		transparent
@@ -157,7 +164,7 @@
 			? `${itemSelectedBg} font-medium text-gray-900 dark:text-gray-200`
 			: 'text-gray-600 dark:text-gray-400'}"
 	>
-		<div class="whitespace-nowrap {d.fontSize}">{item.label}</div>
+		<div class="whitespace-nowrap {fontSize}">{item.label}</div>
 		{#if item.subtitle}
 			<div class="mt-0.5 opacity-70 {d.subtitleSize}">{item.subtitle}</div>
 		{/if}
@@ -197,18 +204,18 @@
 				onclick={() => (open = !open)}
 				aria-expanded={open}
 				aria-haspopup="listbox"
-				class="flex w-full items-center justify-between border border-gray-200 text-left shadow-lg transition-colors dark:border-gray-700 {d.triggerPadding} {d.lineHeight} {triggerBg} {open
+				class="flex w-full items-center justify-between border border-gray-200 text-left shadow-lg transition-colors dark:border-gray-700 {triggerPadding} {d.lineHeight} {triggerBg} {open
 					? 'rounded-t-lg border-b-0'
 					: 'rounded-lg'}"
 			>
 				<div class="min-w-0 flex-1">
-					<div class="truncate font-medium text-gray-900 dark:text-gray-200 {d.fontSize}">
+					<div class="truncate font-medium text-gray-900 dark:text-gray-200 {fontSize}">
 						{selectedItem?.label ?? placeholder}
 					</div>
 				</div>
 				<Icon
 					src={ChevronDown}
-					class="ml-2 h-5 w-5 flex-shrink-0 text-gray-400 transition-transform {open
+					class="flex-shrink-0 text-gray-400 transition-transform {chevron} {open
 						? 'rotate-180'
 						: ''}"
 					aria-hidden="true"
