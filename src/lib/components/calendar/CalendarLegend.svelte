@@ -6,6 +6,10 @@
 	 * Lists only the types actually on screen, so filtering down to one kind of
 	 * event leaves a key with one entry rather than eight. Its two `useEffect`
 	 * listener pairs are the `clickOutside` and `escapeKey` attachments.
+	 *
+	 * The panel opens rightwards from the button's left edge: on a phone the
+	 * controls wrap to the left of the screen, where a panel opening leftwards
+	 * ran off it.
 	 */
 	import { clickOutside } from '$lib/attachments/clickOutside';
 	import { escapeKey } from '$lib/attachments/escapeKey';
@@ -47,7 +51,7 @@
 
 		{#if open}
 			<div
-				class="absolute top-full right-0 z-30 mt-1 w-48 rounded-lg border border-gray-200 bg-white p-2 shadow-lg dark:border-gray-700 dark:bg-gray-800"
+				class="absolute top-full left-0 z-30 mt-1 w-48 rounded-lg border border-gray-200 bg-white p-2 shadow-lg dark:border-gray-700 dark:bg-gray-800"
 			>
 				<ul class="flex flex-col gap-1.5">
 					{#each types as type (type)}

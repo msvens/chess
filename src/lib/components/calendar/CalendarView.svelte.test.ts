@@ -1,9 +1,15 @@
-import { render, screen } from '@testing-library/svelte';
+import { render, screen, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { DistrictDTO, TournamentDto } from '$lib/api';
 import { ORGANIZATIONS_STATE_KEY, OrganizationsState } from '$lib/stores/organizations.svelte';
 import CalendarView from './CalendarView.svelte';
+
+/** Picks `option` in the nav dropdown labelled `control` ("Vy", "Visa turneringar på"). */
+async function choose(user: ReturnType<typeof userEvent.setup>, control: string, option: string) {
+	await user.click(within(screen.getByRole('group', { name: control })).getByRole('button'));
+	await user.click(screen.getByRole('option', { name: option }));
+}
 
 const INDIVIDUAL = 3;
 const GRAND_PRIX = 7;
@@ -72,7 +78,7 @@ describe('which period is shown', () => {
 
 	it('remembers a change of view', async () => {
 		const user = setup([event()]);
-		await user.selectOptions(screen.getByRole('combobox', { name: 'Vy' }), 'week');
+		await choose(user, 'Vy', 'Vecka');
 		expect(localStorage.getItem('calendar-view-mode')).toBe('week');
 	});
 
@@ -184,10 +190,7 @@ describe('game days or tournament dates', () => {
 
 	it('switches to tournament dates, and remembers it', async () => {
 		const user = setup([league()]);
-		await user.selectOptions(
-			screen.getByRole('combobox', { name: 'Visa turneringar på' }),
-			'dates'
-		);
+		await choose(user, 'Visa turneringar på', 'Turneringsdatum');
 
 		// Over a week long, so only its start in February is marked; March is empty.
 		expect(dayButton(/evenemang den .*10 mars/)).toBeNull();
@@ -197,7 +200,9 @@ describe('game days or tournament dates', () => {
 	it('opens on the mode chosen last time', () => {
 		localStorage.setItem('calendar-day-mode', 'dates');
 		setup([league()]);
-		expect(screen.getByRole('combobox', { name: 'Visa turneringar på' })).toHaveValue('dates');
+		expect(
+			within(screen.getByRole('group', { name: 'Visa turneringar på' })).getByRole('button')
+		).toHaveTextContent('Turneringsdatum');
 		expect(dayButton(/evenemang den .*10 mars/)).toBeNull();
 	});
 });
@@ -245,8 +250,7 @@ describe('the agenda layout', () => {
 });
 
 describe('the day view', () => {
-	const toDay = async (user: ReturnType<typeof userEvent.setup>) =>
-		user.selectOptions(screen.getByRole('combobox', { name: 'Vy' }), 'day');
+	const toDay = async (user: ReturnType<typeof userEvent.setup>) => choose(user, 'Vy', 'Dag');
 
 	it('shows one day, named in full', async () => {
 		const user = setup([event({ start: '2026-03-15', end: '2026-03-15' })]);

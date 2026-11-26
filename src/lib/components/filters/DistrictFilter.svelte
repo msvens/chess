@@ -17,6 +17,8 @@
 		variant?: 'dropdown' | 'vertical';
 		density?: ListDensity;
 		transparent?: boolean;
+		/** Small text on phones, as in the calendar nav below the filters. */
+		smallOnMobile?: boolean;
 		showLabel?: boolean;
 		/** Supply to show counts and hide districts with nothing in them. */
 		districtCounts?: DistrictCount[];
@@ -29,6 +31,7 @@
 		variant = 'dropdown',
 		density,
 		transparent = false,
+		smallOnMobile = false,
 		showLabel = true,
 		districtCounts,
 		totalCount
@@ -52,5 +55,6 @@
 		{variant}
 		{density}
 		{transparent}
+		{smallOnMobile}
 	/>
 {/if}

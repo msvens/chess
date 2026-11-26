@@ -145,6 +145,7 @@
 			variant="dropdown"
 			density="compact"
 			transparent
+			smallOnMobile
 			{districtCounts}
 			totalCount={listed.length}
 		/>
@@ -154,6 +155,7 @@
 			counts={categoryCounts}
 			density="compact"
 			transparent
+			smallOnMobile
 		/>
 		<TournamentTypeFilter
 			selected={type}
@@ -161,6 +163,7 @@
 			counts={typeCounts}
 			density="compact"
 			transparent
+			smallOnMobile
 		/>
 		<TournamentStateFilter
 			selected={tournamentState}
@@ -168,6 +171,7 @@
 			counts={stateCounts}
 			density="compact"
 			transparent
+			smallOnMobile
 		/>
 	</div>
 

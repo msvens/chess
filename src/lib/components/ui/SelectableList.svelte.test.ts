@@ -179,3 +179,36 @@ describe('SelectableList — grouped items', () => {
 		expect(screen.getAllByRole('option')).toHaveLength(3);
 	});
 });
+
+describe('SelectableList — smallOnMobile', () => {
+	const phone = (matches: boolean) =>
+		vi.spyOn(window, 'matchMedia').mockImplementation(
+			(query: string) =>
+				({
+					matches,
+					media: query,
+					onchange: null,
+					addListener: () => {},
+					removeListener: () => {},
+					addEventListener: () => {},
+					removeEventListener: () => {},
+					dispatchEvent: () => false
+				}) as MediaQueryList
+		);
+
+	const triggerText = () => screen.getByRole('button').querySelector('.truncate')!;
+
+	it('uses small text on a phone', () => {
+		phone(true);
+		renderDropdown({ density: 'compact', smallOnMobile: true });
+		expect(triggerText()).toHaveClass('text-xs');
+		vi.restoreAllMocks();
+	});
+
+	it("keeps the density's text on a wider screen, or when not asked", () => {
+		phone(false);
+		renderDropdown({ density: 'compact', smallOnMobile: true });
+		expect(triggerText()).toHaveClass('text-sm');
+		vi.restoreAllMocks();
+	});
+});
