@@ -33,9 +33,9 @@ const data = (groups: PrintGroupData[]): PrintData =>
 		groups
 	}) as PrintData;
 
-const setup = (groups: PrintGroupData[], round = 1) =>
+const setup = (groups: PrintGroupData[], round = 1, qrSheet = false) =>
 	render(PrintableTournament, {
-		props: { data: data(groups), round, fontMode: 'medium', auto: true }
+		props: { data: data(groups), round, fontMode: 'medium', auto: true, qrSheet }
 	});
 
 const pages = () => document.querySelectorAll('.print-page');
@@ -45,6 +45,19 @@ describe('PrintableTournament', () => {
 		setup([group({})]);
 		const headings = screen.getAllByRole('heading', { level: 2 }).map((h) => h.textContent?.trim());
 		expect(headings).toEqual(['Rond 1', 'Ställning']);
+	});
+
+	it('adds a QR code sheet after each group only when asked for', () => {
+		setup([group({}), group({ group: classGroup(101, 'Grupp B'), multipleGroups: true })]);
+		expect(screen.queryByRole('img')).not.toBeInTheDocument();
+
+		document.body.innerHTML = '';
+		setup([group({}), group({ group: classGroup(101, 'Grupp B'), multipleGroups: true })], 1, true);
+		expect(screen.getAllByRole('img')).toHaveLength(2);
+		expect(screen.getByText('chess.msvens.com/results/5835/100')).toBeInTheDocument();
+		expect(screen.getByText('chess.msvens.com/results/5835/101')).toBeInTheDocument();
+		// Each group's code follows its own standings.
+		expect(pages()[2].textContent).toContain('chess.msvens.com/results/5835/100');
 	});
 
 	it('prints the rating of the type the round was rated under', () => {

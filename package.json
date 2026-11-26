@@ -35,7 +35,8 @@
 		"@msvens/schack-se-sdk": "github:msvens/schack-se-sdk#v0.33.0",
 		"leaflet": "^1.9.4",
 		"leaflet.markercluster": "^1.5.3",
-		"svelte-hero-icons": "^5.2.0"
+		"svelte-hero-icons": "^5.2.0",
+		"uqr": "^0.1.3"
 	},
 	"devDependencies": {
 		"@eslint/js": "^10.0.1",

@@ -21,7 +21,8 @@ function setup(over: Record<string, unknown> = {}) {
 		onRoundChange: vi.fn(),
 		onFontModeChange: vi.fn(),
 		onAutoChange: vi.fn(),
-		onAllGroupsChange: vi.fn()
+		onAllGroupsChange: vi.fn(),
+		onQrSheetChange: vi.fn()
 	};
 	render(PrintToolbar, {
 		props: {
@@ -30,6 +31,7 @@ function setup(over: Record<string, unknown> = {}) {
 			fontMode: 'medium',
 			auto: true,
 			allGroups: false,
+			qrSheet: false,
 			classOptions: CLASSES,
 			currentClassId: 1,
 			groupOptions: GROUPS,
@@ -101,6 +103,8 @@ describe('PrintToolbar', () => {
 				onAutoChange: vi.fn(),
 				allGroups: false,
 				onAllGroupsChange: vi.fn(),
+				qrSheet: false,
+				onQrSheetChange: vi.fn(),
 				classOptions: [CLASSES[0]],
 				currentClassId: 1,
 				groupOptions: [GROUPS[0]],
@@ -124,6 +128,14 @@ describe('PrintToolbar', () => {
 		const { onAutoChange, user } = setup();
 		await user.click(screen.getByRole('checkbox', { name: 'Autoanpassa' }));
 		expect(onAutoChange).toHaveBeenCalledWith(false);
+	});
+
+	it('reports the QR page toggle, off to begin with', async () => {
+		const { onQrSheetChange, user } = setup();
+		const toggle = screen.getByRole('checkbox', { name: 'QR-sida' });
+		expect(toggle).not.toBeChecked();
+		await user.click(toggle);
+		expect(onQrSheetChange).toHaveBeenCalledWith(true);
 	});
 
 	it('prints, and says it can save a PDF too', async () => {

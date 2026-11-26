@@ -32,6 +32,8 @@
 	let auto = $state(true);
 	/** Off by default: this group only. The toolbar's toggle refetches them all. */
 	let allGroups = $state(false);
+	/** Off by default: most prints are the pairings and standings alone. */
+	let qrSheet = $state(false);
 
 	let t = $derived(getTranslation(language.current).pages.tournamentResults);
 	let nf = $derived(getTranslation(language.current).notFound);
@@ -118,12 +120,14 @@
 			onAutoChange={(next) => (auto = next)}
 			{allGroups}
 			onAllGroupsChange={(next) => (allGroups = next)}
+			{qrSheet}
+			onQrSheetChange={(next) => (qrSheet = next)}
 			classOptions={nav.classOptions}
 			currentClassId={nav.currentClassId}
 			groupOptions={nav.groupOptions}
 			{groupId}
 			{tournamentId}
 		/>
-		<PrintableTournament {data} round={round ?? 1} {fontMode} {auto} />
+		<PrintableTournament {data} round={round ?? 1} {fontMode} {auto} {qrSheet} />
 	{/if}
 </div>

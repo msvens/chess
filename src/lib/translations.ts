@@ -590,6 +590,12 @@ export interface Translations {
 				/** Clear-selection entry in each dropdown. */
 				all: string;
 			};
+			/** The QR code that points phones at the group page, for a screen in the playing hall. */
+			qrCode: {
+				show: string;
+				hide: string;
+				label: string;
+			};
 			print: {
 				standings: string;
 				rank: string;
@@ -613,6 +619,10 @@ export interface Translations {
 				medium: string;
 				large: string;
 				autoFit: string;
+				/** The toolbar toggle that adds a QR code sheet after each group's standings. */
+				qrSheet: string;
+				/** The line under the code on that sheet. */
+				qrScan: string;
 			};
 			teamRoundResults: {
 				board: string;
@@ -1438,6 +1448,11 @@ const translations: Record<Language, Translations> = {
 					seniorPrizes: 'Veteran prizes',
 					all: 'All'
 				},
+				qrCode: {
+					show: 'Show QR code',
+					hide: 'Hide QR code',
+					label: 'QR code for this page'
+				},
 				print: {
 					standings: 'Standings',
 					rank: '#',
@@ -1460,7 +1475,9 @@ const translations: Record<Language, Translations> = {
 					small: 'Small',
 					medium: 'Medium',
 					large: 'Large',
-					autoFit: 'Auto-fit'
+					autoFit: 'Auto-fit',
+					qrSheet: 'QR page',
+					qrScan: 'Scan to follow the results'
 				},
 				teamRoundResults: {
 					board: 'Board',
@@ -2274,6 +2291,11 @@ const translations: Record<Language, Translations> = {
 					seniorPrizes: 'Veteranpriser',
 					all: 'Alla'
 				},
+				qrCode: {
+					show: 'Visa QR-kod',
+					hide: 'Dölj QR-kod',
+					label: 'QR-kod till sidan'
+				},
 				print: {
 					standings: 'Ställning',
 					rank: '#',
@@ -2296,7 +2318,9 @@ const translations: Record<Language, Translations> = {
 					small: 'Liten',
 					medium: 'Mellan',
 					large: 'Stor',
-					autoFit: 'Autoanpassa'
+					autoFit: 'Autoanpassa',
+					qrSheet: 'QR-sida',
+					qrScan: 'Skanna för att följa resultaten'
 				},
 				teamRoundResults: {
 					board: 'Bräde',
