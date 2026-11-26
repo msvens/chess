@@ -8,6 +8,8 @@
 	import PageTitle from '$lib/components/layout/PageTitle.svelte';
 	import TodayTournaments from '$lib/components/today/TodayTournaments.svelte';
 	import DistrictFilter from '$lib/components/filters/DistrictFilter.svelte';
+	import CalendarLegend from '$lib/components/calendar/CalendarLegend.svelte';
+	import { getAllTournamentTypes } from '$lib/utils/tournamentFilters';
 	import {
 		districtCounts as countByDistrict,
 		districtsOf,
@@ -87,6 +89,12 @@
 				{districtCounts}
 				totalCount={tournaments.length}
 			/>
+			<!-- The calendar's colour key, at the row's right end: the list's dots
+			     mean nothing without it. Every type, not only today's, so the key
+			     reads the same whatever is on. -->
+			<div class="flex items-end justify-end md:col-span-3">
+				<CalendarLegend types={getAllTournamentTypes()} align="end" />
+			</div>
 		</div>
 	{/if}
 	<TodayTournaments tournaments={shown} {loading} error={failed ? t.loadError : undefined} />

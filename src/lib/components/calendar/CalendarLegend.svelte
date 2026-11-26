@@ -3,9 +3,10 @@
 	 * The colour key, on demand.
 	 * Ports `components/calendar/CalendarLegend.tsx`.
 	 *
-	 * Lists only the types actually on screen, so filtering down to one kind of
-	 * event leaves a key with one entry rather than eight. Its two `useEffect`
-	 * listener pairs are the `clickOutside` and `escapeKey` attachments.
+	 * Lists the types it is given: every type, on the calendar and /today, so
+	 * a colour can be looked up whatever is on screen; none hides the button.
+	 * Its two `useEffect` listener pairs are the `clickOutside` and `escapeKey`
+	 * attachments.
 	 *
 	 * The panel opens rightwards from the button's left edge: on a phone the
 	 * controls wrap to the left of the screen, where a panel opening leftwards
@@ -18,8 +19,14 @@
 	import { language } from '$lib/stores/language.svelte';
 	import { getTranslation } from '$lib/translations';
 
-	/** Tournament types present in the current data, in canonical order. */
-	let { types }: { types: number[] } = $props();
+	interface CalendarLegendProps {
+		/** The types to list, in canonical order. */
+		types: number[];
+		/** Which edge of the button the panel lines up with: `end` for a button at the right of the screen. */
+		align?: 'start' | 'end';
+	}
+
+	let { types, align = 'start' }: CalendarLegendProps = $props();
 
 	let t = $derived(getTranslation(language.current));
 	let cal = $derived(t.pages.calendar);
@@ -51,7 +58,9 @@
 
 		{#if open}
 			<div
-				class="absolute top-full left-0 z-30 mt-1 w-48 rounded-lg border border-gray-200 bg-white p-2 shadow-lg dark:border-gray-700 dark:bg-gray-800"
+				class="absolute top-full z-30 mt-1 w-48 {align === 'end'
+					? 'right-0'
+					: 'left-0'} rounded-lg border border-gray-200 bg-white p-2 shadow-lg dark:border-gray-700 dark:bg-gray-800"
 			>
 				<ul class="flex flex-col gap-1.5">
 					{#each types as type (type)}

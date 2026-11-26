@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { DistrictDTO, TournamentToday } from '$lib/api';
 import { ORGANIZATIONS_STATE_KEY, OrganizationsState } from '$lib/stores/organizations.svelte';
+import { getAllTournamentTypes } from '$lib/utils/tournamentFilters';
 import Page from './+page.svelte';
 
 const getTournamentsToday = vi.fn();
@@ -56,7 +57,11 @@ function setup(byOrgNumber: Record<number, number | null> = {}) {
 	return userEvent.setup();
 }
 
-const districtTrigger = () => screen.getByRole('button', { expanded: false });
+/** The district dropdown's trigger: the collapsed button that opens a listbox, not the colour key. */
+const districtTrigger = () =>
+	screen
+		.getAllByRole('button', { expanded: false })
+		.find((button) => button.getAttribute('aria-haspopup') === 'listbox')!;
 
 beforeEach(() => getTournamentsToday.mockReset());
 
@@ -91,6 +96,20 @@ describe('the today page', () => {
 		await user.click(screen.getByRole('option', { name: /Skånes/ }));
 		expect(screen.getByRole('link', { name: 'Lund Open' })).toBeInTheDocument();
 		expect(screen.queryByRole('link', { name: 'Farsta JGP' })).toBeNull();
+	});
+
+	it("has the calendar's colour key, with every type in it", async () => {
+		getTournamentsToday.mockResolvedValue({
+			status: 200,
+			data: [tournament(1, 'Farsta JGP'), tournament(2, 'Grand Prix-serien', GRAND_PRIX)]
+		});
+		const user = setup();
+		const keyButton = await screen.findByRole('button', { name: 'Färger' });
+		await user.click(keyButton);
+		// Every type, whatever is on today, inside the key's own panel.
+		expect(keyButton.parentElement!.querySelectorAll('li')).toHaveLength(
+			getAllTournamentTypes().length
+		);
 	});
 
 	it('offers only the districts playing today', async () => {
