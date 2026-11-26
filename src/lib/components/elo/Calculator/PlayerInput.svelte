@@ -9,7 +9,7 @@
 	 * same `selectedRating`, so switching type never has to refetch or re-sync.
 	 */
 	import TextField from '$lib/components/ui/TextField.svelte';
-	import Button from '$lib/components/ui/Button.svelte';
+	import TextFieldWithButton from '$lib/components/ui/TextFieldWithButton.svelte';
 	import PlayerSearchInput from '$lib/components/player/PlayerSearchInput.svelte';
 	import FidePlayerSearchInput from '$lib/components/player/FidePlayerSearchInput.svelte';
 	import { PlayerService, fideService, type MfideTopEntry } from '$lib/api';
@@ -207,46 +207,32 @@
 		</div>
 	{:else if inputMode === 'ssfId'}
 		<div class="space-y-2">
-			<TextField
+			<TextFieldWithButton
 				label={calc.ssfId}
 				value={memberIdInput}
 				onChange={(value) => (memberIdInput = value)}
+				onSubmit={lookupSsfId}
+				buttonLabel={searching ? calc.lookingUp : calc.search}
+				buttonDisabled={searching || !memberIdInput.trim()}
 				placeholder={calc.enterSsfId}
 				type="number"
 				compact
-				fullWidth
-				onEnter={lookupSsfId}
 			/>
-			<Button
-				onclick={lookupSsfId}
-				disabled={searching || !memberIdInput.trim()}
-				variant="outlined"
-				compact
-			>
-				{searching ? calc.lookingUp : calc.search}
-			</Button>
 			{@render ratingLine()}
 		</div>
 	{:else if inputMode === 'fideId'}
 		<div class="space-y-2">
-			<TextField
+			<TextFieldWithButton
 				label={calc.fideId}
 				value={fideIdInput}
 				onChange={(value) => (fideIdInput = value)}
+				onSubmit={lookupFideId}
+				buttonLabel={searching ? calc.lookingUp : calc.search}
+				buttonDisabled={searching || !fideIdInput.trim()}
 				placeholder={calc.enterFideId}
 				type="number"
 				compact
-				fullWidth
-				onEnter={lookupFideId}
 			/>
-			<Button
-				onclick={lookupFideId}
-				disabled={searching || !fideIdInput.trim()}
-				variant="outlined"
-				compact
-			>
-				{searching ? calc.lookingUp : calc.search}
-			</Button>
 			{@render ratingLine()}
 		</div>
 	{:else if inputMode === 'fideSearch'}

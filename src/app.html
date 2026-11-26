@@ -4,6 +4,21 @@
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<script>
+			// iOS zooms the page into a text field under 16px when it gets focus, and
+			// stays zoomed. maximum-scale=1 stops that, and on iOS only that: Safari has
+			// ignored it for pinch-zoom since iOS 10, so people can still zoom. Android
+			// would honour it and lose pinch-zoom, hence iOS alone (iPadOS reports a Mac
+			// with touch). Lets fields follow the app's small sizes on phones.
+			if (
+				/iPhone|iPad|iPod/.test(navigator.userAgent) ||
+				(navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+			) {
+				document
+					.querySelector('meta[name="viewport"]')
+					.setAttribute('content', 'width=device-width, initial-scale=1, maximum-scale=1');
+			}
+		</script>
+		<script>
 			// Set the theme before first paint to avoid a flash. Mirrors theme.svelte.ts,
 			// and deliberately preserves the Next app's behaviour: an explicit choice in
 			// localStorage wins, otherwise DARK. This app does not follow the OS setting —

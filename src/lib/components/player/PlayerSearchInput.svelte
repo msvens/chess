@@ -8,8 +8,7 @@
 	 * though it lives under `player/`, because the SSF name search is the only
 	 * player-specific thing about it.
 	 */
-	import TextField from '$lib/components/ui/TextField.svelte';
-	import Button from '$lib/components/ui/Button.svelte';
+	import TextFieldWithButton from '$lib/components/ui/TextFieldWithButton.svelte';
 	import { clickOutside } from '$lib/attachments/clickOutside';
 	import { escapeKey } from '$lib/attachments/escapeKey';
 	import { PlayerService, formatPlayerName, type PlayerInfoDto } from '$lib/api';
@@ -115,19 +114,15 @@
 		<span class="mb-1 block text-xs text-gray-600 dark:text-gray-400">{label}</span>
 	{/if}
 
-	<div class="flex gap-2">
-		<TextField
-			value={query}
-			onChange={(value) => (query = value)}
-			{placeholder}
-			{compact}
-			fullWidth
-			onEnter={search}
-		/>
-		<Button onclick={search} disabled={searching || !query.trim()} variant="outlined" {compact}>
-			{searching ? '...' : searchLabel}
-		</Button>
-	</div>
+	<TextFieldWithButton
+		value={query}
+		onChange={(value) => (query = value)}
+		onSubmit={search}
+		buttonLabel={searching ? '...' : searchLabel}
+		buttonDisabled={searching || !query.trim()}
+		{placeholder}
+		{compact}
+	/>
 
 	{#if showDropdown && results.length > 0}
 		<div
