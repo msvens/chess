@@ -77,8 +77,8 @@
 		compact: {
 			triggerPadding: 'px-3 py-1.5',
 			itemPadding: 'px-3 py-1',
-			fontSize: 'text-xs',
-			subtitleSize: 'text-[10px]',
+			fontSize: 'text-sm',
+			subtitleSize: 'text-xs',
 			lineHeight: 'leading-tight'
 		},
 		normal: {
@@ -98,6 +98,8 @@
 	};
 
 	let d = $derived(densityClasses[effectiveDensity]);
+	// As in `SelectableList`: small text on phones whatever the density.
+	let fontSize = $derived(mobile.current ? 'text-xs' : d.fontSize);
 
 	function close() {
 		open = false;
@@ -132,7 +134,7 @@
 		onclick={toggle}
 		aria-expanded={open}
 		aria-haspopup="listbox"
-		class="flex w-full items-center justify-between rounded-lg border border-gray-300 bg-white text-left transition-colors hover:bg-gray-50 dark:border-gray-700 dark:bg-dark-bg dark:hover:bg-gray-800 {d.triggerPadding} {d.fontSize} {d.lineHeight}"
+		class="flex w-full items-center justify-between rounded-lg border border-gray-300 bg-white text-left transition-colors hover:bg-gray-50 dark:border-gray-700 dark:bg-dark-bg dark:hover:bg-gray-800 {d.triggerPadding} {fontSize} {d.lineHeight}"
 	>
 		<span class="text-gray-900 dark:text-gray-200">
 			{selectedItem?.label ?? placeholder}
@@ -157,7 +159,7 @@
 					type="text"
 					placeholder={filterPlaceholder}
 					aria-label={filterPlaceholder}
-					class="w-full rounded border border-gray-300 bg-gray-50 px-3 py-2 text-sm text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:placeholder-gray-400"
+					class="w-full rounded border border-gray-300 bg-gray-50 px-3 py-2 text-xs text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:outline-none md:text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:placeholder-gray-400"
 				/>
 			</div>
 
@@ -169,7 +171,7 @@
 						aria-selected={selected}
 						onclick={() => select(item.id)}
 						title={item.tooltip}
-						class="w-full text-left transition-colors {d.itemPadding} {d.fontSize} {d.lineHeight} {selected
+						class="w-full text-left transition-colors {d.itemPadding} {fontSize} {d.lineHeight} {selected
 							? 'bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-gray-200'
 							: 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800'}"
 					>
@@ -181,7 +183,7 @@
 						{/if}
 					</button>
 				{:else}
-					<div class="text-center text-gray-500 dark:text-gray-400 {d.itemPadding} {d.fontSize}">
+					<div class="text-center text-gray-500 dark:text-gray-400 {d.itemPadding} {fontSize}">
 						{noResultsLabel}
 					</div>
 				{/each}

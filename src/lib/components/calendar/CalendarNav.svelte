@@ -77,7 +77,7 @@
 		<button
 			type="button"
 			onclick={onToday}
-			class="rounded-md border border-gray-200 px-2.5 py-1 text-xs font-medium text-gray-600 transition-colors hover:bg-gray-100 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
+			class="rounded-md border border-gray-200 px-2.5 py-1 text-xs font-medium text-gray-600 transition-colors hover:bg-gray-100 md:text-sm dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
 		>
 			{nav.today}
 		</button>
@@ -118,7 +118,6 @@
 				variant="dropdown"
 				density="compact"
 				transparent
-				smallOnMobile
 			/>
 		</div>
 		<div role="group" aria-label={cal.dayModeLabel} class="w-fit">
@@ -130,7 +129,6 @@
 				variant="dropdown"
 				density="compact"
 				transparent
-				smallOnMobile
 			/>
 		</div>
 	</div>

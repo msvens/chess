@@ -25,6 +25,8 @@
 		disabled?: boolean;
 		fullWidth?: boolean;
 		compact?: boolean;
+		/** Text size and height of the `TextField` beside it (with the same `compact`). */
+		matchField?: boolean;
 		class?: string;
 		/** Tooltip, for a button whose label cannot say the whole story. */
 		title?: string;
@@ -39,6 +41,7 @@
 		disabled = false,
 		fullWidth = false,
 		compact = false,
+		matchField = false,
 		class: cls = '',
 		title
 	}: ButtonProps = $props();
@@ -90,7 +93,14 @@
 	let classes = $derived(
 		[
 			'inline-flex items-center justify-center rounded transition-colors',
-			compact ? 'px-3 py-1.5 text-sm' : 'px-4 py-2',
+			// Compact buttons sit in rows of dropdowns, toggles and fields, so they
+			// share their text size. A full-size one keeps the inherited size,
+			// unless `matchField` sizes it as the text field beside it.
+			compact
+				? 'px-3 py-1.5 text-xs md:text-sm'
+				: matchField
+					? 'px-4 py-2 text-xs md:text-sm'
+					: 'px-4 py-2',
 			fullWidth ? 'w-full' : '',
 			colorStyles[color][variant],
 			cls

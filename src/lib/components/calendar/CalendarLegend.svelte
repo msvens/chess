@@ -39,7 +39,7 @@
 			onclick={() => (open = !open)}
 			aria-label={cal.colors}
 			aria-expanded={open}
-			class="flex h-8 items-center gap-1.5 rounded-md border border-gray-200 px-2 text-xs font-medium text-gray-600 transition-colors hover:bg-gray-100 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
+			class="flex h-8 items-center gap-1.5 rounded-md border border-gray-200 px-2 text-xs font-medium text-gray-600 transition-colors hover:bg-gray-100 md:text-sm dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
 		>
 			<span aria-hidden="true" class="flex gap-0.5">
 				<span class="h-2 w-2 rounded-full bg-rose-500"></span>
@@ -55,7 +55,7 @@
 			>
 				<ul class="flex flex-col gap-1.5">
 					{#each types as type (type)}
-						<li class="flex items-center gap-2 text-xs text-gray-700 dark:text-gray-300">
+						<li class="flex items-center gap-2 text-xs text-gray-700 md:text-sm dark:text-gray-300">
 							<span
 								aria-hidden="true"
 								class="h-2.5 w-2.5 shrink-0 rounded-full {swatchClasses(type)}"

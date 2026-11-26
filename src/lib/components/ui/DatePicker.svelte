@@ -130,7 +130,7 @@
 		aria-expanded={open}
 		aria-haspopup="dialog"
 		class="flex cursor-pointer items-center justify-between gap-2 rounded border border-gray-300 bg-transparent text-left hover:border-gray-900 dark:border-gray-600 dark:hover:border-white {compact
-			? 'px-3 py-1.5 text-sm'
+			? 'px-3 py-1.5 text-xs md:text-sm'
 			: 'px-3 py-2'} {fullWidth ? 'w-full' : ''} {value
 			? 'text-gray-900 dark:text-gray-200'
 			: 'text-gray-600 dark:text-gray-400'}"

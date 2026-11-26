@@ -14,7 +14,7 @@
 	import PageLayout from '$lib/components/layout/PageLayout.svelte';
 	import PageTitle from '$lib/components/layout/PageTitle.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
-	import TextField from '$lib/components/ui/TextField.svelte';
+	import TextFieldWithButton from '$lib/components/ui/TextFieldWithButton.svelte';
 	import DatePicker from '$lib/components/ui/DatePicker.svelte';
 	import DistrictFilter from '$lib/components/filters/DistrictFilter.svelte';
 	import TournamentCategoryFilter from '$lib/components/filters/TournamentCategoryFilter.svelte';
@@ -205,19 +205,14 @@
 		</div>
 
 		<div>
-			<div class="flex items-center gap-3">
-				<TextField
-					value={searchText}
-					onChange={(v) => (searchText = v)}
-					onEnter={searchByText}
-					placeholder={t.pages.results.filters.textSearch.placeholder}
-					fullWidth
-					compact
-				/>
-				<Button onclick={searchByText} variant="outlined" disabled={loading} compact>
-					{t.common.actions.search}
-				</Button>
-			</div>
+			<TextFieldWithButton
+				value={searchText}
+				onChange={(v) => (searchText = v)}
+				onSubmit={searchByText}
+				buttonLabel={t.common.actions.search}
+				buttonDisabled={loading}
+				placeholder={t.pages.results.filters.textSearch.placeholder}
+			/>
 			{#if searchTruncated}
 				<p class="mt-1 text-sm text-amber-700 dark:text-amber-400">
 					{messages.searchTruncated}
@@ -226,19 +221,14 @@
 		</div>
 
 		<div>
-			<div class="flex items-center gap-3">
-				<TextField
-					value={groupText}
-					onChange={(v) => (groupText = v)}
-					onEnter={openGroup}
-					placeholder={t.pages.results.filters.groupLookup.placeholder}
-					fullWidth
-					compact
-				/>
-				<Button onclick={openGroup} variant="outlined" disabled={groupLoading} compact>
-					{t.pages.results.filters.groupLookup.openButton}
-				</Button>
-			</div>
+			<TextFieldWithButton
+				value={groupText}
+				onChange={(v) => (groupText = v)}
+				onSubmit={openGroup}
+				buttonLabel={t.pages.results.filters.groupLookup.openButton}
+				buttonDisabled={groupLoading}
+				placeholder={t.pages.results.filters.groupLookup.placeholder}
+			/>
 			{#if groupError}
 				<p class="mt-1 text-sm text-red-600 dark:text-red-400">{groupError}</p>
 			{/if}

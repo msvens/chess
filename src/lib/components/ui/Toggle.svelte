@@ -28,8 +28,9 @@
 			class="peer h-5 w-9 rounded-full bg-gray-200 peer-checked:bg-blue-600 peer-focus:ring-2 peer-focus:ring-blue-500 peer-focus:ring-offset-2 peer-focus:outline-none after:absolute after:top-[2px] after:left-[2px] after:h-4 after:w-4 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:after:translate-x-full peer-checked:after:border-white dark:bg-gray-700 dark:peer-focus:ring-offset-dark-bg"
 		></div>
 	</div>
+	<!-- Small on phones, level with the dropdowns there. -->
 	<span
-		class="text-sm transition-colors {checked
+		class="text-xs transition-colors md:text-sm {checked
 			? 'font-medium text-gray-900 dark:text-gray-200'
 			: 'text-gray-500 dark:text-gray-400'}"
 	>

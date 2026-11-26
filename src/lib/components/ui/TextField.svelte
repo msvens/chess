@@ -41,8 +41,14 @@
 			'focus:border-gray-900 focus:outline-none',
 			'dark:border-gray-600 dark:text-gray-200 dark:placeholder-gray-400 dark:focus:border-white',
 			'disabled:cursor-not-allowed disabled:opacity-50',
-			compact ? 'px-3 py-1.5 text-sm' : 'px-3 py-2',
-			fullWidth ? 'w-full' : '',
+			// The general rule: small on phones, text-sm from md up. iOS would
+			// zoom into a field under 16px on focus; app.html stops that on iOS
+			// alone. `compact` only tightens the padding.
+			compact ? 'px-3 py-1.5 text-xs md:text-sm' : 'px-3 py-2 text-xs md:text-sm',
+			// Block when it fills its wrapper: an inline input leaves room for
+			// descenders under it, so the wrapper outgrows the field and a button
+			// stretched beside it (`TextFieldWithButton`) no longer lines up.
+			fullWidth ? 'block w-full' : '',
 			marginClasses[margin],
 			// Date inputs need help with the calendar icon in dark mode.
 			type === 'date'

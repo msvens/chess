@@ -11,8 +11,7 @@
 	import { goto } from '$app/navigation';
 	import PageLayout from '$lib/components/layout/PageLayout.svelte';
 	import PageTitle from '$lib/components/layout/PageTitle.svelte';
-	import Button from '$lib/components/ui/Button.svelte';
-	import TextField from '$lib/components/ui/TextField.svelte';
+	import TextFieldWithButton from '$lib/components/ui/TextFieldWithButton.svelte';
 	import PlayerSearchInput from '$lib/components/player/PlayerSearchInput.svelte';
 	import { getRecentPlayers } from '$lib/recentPlayers';
 	import { PlayerService } from '$lib/api';
@@ -91,58 +90,38 @@
 		/>
 
 		<div>
-			<span class="mb-1 block text-xs text-gray-600 dark:text-gray-400">
-				{t.pages.players.search.byMemberId}
-			</span>
-			<div class="flex gap-2">
-				<TextField
-					value={memberId}
-					onChange={(value) => {
-						memberId = value;
-						memberIdError = '';
-					}}
-					placeholder={t.pages.players.search.memberIdPlaceholder}
-					type="number"
-					fullWidth
-					onEnter={searchMemberId}
-				/>
-				<Button
-					onclick={searchMemberId}
-					disabled={memberIdLoading || !memberId.trim()}
-					variant="outlined"
-				>
-					{memberIdLoading ? '...' : t.common.actions.search}
-				</Button>
-			</div>
+			<TextFieldWithButton
+				label={t.pages.players.search.byMemberId}
+				value={memberId}
+				onChange={(value) => {
+					memberId = value;
+					memberIdError = '';
+				}}
+				onSubmit={searchMemberId}
+				buttonLabel={memberIdLoading ? '...' : t.common.actions.search}
+				buttonDisabled={memberIdLoading || !memberId.trim()}
+				placeholder={t.pages.players.search.memberIdPlaceholder}
+				type="number"
+			/>
 			{#if memberIdError}
 				<p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{memberIdError}</p>
 			{/if}
 		</div>
 
 		<div>
-			<span class="mb-1 block text-xs text-gray-600 dark:text-gray-400">
-				{t.pages.players.search.byFideId}
-			</span>
-			<div class="flex gap-2">
-				<TextField
-					value={fideId}
-					onChange={(value) => {
-						fideId = value;
-						fideIdError = '';
-					}}
-					placeholder={t.pages.players.search.fideIdPlaceholder}
-					type="number"
-					fullWidth
-					onEnter={searchFideId}
-				/>
-				<Button
-					onclick={searchFideId}
-					disabled={fideIdLoading || !fideId.trim()}
-					variant="outlined"
-				>
-					{fideIdLoading ? '...' : t.common.actions.search}
-				</Button>
-			</div>
+			<TextFieldWithButton
+				label={t.pages.players.search.byFideId}
+				value={fideId}
+				onChange={(value) => {
+					fideId = value;
+					fideIdError = '';
+				}}
+				onSubmit={searchFideId}
+				buttonLabel={fideIdLoading ? '...' : t.common.actions.search}
+				buttonDisabled={fideIdLoading || !fideId.trim()}
+				placeholder={t.pages.players.search.fideIdPlaceholder}
+				type="number"
+			/>
 			{#if fideIdError}
 				<p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{fideIdError}</p>
 			{/if}
